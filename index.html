@@ -112,6 +112,11 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;b
 .lch{display:flex;gap:6px;}
 .lch2{font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;}
 .cd{background:var(--grl);color:var(--gr);}.cn{background:var(--bg);color:var(--hint);border:.5px solid var(--border);}
+.tog-btn{cursor:pointer;border:none;font-family:inherit;transition:all .15s;active:opacity:.7;}
+.tog-btn:active{transform:scale(.95);}
+.tog-btn:disabled{opacity:.5;cursor:not-allowed;}
+.date-edit{cursor:pointer;display:flex;align-items:center;gap:3px;font-size:11px;color:var(--hint);}
+.date-edit:active{opacity:.7;}
 /* 현황 */
 .pi{padding:14px 0;border-bottom:.5px solid var(--border);}
 .pi:last-child{border-bottom:none;}
@@ -335,28 +340,43 @@ async function updateSheetCell(rowIdx, col, value) {
 }
 
 async function toggleSheetStatus(rowIdx, col, currentDone, elId) {
-  const newVal = currentDone ? '미작성' : '작성완료';
+  const newDone = !currentDone;
+  const newVal = newDone ? '작성완료' : '미작성';
+  const today = new Date().toLocaleDateString('ko-KR');
   const el = document.getElementById(elId);
-  if (el) { el.textContent = '⏳'; el.className = 'lch2 cn'; }
+  const icon = col==='G'?'📝':col==='H'?'📸':'🎬';
+  const label = col==='G'?'블로그':col==='H'?'인스타':'쇼츠';
+  if (el) { el.textContent = '⏳'; el.className = 'lch2 cn'; el.disabled = true; }
+  // 상태값 업데이트
   const ok = await updateSheetCell(rowIdx, col, newVal);
+  // 완료로 변경 시 업로드일(F열=6번) 도 자동 기록
+  if (ok && newDone) {
+    await updateSheetCell(rowIdx, 'F', today);
+    if (sheetCache && sheetCache[rowIdx-1]) sheetCache[rowIdx-1][5] = today;
+    // 날짜 표시 업데이트
+    const dateEl = document.getElementById(`date_${rowIdx}`);
+    if (dateEl) dateEl.textContent = today;
+  }
   if (ok) {
-    // 캐시 업데이트
     const colMap = {G:6, H:7, J:9};
     const cIdx = colMap[col];
     if (sheetCache && sheetCache[rowIdx-1] && cIdx !== undefined) {
       sheetCache[rowIdx-1][cIdx] = newVal;
     }
     if (el) {
-      const done = newVal === '작성완료';
-      el.className = `lch2 ${done?'cd':'cn'}`;
-      el.textContent = col==='G'?`📝 ${done?'완료':'미업로드'}`:col==='H'?`📸 ${done?'완료':'미업로드'}`:`🎬 ${done?'완료':'미업로드'}`;
+      el.className = `lch2 ${newDone?'cd':'cn'}`;
+      el.textContent = `${icon} ${newDone?'완료':'미업로드'}`;
+      el.disabled = false;
+      el.onclick = () => toggleSheetStatus(rowIdx, col, newDone, elId);
     }
-    toast(newVal === '작성완료' ? '✅ 업로드 완료로 변경됐어요' : '↩️ 미업로드로 변경됐어요');
+    toast(newDone ? `✅ ${label} 업로드 완료!` : `↩️ ${label} 미업로드로 변경됐어요`);
   } else {
     toast('❌ 변경 실패. 다시 시도해주세요.');
     if (el) {
       el.className = `lch2 ${currentDone?'cd':'cn'}`;
-      el.textContent = col==='G'?`📝 ${currentDone?'완료':'미업로드'}`:col==='H'?`📸 ${currentDone?'완료':'미업로드'}`:`🎬 ${currentDone?'완료':'미업로드'}`;
+      el.textContent = `${icon} ${currentDone?'완료':'미업로드'}`;
+      el.disabled = false;
+      el.onclick = () => toggleSheetStatus(rowIdx, col, currentDone, elId);
     }
   }
 }
@@ -387,15 +407,38 @@ function sheetRowToHtml(r, rowIdx) {
   const iDone = insta.includes('완료')||insta.includes('작성');
   const yDone = yt.includes('완료')||yt.includes('작성');
   const bid = `st_${rowIdx}_G`, iid = `st_${rowIdx}_H`, yid = `st_${rowIdx}_J`;
+  const did = `date_${rowIdx}`;
   return `<div class="li">
-    <div class="lh"><span class="lc ${isRec?'lcr':'lci'}">${cat.replace(/[\[\]]/g,'')}</span><span class="ld2">${date}</span></div>
+    <div class="lh">
+      <span class="lc ${isRec?'lcr':'lci'}">${cat.replace(/[\[\]]/g,'')}</span>
+      <span class="date-edit" onclick="editDate(${rowIdx},'${did}')">
+        <span id="${did}" class="ld2">${date||'날짜 없음'}</span> ✏️
+      </span>
+    </div>
     <div class="lti">${title}</div>
-    <div class="lch" style="flex-wrap:wrap;gap:6px;">
-      <button id="${bid}" class="lch2 ${bDone?'cd':'cn'}" onclick="toggleSheetStatus(${rowIdx},'G',${bDone},'${bid}')" style="cursor:pointer;border:none;font-family:inherit;">📝 ${bDone?'완료':'미업로드'}</button>
-      <button id="${iid}" class="lch2 ${iDone?'cd':'cn'}" onclick="toggleSheetStatus(${rowIdx},'H',${iDone},'${iid}')" style="cursor:pointer;border:none;font-family:inherit;">📸 ${iDone?'완료':'미업로드'}</button>
-      <button id="${yid}" class="lch2 ${yDone?'cd':'cn'}" onclick="toggleSheetStatus(${rowIdx},'J',${yDone},'${yid}')" style="cursor:pointer;border:none;font-family:inherit;">🎬 ${yDone?'완료':'미업로드'}</button>
+    <div class="lch" style="flex-wrap:wrap;gap:6px;margin-top:6px;">
+      <button id="${bid}" class="lch2 ${bDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'G',${bDone},'${bid}')">📝 ${bDone?'완료':'미업로드'}</button>
+      <button id="${iid}" class="lch2 ${iDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'H',${iDone},'${iid}')">📸 ${iDone?'완료':'미업로드'}</button>
+      <button id="${yid}" class="lch2 ${yDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'J',${yDone},'${yid}')">🎬 ${yDone?'완료':'미업로드'}</button>
     </div>
   </div>`;
+}
+
+async function editDate(rowIdx, did) {
+  const el = document.getElementById(did);
+  const cur = el ? el.textContent.replace('날짜 없음','').trim() : '';
+  const input = prompt('업로드 날짜를 입력해주세요 (예: 2026. 6. 16.)', cur || new Date().toLocaleDateString('ko-KR'));
+  if (!input || input === cur) return;
+  el.textContent = '저장 중...';
+  const ok = await updateSheetCell(rowIdx, 'F', input);
+  if (ok) {
+    if (sheetCache && sheetCache[rowIdx-1]) sheetCache[rowIdx-1][5] = input;
+    el.textContent = input;
+    toast('📅 날짜가 업데이트됐어요');
+  } else {
+    el.textContent = cur || '날짜 없음';
+    toast('❌ 날짜 변경 실패');
+  }
 }
 
 let sheetCache = null;
