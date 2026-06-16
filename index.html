@@ -327,26 +327,68 @@ async function loadSheetData() {
   }
 }
 
+function parseSheetRows(rows) {
+  // 헤더 제외, 제목(4번째 컬럼)이 있는 행만 필터링
+  return rows.slice(1).filter(r => {
+    const title = (r[4]||r[3]||'').trim();
+    return title.length > 0;
+  });
+}
+
+function sheetRowToHtml(r) {
+  const cat = r[1]||'', title = (r[4]||r[3]||'').trim(), date = r[5]||'', blog = r[6]||'', insta = r[7]||'', yt = r[9]||'';
+  const isRec = cat.includes('임신')||cat.includes('연애')||cat.includes('출산')||cat.includes('육아일');
+  const bDone = blog.includes('완료')||blog.includes('작성');
+  const iDone = insta.includes('완료')||insta.includes('작성');
+  const yDone = yt.includes('완료')||yt.includes('작성');
+  return `<div class="li"><div class="lh"><span class="lc ${isRec?'lcr':'lci'}">${cat.replace(/[\[\]]/g,'')}</span><span class="ld2">${date}</span></div><div class="lti">${title}</div><div class="lch"><span class="lch2 ${bDone?'cd':'cn'}">📝 ${bDone?'완료':'미업로드'}</span><span class="lch2 ${iDone?'cd':'cn'}">📸 ${iDone?'완료':'미업로드'}</span><span class="lch2 ${yDone?'cd':'cn'}">🎬 ${yDone?'완료':'미업로드'}</span></div></div>`;
+}
+
+let sheetCache = null;
+
+async function loadAndCacheSheet() {
+  const rows = await loadSheetData();
+  if (rows) sheetCache = rows;
+  return rows;
+}
+
 async function renderSheetData() {
   const el = document.getElementById('sheetData');
   const badge = document.getElementById('sheetSyncBadge');
-  const rows = await loadSheetData();
+  const rows = await loadAndCacheSheet();
   if (!rows || rows.length < 2) {
     el.innerHTML = '<div class="em"><div class="emi">📭</div>시트에 데이터가 없어요</div>';
     badge.className='sync-badge sync-err'; badge.textContent='데이터 없음';
     return;
   }
-  badge.className='sync-badge sync-ok'; badge.textContent=`${rows.length-1}개 콘텐츠`;
-  // 헤더 제외하고 최근 20개
-  const dataRows = rows.slice(1).reverse().slice(0,20);
-  el.innerHTML = dataRows.map(r => {
-    const cat = r[1]||'', title = r[4]||r[3]||'제목 없음', date = r[5]||'', blog = r[6]||'', insta = r[7]||'', yt = r[9]||'';
-    const isRec = cat.includes('임신')||cat.includes('연애')||cat.includes('출산')||cat.includes('육아일');
-    const bDone = blog.includes('완료')||blog.includes('작성');
-    const iDone = insta.includes('완료')||insta.includes('작성');
-    const yDone = yt.includes('완료')||yt.includes('작성');
-    return `<div class="li"><div class="lh"><span class="lc ${isRec?'lcr':'lci'}">${cat.replace(/[\[\]]/g,'')}</span><span class="ld2">${date}</span></div><div class="lti">${title}</div><div class="lch"><span class="lch2 ${bDone?'cd':'cn'}">📝 ${bDone?'완료':'미업로드'}</span><span class="lch2 ${iDone?'cd':'cn'}">📸 ${iDone?'완료':'미업로드'}</span><span class="lch2 ${yDone?'cd':'cn'}">🎬 ${yDone?'완료':'미업로드'}</span></div></div>`;
-  }).join('');
+  const dataRows = parseSheetRows(rows).reverse().slice(0,30);
+  badge.className='sync-badge sync-ok'; badge.textContent=`${dataRows.length}개 콘텐츠`;
+  el.innerHTML = dataRows.length ? dataRows.map(sheetRowToHtml).join('') : '<div class="em"><div class="emi">📭</div>데이터가 없어요</div>';
+}
+
+async function renderSheetLog() {
+  const ll = document.getElementById('logList');
+  // 로컬 + 시트 합산 통계
+  let rows = sheetCache;
+  if (!rows) rows = await loadAndCacheSheet();
+  const sheetRows = rows ? parseSheetRows(rows) : [];
+  const total = sheetRows.length;
+  const blDone = sheetRows.filter(r=>(r[6]||'').includes('완료')||(r[6]||'').includes('작성')).length;
+  const inDone = sheetRows.filter(r=>(r[7]||'').includes('완료')||(r[7]||'').includes('작성')).length;
+  const ytDone = sheetRows.filter(r=>(r[9]||'').includes('완료')||(r[9]||'').includes('작성')).length;
+  document.getElementById('sTot').textContent = total;
+  document.getElementById('sBl').textContent = blDone;
+  document.getElementById('sIn').textContent = inDone;
+  document.getElementById('sSh').textContent = ytDone;
+  // 목록: 시트 데이터 최근 30개
+  const recent = sheetRows.reverse().slice(0,30);
+  ll.innerHTML = recent.length ? recent.map(sheetRowToHtml).join('') : '<div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div>';
+  // 현황 탭 pending/done도 업데이트
+  const pend = sheetRows.filter(r=>!((r[6]||'').includes('완료')||(r[6]||'').includes('작성'))||!((r[7]||'').includes('완료')||(r[7]||'').includes('작성'))||!((r[9]||'').includes('완료')||(r[9]||'').includes('작성')));
+  const done = sheetRows.filter(r=>((r[6]||'').includes('완료')||(r[6]||'').includes('작성'))&&((r[7]||'').includes('완료')||(r[7]||'').includes('작성'))&&((r[9]||'').includes('완료')||(r[9]||'').includes('작성')));
+  const row2=r=>`<div class="pi"><div class="pit">${r[5]||''} · ${(r[4]||r[3]||'').trim()}</div><div class="pic"><span class="lch2 ${(r[6]||'').includes('완료')||(r[6]||'').includes('작성')?'cd':'cn'}">📝 블로그</span><span class="lch2 ${(r[7]||'').includes('완료')||(r[7]||'').includes('작성')?'cd':'cn'}">📸 인스타</span><span class="lch2 ${(r[9]||'').includes('완료')||(r[9]||'').includes('작성')?'cd':'cn'}">🎬 쇼츠</span></div></div>`;
+  document.getElementById('pendList').innerHTML=pend.length?pend.map(row2).join(''):'<div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div>';
+  document.getElementById('doneList').innerHTML=done.length?done.map(row2).join(''):'<div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div>';
 }
 
 // ===== Claude API =====
@@ -518,20 +560,7 @@ async function saveLog(){
   else{ toast('앱에 저장됐어요 (시트 기록 실패)'); }
 }
 
-function renderLog(){
-  document.getElementById('sTot').textContent=logs.length;
-  document.getElementById('sBl').textContent=logs.filter(l=>l.bs==='완료').length;
-  document.getElementById('sIn').textContent=logs.filter(l=>l.is==='완료').length;
-  document.getElementById('sSh').textContent=logs.filter(l=>l.ss==='완료').length;
-  const ll=document.getElementById('logList');
-  if(!logs.length){ll.innerHTML='<div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div>';return;}
-  ll.innerHTML=logs.map(l=>`<div class="li"><div class="lh"><span class="lc ${l.type==='기록형'?'lcr':'lci'}">${l.cat}</span><span class="ld2">${l.date}</span></div><div class="lti">${l.title}</div><div class="lch"><span class="lch2 ${l.bs==='완료'?'cd':'cn'}">📝 ${l.bs}</span><span class="lch2 ${l.is==='완료'?'cd':'cn'}">📸 ${l.is}</span><span class="lch2 ${l.ss==='완료'?'cd':'cn'}">🎬 ${l.ss}</span></div></div>`).join('');
-  const pend=logs.filter(l=>l.bs!=='완료'||l.is!=='완료'||l.ss!=='완료');
-  const done=logs.filter(l=>l.bs==='완료'&&l.is==='완료'&&l.ss==='완료');
-  const row=l=>`<div class="pi"><div class="pit">${l.date} · ${l.title}</div><div class="pic"><span class="lch2 ${l.bs==='완료'?'cd':'cn'}">📝 블로그</span><span class="lch2 ${l.is==='완료'?'cd':'cn'}">📸 인스타</span><span class="lch2 ${l.ss==='완료'?'cd':'cn'}">🎬 쇼츠</span></div></div>`;
-  document.getElementById('pendList').innerHTML=pend.length?pend.map(row).join(''):'<div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div>';
-  document.getElementById('doneList').innerHTML=done.length?done.map(row).join(''):'<div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div>';
-}
+function renderLog(){ renderSheetLog(); }
 
 function showPg(id){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
@@ -540,16 +569,15 @@ function showPg(id){
   document.getElementById(`t-${id}`).classList.add('active');
   document.getElementById('topBadge').textContent={write:'글 작성',log:'기록',status:'현황'}[id];
   document.querySelector('.wrap').scrollTop=0;
-  if(id==='log')renderLog();
-  if(id==='status'){renderLog();renderSheetData();}
+  if(id==='log') renderSheetLog();
+  if(id==='status') renderSheetData();
 }
 
 function cpTxt(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('복사됐어요 ✨'));}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
-// 초기 토큰 연결 시도
-renderLog();
-getGToken().catch(()=>{});
+// 초기 토큰 연결 + 데이터 로드
+getGToken().then(()=>renderSheetLog()).catch(()=>{});
 </script>
 </body>
 </html>
