@@ -8,69 +8,52 @@
 <title>말랑데이즈</title>
 <style>
 :root {
-  --bg: #FAFAF8; --surface: #FFF; --border: #E8E6E0; --border-strong: #C8C4BC;
+  --bg: #FAFAF8; --surface: #FFFFFF; --border: #E8E6E0; --border-strong: #C8C4BC;
   --text: #1A1916; --text-sub: #6B6860; --text-hint: #A8A49E;
   --accent: #D4845A; --accent-light: #FAF0EB; --accent-dark: #B86A42;
   --green: #5A8A5E; --green-light: #EDF4EE;
   --purple: #7A6DB0; --purple-light: #F2F0FA;
   --radius: 14px; --radius-sm: 8px;
-  --tab-h: 60px; --safe-b: env(safe-area-inset-bottom,0px); --safe-t: env(safe-area-inset-top,0px);
+  --tab-h: 60px; --safe-b: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html,body { height: 100%; overflow: hidden; }
+html, body { height: 100%; overflow: hidden; }
 body { font-family: 'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
 .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
-
-/* Top */
-.top-bar { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 12px 18px; padding-top: calc(12px + var(--safe-t)); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.top-bar { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 14px 18px 12px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; padding-top: calc(14px + env(safe-area-inset-top,0px)); }
 .top-logo { font-size: 17px; font-weight: 600; }
 .top-sub { font-size: 11px; color: var(--text-hint); margin-top: 1px; }
-.top-badge { background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
-
-/* Scroll */
+.top-badge { background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
 .page-wrap { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-.page { display: none; padding: 16px; padding-bottom: calc(var(--tab-h) + var(--safe-b) + 16px); }
+.page { display: none; padding: 16px; padding-bottom: calc(var(--tab-h) + var(--safe-b) + 20px); }
 .page.active { display: block; }
-
-/* Bottom tab */
 .tab-bar { background: var(--surface); border-top: 0.5px solid var(--border); display: flex; height: calc(var(--tab-h) + var(--safe-b)); padding-bottom: var(--safe-b); flex-shrink: 0; }
-.tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; font-family: inherit; cursor: pointer; color: var(--text-hint); padding: 8px 0; }
+.tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; font-family: inherit; cursor: pointer; color: var(--text-hint); transition: color 0.15s; padding: 8px 0; }
 .tab-item.active { color: var(--accent); }
 .tab-icon { font-size: 22px; line-height: 1; }
 .tab-label { font-size: 10px; font-weight: 500; }
 .tab-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-top: -2px; opacity: 0; }
 .tab-item.active .tab-dot { opacity: 1; }
-
-/* Cards */
 .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
 .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-
-/* Cat grid */
 .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.cat-btn { padding: 13px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-sub); text-align: left; transition: all 0.12s; }
+.cat-btn { padding: 13px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-sub); text-align: left; transition: all 0.15s; }
 .cat-btn:active { transform: scale(0.97); }
 .cat-btn.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }
 .cat-type { display: block; font-size: 10px; font-weight: 400; margin-top: 3px; color: var(--text-hint); }
 .cat-btn.selected .cat-type { color: var(--accent); }
-
-/* Form */
 .form-row { margin-bottom: 14px; }
 .form-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; display: block; }
-.form-hint { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
-.form-input,.form-textarea,.form-select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 15px; color: var(--text); background: var(--surface); outline: none; -webkit-appearance: none; transition: border-color 0.15s; }
-.form-input:focus,.form-textarea:focus,.form-select:focus { border-color: var(--accent); }
+.form-hint { font-size: 11px; color: var(--text-hint); margin-top: 4px; line-height: 1.4; }
+.form-input, .form-textarea, .form-select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 15px; color: var(--text); background: var(--surface); outline: none; -webkit-appearance: none; transition: border-color 0.15s; }
+.form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
 .form-textarea { resize: none; min-height: 90px; }
-
-/* URL fetch button */
 .url-row { display: flex; gap: 8px; }
 .url-row .form-input { flex: 1; }
-.fetch-btn { padding: 12px 14px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-.fetch-btn:active { background: var(--accent-dark); }
-.fetch-btn:disabled { background: var(--border-strong); }
-.fetched-box { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; color: var(--text-sub); line-height: 1.7; white-space: pre-wrap; margin-top: 8px; display: none; }
-.fetched-box.show { display: block; }
-
-/* Photo zone */
+.url-fetch-btn { flex-shrink: 0; padding: 12px 14px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.url-fetch-btn:active { background: var(--accent-dark); }
+.fetched-info { background: var(--green-light); border: 0.5px solid #A8D4AC; border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 8px; font-size: 13px; color: #2D5E32; line-height: 1.6; display: none; }
+.fetched-info.show { display: block; }
 .photo-zone { border: 1.5px dashed var(--border-strong); border-radius: var(--radius-sm); padding: 18px; text-align: center; cursor: pointer; }
 .photo-zone:active { background: var(--accent-light); border-color: var(--accent); }
 .photo-zone-icon { font-size: 28px; margin-bottom: 6px; }
@@ -79,20 +62,14 @@ body { font-family: 'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-seri
 .photo-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .photo-chip { display: flex; align-items: center; gap: 5px; padding: 5px 10px; background: var(--bg); border: 0.5px solid var(--border); border-radius: 20px; font-size: 12px; color: var(--text-sub); }
 .photo-remove { color: var(--text-hint); font-size: 16px; padding: 0 2px; }
-
-/* Gen btn */
-.gen-btn { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 4px; transition: all 0.12s; }
+.gen-btn { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 4px; transition: all 0.15s; }
 .gen-btn:active { background: var(--accent-dark); transform: scale(0.98); }
-
-/* Loading */
 .loading { display: none; text-align: center; padding: 48px 20px; }
 .loading.show { display: block; }
 .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 14px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-size: 14px; color: var(--text-sub); font-weight: 500; }
 .loading-step { font-size: 12px; color: var(--text-hint); margin-top: 6px; }
-
-/* Output */
 .output-area { display: none; }
 .output-area.show { display: block; }
 .out-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 12px; scrollbar-width: none; }
@@ -106,8 +83,6 @@ body { font-family: 'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-seri
 .out-btn { flex: 1; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; color: var(--text-sub); }
 .out-btn.primary { background: var(--text); color: white; border-color: var(--text); }
 .out-btn:active { opacity: 0.8; transform: scale(0.98); }
-
-/* Photo guide */
 .photo-guide { background: var(--purple-light); border: 0.5px solid #C4BEE0; border-radius: var(--radius-sm); padding: 14px; }
 .photo-guide-title { font-size: 12px; font-weight: 600; color: var(--purple); margin-bottom: 10px; }
 .photo-guide-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid #D8D4EE; }
@@ -115,25 +90,19 @@ body { font-family: 'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-seri
 .photo-num { width: 24px; height: 24px; border-radius: 50%; background: var(--purple); color: white; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .photo-desc { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
 .photo-pos { font-size: 11px; color: var(--purple); font-weight: 600; margin-bottom: 2px; }
-
-/* Status */
 .status-list { display: flex; flex-direction: column; }
 .status-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 0.5px solid var(--border); }
 .status-item:last-child { border-bottom: none; }
 .status-ch { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
 .status-icon { font-size: 20px; }
-.status-date { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
 .status-badge { padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
 .badge-none { background: var(--bg); color: var(--text-hint); border: 1px solid var(--border); }
 .badge-done { background: var(--green-light); color: var(--green); }
-
-/* Stats */
-.stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.status-date { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
+.stats-row { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 14px; }
 .stat-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px; }
 .stat-num { font-size: 26px; font-weight: 700; color: var(--text); }
 .stat-label { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
-
-/* Log */
 .log-item { padding: 14px 0; border-bottom: 0.5px solid var(--border); }
 .log-item:last-child { border-bottom: none; }
 .log-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
@@ -143,24 +112,21 @@ body { font-family: 'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-seri
 .log-date { font-size: 11px; color: var(--text-hint); }
 .log-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
 .log-channels { display: flex; gap: 6px; }
-.log-ch { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; }
+.log-ch { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; display: flex; align-items: center; gap: 3px; }
 .ch-done { background: var(--green-light); color: var(--green); }
 .ch-none { background: var(--bg); color: var(--text-hint); border: 0.5px solid var(--border); }
-
-/* Pending */
 .pending-item { padding: 14px 0; border-bottom: 0.5px solid var(--border); }
 .pending-item:last-child { border-bottom: none; }
 .pending-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
-
-/* Empty */
+.pending-chs { display: flex; gap: 6px; flex-wrap: wrap; }
 .empty { text-align: center; padding: 40px 20px; color: var(--text-hint); font-size: 14px; }
 .empty-icon { font-size: 36px; margin-bottom: 10px; }
-
-/* Toast */
 .toast { position: fixed; bottom: calc(var(--tab-h) + var(--safe-b) + 12px); left: 50%; transform: translateX(-50%) translateY(10px); background: #1A1916; color: white; padding: 11px 20px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.divider { border: none; border-top: 0.5px solid var(--border); margin: 14px 0; }
 input[type="file"] { display: none; }
+.divider { border: none; border-top: 0.5px solid var(--border); margin: 14px 0; }
+.seo-tip { background: #EDF4EE; border-radius: var(--radius-sm); padding: 10px 12px; font-size: 12px; color: #2D5E32; margin-bottom: 14px; line-height: 1.5; }
+.seo-tip strong { font-weight: 600; }
 </style>
 </head>
 <body>
@@ -180,12 +146,24 @@ input[type="file"] { display: none; }
       <div class="card">
         <div class="card-title">📂 카테고리 선택</div>
         <div class="cat-grid">
-          <button class="cat-btn" data-cat="임신기록" data-type="기록형" onclick="selCat(this)">임신기록<span class="cat-type">기록형 · 감정 80%</span></button>
-          <button class="cat-btn" data-cat="육아정보" data-type="정보형" onclick="selCat(this)">육아정보<span class="cat-type">정보형 · 정보 85%</span></button>
-          <button class="cat-btn" data-cat="연애회상" data-type="기록형" onclick="selCat(this)">연애회상<span class="cat-type">기록형 · 감정 70%</span></button>
-          <button class="cat-btn" data-cat="맛집" data-type="정보형" onclick="selCat(this)">먹고 기록하기<span class="cat-type">정보형 · 정보 80%</span></button>
-          <button class="cat-btn" data-cat="육아용품" data-type="정보형" onclick="selCat(this)">육아용품<span class="cat-type">정보형 · 정보 90%</span></button>
-          <button class="cat-btn" data-cat="살림재테크" data-type="정보형" onclick="selCat(this)">살림·재테크<span class="cat-type">정보형 · 정보 90%</span></button>
+          <button class="cat-btn" data-cat="임신기록" data-type="기록형" onclick="selectCat(this)">
+            임신기록<span class="cat-type">기록형 · 감정 80%</span>
+          </button>
+          <button class="cat-btn" data-cat="연애회상" data-type="기록형" onclick="selectCat(this)">
+            연애회상<span class="cat-type">기록형 · 감정 70%</span>
+          </button>
+          <button class="cat-btn" data-cat="육아정보" data-type="정보형" onclick="selectCat(this)">
+            육아정보<span class="cat-type">정보형 · 정보 85%</span>
+          </button>
+          <button class="cat-btn" data-cat="육아용품" data-type="정보형" onclick="selectCat(this)">
+            육아용품<span class="cat-type">정보형 · 정보 90%</span>
+          </button>
+          <button class="cat-btn" data-cat="먹고기록" data-type="정보형" onclick="selectCat(this)">
+            먹고 기록하기<span class="cat-type">정보형 · 정보 80%</span>
+          </button>
+          <button class="cat-btn" data-cat="살림재테크" data-type="정보형" onclick="selectCat(this)">
+            살림·재테크<span class="cat-type">정보형 · 정보 90%</span>
+          </button>
         </div>
       </div>
 
@@ -240,7 +218,6 @@ input[type="file"] { display: none; }
             <div id="photoGuide"><div class="empty"><div class="empty-icon">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div></div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-title">📤 업로드 체크</div>
           <div class="status-list">
@@ -303,174 +280,181 @@ input[type="file"] { display: none; }
 <div class="toast" id="toast"></div>
 
 <script>
-const SP = `당신은 말랑데이즈 블로그의 전담 글쓰기 파트너입니다.
+const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니다.
 
-브랜드: 말랑데이즈 (mallangdayz) | 운영자: 말랑파파 (남편·아빠 시점)
-등장인물: 말랑파파, 말랑맘, 말랑이(딸)
-최종 판단 기준: 10년 뒤 말랑이와 함께 봐도 의미 있는 기록인가?
+브랜드: 말랑데이즈(mallangdayz) | 운영자: 말랑파파(남편·아빠 시점) | 등장인물: 말랑파파, 말랑맘, 말랑이(딸)
+미션: 남편에서 아빠가 되어가는 과정을 기록하고 가족의 성장을 아카이브로 남긴다.
+최종 판단: 10년 뒤 말랑이와 함께 봐도 의미 있는 기록인가?
 
-[SEO 원칙 - 모든 카테고리 공통]
-- 제목: 검색 키워드를 자연스럽게 포함. 형식: [핵심키워드] 구체적 상황/후기
-- 도입부 첫 문단에 핵심 키워드 포함
-- 소제목(H2)마다 검색어 포함
-- 결론/총평에서 키워드 재강조
-- 네이버 검색 최적화 기준으로 작성
+=== SEO 필수 원칙 ===
+- 제목: [지역/상황 + 핵심키워드] 형식. 검색자가 실제로 검색할 단어 포함
+- 본문 첫 문단: 핵심 키워드 자연스럽게 2~3회 포함
+- 소제목(h2): 검색 의도를 반영한 질문형 또는 키워드형
+- 결론을 앞에: 검색자가 원하는 답을 먼저 주고 상세 내용 전개
+- 구체적 수치·정보 포함: 가격, 시간, 주소 등 명확하게
 
-[카테고리별 원칙]
+=== 카테고리별 원칙 ===
 
-기록형(임신기록·연애회상):
-- 감정 70~80% + 정보 20~30%
-- 말랑파파 시점, 편지체, 문장 짧게
-- 임신기록 마지막: 말랑이에게 한 줄
-- 연애회상: 말랑맘과의 추억, 과거 회상 톤. 말랑이는 등장 안 함.
+[기록형 - 임신기록]
+비율: 감정 80% + 정보 20%
+톤: 말랑파파 시점 편지체, 짧은 문장, 여백 있게
+시작: "안녕하세요 :) 말랑파파입니다."
+구조: 오프닝(감정) → 이번 주 말랑이 → 이번 주 말랑맘 → 이번 주 우리 부부 → 요즘 생각("인용구") → 오늘의 한 줄(말랑이에게)
+SEO 제목: [임신 N주] 이번 주 가장 인상 깊었던 순간
 
-정보형(육아정보·육아용품·살림재테크·맛집):
-- 정보 85~90% + 경험 10~15%
-- 결론 먼저, 실용적으로
-- 검색자가 바로 행동할 수 있는 정보 위주
+[기록형 - 연애회상]
+비율: 감정 70% + 정보 30%
+톤: 과거 회상, 말랑파파 시점, 말랑맘과의 추억 중심 (말랑이 등장 안 함)
+시작: "안녕하세요 :) 말랑파파입니다."
+구조: 오프닝(그날 분위기) → 있었던 일 → 그때 느낀 것 → 지금 돌아보면
+SEO 제목: [데이트 장소/지역] 키워드 한 줄
 
-[구조]
-임신기록: [임신 N주] 키워드 한 줄 → 오프닝(감정) → 이번 주 말랑이 → 이번 주 말랑맘 → 이번 주 우리 부부 → 요즘 생각(인용구) → 말랑이에게 한 줄
+[정보형 - 육아정보]
+비율: 정보 85% + 경험 15%
+대상 주제: 신생아용품, 수유, 수면교육, 예방접종, 이유식, 성장발달 등
+구조: 결론 먼저 → 상세 정보 → 말랑이 실제 경험 → 주의사항 → 총평
+SEO 제목: [주제 키워드] 총정리 / 실제 경험 후기
 
-연애회상: [연애회상] 키워드 한 줄 → 그날 배경/분위기 → 에피소드 → 그때 느낀 것 → 지금 돌아보며
+[정보형 - 육아용품]
+비율: 정보 90% + 경험 10%
+구조: 한줄 결론(추천/비추/조건부) → 구매 이유 → 장점/단점 → 구매 정보 → 추천 대상
+SEO 제목: [제품명] 솔직 후기 | 장단점 총정리 (내돈내산/협찬)
 
-육아정보: [키워드] 핵심정보 제목 → 한 줄 요약 → 핵심 정보(소제목별) → 말랑이 실제 경험 → 총정리
+[정보형 - 먹고기록하기]
+비율: 정보 80% + 경험 20%
+구조: 핵심정보(주소·시간·가격·주차) → 방문 계기 한 줄 → 주문 메뉴·맛 → 분위기 → 재방문 의사·총평
+SEO 제목: [지역 + 음식종류] 매장명 | 주차·웨이팅·메뉴 총정리
+특이사항: 매장 URL에서 가져온 정보를 바탕으로 작성. 메뉴·가격은 사용자 입력 기준.
 
-맛집: [지역 맛집] 매장명 | 키워드 → 핵심정보(주소·시간·가격·주차) 먼저 → 방문 계기(한 줄) → 메뉴&맛 → 분위기&편의성 → 총평&추천
+[정보형 - 살림재테크]
+비율: 정보 90% + 경험 10%
+구조: 결론(해당 여부 판단) → 조건·자격 → 신청 방법 → 실제 경험 → 주의사항 → 총평
+SEO 제목: [제도명/상품명] 조건·신청방법 총정리 | 실제 후기
 
-육아용품: [제품명] 한 줄 핵심 평가 (내돈내산/협찬) → 한 줄 결론 → 구매 이유 → 장점/단점 → 구매정보 → 추천 대상
-
-살림재테크: [주제] 조건·신청방법 총정리 → 결론(해당 여부) → 조건&자격 → 신청방법 → 실제 경험 → 주의사항
-
-인스타: 감정이나 핵심 한 줄 + "자세한 내용은 블로그 링크에!" + 관련 해시태그 12개
-쇼츠: 훅(3초, 궁금증 유발) → 핵심(30초) → 마무리+CTA(7초) | 40초 내외`;
+=== 채널별 출력 ===
+인스타: 감정 한 줄 또는 핵심 정보 한 줄 → "자세한 내용은 블로그에서 확인하세요 🔗" → 해시태그 12~15개 (검색량 높은 것 포함)
+쇼츠: 훅(3초, 궁금증 유발) → 핵심내용(30초) → 마무리+CTA(7초). 총 40초 내외. 구어체로.`;
 
 const FORMS = {
-  임신기록: [
-    {id:'week', label:'임신 주차', ph:'예) 34주', hint:'검색 키워드로 활용됩니다'},
-    {id:'baby', label:'이번 주 말랑이', ta:true, ph:'태동, 태아 크기, 초음파 내용 등'},
-    {id:'mom', label:'이번 주 말랑맘', ta:true, ph:'몸 변화, 증상, 감정, 에피소드'},
-    {id:'couple', label:'이번 주 우리 부부', ta:true, ph:'준비한 것, 나눈 대화, 고민'},
-    {id:'keyword', label:'이번 주 핵심 키워드 (선택)', ph:'예) 태동 강해짐, 출산가방 준비'},
-    {id:'letter', label:'말랑이에게 한마디', ph:'예) 곧 만나자, 건강하게 자라줘서 고마워'},
-  ],
-  연애회상: [
-    {id:'when', label:'그날 언제·어디서', ph:'예) 2022년 여름, 일산 호수공원'},
-    {id:'episode', label:'그날 있었던 일', ta:true, ph:'소소한 에피소드 자유롭게. 말랑이는 아직 없을 때예요.'},
-    {id:'feeling', label:'그때 느낀 것', ta:true, ph:'그날의 감정, 아내에 대해 느낀 것'},
-    {id:'now', label:'지금 돌아보며 (선택)', ph:'예) 그때 고백 안 했으면 어떻게 됐을까'},
-    {id:'keyword', label:'검색 키워드 (선택)', ph:'예) 일산 호수공원 데이트, 커플 피크닉'},
-  ],
-  맛집: [
-    {id:'url', label:'네이버 플레이스 URL', ph:'place.map.naver.com/... 주소를 붙여넣으세요', url:true},
-    {id:'menu', label:'주문한 메뉴 & 단가', ta:true, ph:'예) 연어사시미 35,000원\n우동 12,000원'},
-    {id:'taste', label:'맛 솔직 후기', ta:true, ph:'맛, 양, 가성비 솔직하게'},
-    {id:'tip', label:'방문 팁 (선택)', ph:'예) 웨이팅 있음, 주차 편함, 임산부 방문'},
-    {id:'revisit', label:'재방문 의사', sel:['재방문 O','조건부 재방문','재방문 X']},
-  ],
-  육아정보: [
-    {id:'topic', label:'주제', ph:'예) 신생아 목욕, 수유 자세, 예방접종 순서', hint:'검색 키워드가 됩니다'},
-    {id:'summary', label:'핵심 내용 요약', ta:true, ph:'알려주고 싶은 정보 핵심만'},
-    {id:'detail', label:'상세 내용', ta:true, ph:'단계별 방법, 주의사항, 팁 등'},
-    {id:'experience', label:'말랑이 실제 경험 (선택)', ta:true, ph:'직접 해보니 어땠는지, 달랐던 점'},
-    {id:'target', label:'이런 분께 도움 돼요 (선택)', ph:'예) 신생아 첫째 부모, 모유수유 중인 분'},
-  ],
-  육아용품: [
-    {id:'product', label:'제품명', ph:'예) 스토케 트립트랩 하이체어'},
-    {id:'price', label:'가격 / 구매처', ph:'예) 490,000원 / 공식몰'},
-    {id:'reason', label:'구매 이유', ta:true, ph:'어떤 필요에서 샀는지'},
-    {id:'pros', label:'좋았던 점', ta:true, ph:''},
-    {id:'cons', label:'아쉬운 점', ta:true, ph:''},
-    {id:'rec', label:'추천 대상', ph:'예) 이유식 시작하는 6개월 이상'},
-    {id:'sp', label:'구매 유형', sel:['내돈내산','협찬']},
-  ],
-  살림재테크: [
-    {id:'topic', label:'주제', ph:'예) 신생아특례대출, 출산지원금, 아동수당'},
-    {id:'summary', label:'핵심 요약', ta:true, ph:'뭔지, 얼마나 도움 되는지 한 줄'},
-    {id:'cond', label:'신청 조건 / 자격', ta:true, ph:''},
-    {id:'how', label:'신청 방법 / 절차', ta:true, ph:''},
-    {id:'exp', label:'직접 경험', ta:true, ph:'실제로 신청해보니 어땠는지'},
-    {id:'warn', label:'주의사항', ta:true, ph:''},
-  ],
+  임신기록: {
+    seoHint: '예) 임신 34주 배 크기, 임신 34주 증상',
+    fields: [
+      {id:'week', label:'임신 주차', ph:'예) 34주'},
+      {id:'keyword', label:'SEO 키워드 (선택)', ph:'예) 임신 34주 증상, 배크기 변화'},
+      {id:'baby', label:'이번 주 말랑이', ta:true, ph:'태동, 태아 변화, 초음파 내용 등'},
+      {id:'mom', label:'이번 주 말랑맘', ta:true, ph:'몸 변화, 감정, 에피소드'},
+      {id:'couple', label:'이번 주 우리 부부', ta:true, ph:'준비한 것, 나눈 대화, 고민'},
+      {id:'letter', label:'말랑이에게 한마디', ph:'예) 곧 만나자, 기다리고 있어'},
+    ]
+  },
+  연애회상: {
+    seoHint: '예) 일산 호수공원 데이트, 여수 여행 커플',
+    fields: [
+      {id:'keyword', label:'SEO 키워드 / 장소', ph:'예) 일산 호수공원 데이트 코스'},
+      {id:'when', label:'그날 언제', ph:'예) 2023년 봄, 사귄 지 3개월'},
+      {id:'episode', label:'그날 있었던 일', ta:true, ph:'소소하게 자유롭게. 말랑이는 등장 안 해요.'},
+      {id:'feeling', label:'그때 느낀 것', ta:true, ph:'그날의 감정, 아내에 대해 느낀 것'},
+      {id:'now', label:'지금 돌아보면 (선택)', ph:'예) 그때 용기 내길 잘했다'},
+    ]
+  },
+  육아정보: {
+    seoHint: '예) 신생아 수면교육 방법, 모유수유 자세',
+    fields: [
+      {id:'topic', label:'주제', ph:'예) 신생아 수면교육, 이유식 시작 시기, 예방접종 순서'},
+      {id:'keyword', label:'SEO 키워드', ph:'예) 신생아 수면교육 방법 월령별'},
+      {id:'summary', label:'핵심 내용 요약', ta:true, ph:'주제에 대해 알고 있는 내용, 조사한 정보'},
+      {id:'experience', label:'말랑이 실제 경험 (선택)', ta:true, ph:'말랑이에게 적용해본 경험이 있으면'},
+      {id:'caution', label:'주의사항 (선택)', ta:true, ph:'헷갈리기 쉬운 것, 잘못된 상식 등'},
+    ]
+  },
+  육아용품: {
+    seoHint: '예) 범보의자 추천, 스토케 유모차 후기',
+    fields: [
+      {id:'product', label:'제품명', ph:'예) 범보 멀티시트, 스토케 스쿠트 유모차'},
+      {id:'keyword', label:'SEO 키워드', ph:'예) 범보의자 추천 월령 사용법'},
+      {id:'price', label:'구매 가격 / 구매처', ph:'예) 89,000원 / 쿠팡'},
+      {id:'reason', label:'구매 이유', ta:true, ph:'어떤 필요에서 샀는지'},
+      {id:'pros', label:'좋았던 점', ta:true, ph:''},
+      {id:'cons', label:'아쉬운 점', ta:true, ph:''},
+      {id:'rec', label:'추천 대상', ph:'예) 신생아 3개월 이상, 허리 힘 생긴 아기'},
+      {id:'sp', label:'구매 유형', sel:['내돈내산','협찬·제공']},
+    ]
+  },
+  먹고기록: {
+    seoHint: '네이버 플레이스 URL을 붙여넣으면 매장 정보를 자동으로 가져와요',
+    fields: [
+      {id:'url', label:'네이버 플레이스 URL', ph:'https://map.naver.com/...', isUrl:true},
+      {id:'menu', label:'주문한 메뉴 & 가격', ta:true, ph:'예) 연어사시미 35,000원\n우동 12,000원'},
+      {id:'taste', label:'솔직한 맛 평가', ta:true, ph:'맛있었다면 뭐가, 별로였다면 왜'},
+      {id:'visit_ctx', label:'방문 계기 (선택)', ph:'예) 만삭여행 중, 임신 중 생선 먹고 싶어서'},
+    ]
+  },
+  살림재테크: {
+    seoHint: '예) 신생아특례대출 조건, 청약 신혼부부',
+    fields: [
+      {id:'topic', label:'주제', ph:'예) 신생아특례대출, 신혼부부 청약, 아이 의료비 절약'},
+      {id:'keyword', label:'SEO 키워드', ph:'예) 신생아특례대출 조건 2024 신청방법'},
+      {id:'summary', label:'핵심 내용', ta:true, ph:'제도 개요, 혜택'},
+      {id:'condition', label:'조건 / 자격', ta:true, ph:'소득 기준, 대상, 필요 서류 등'},
+      {id:'how', label:'신청 방법', ta:true, ph:'어디서, 어떻게 신청하는지'},
+      {id:'experience', label:'직접 경험 (선택)', ta:true, ph:'신청해봤다면 느낀 점'},
+      {id:'caution', label:'주의사항', ta:true, ph:'놓치기 쉬운 것, 주의할 점'},
+    ]
+  },
 };
 
-let curCat='', curType='', files=[], logs=JSON.parse(localStorage.getItem('ml')||'[]'), cur={}, stMap={}, fetchedInfo='';
-const STEPS=['카테고리 분석 중','정보 수집 중','SEO 키워드 설정 중','초안 작성 중','인스타·쇼츠 생성 중'];
+let selCat='', selType='', files=[], logs=JSON.parse(localStorage.getItem('ml')||'[]'), cur={}, stMap={}, fetchedInfo='';
+const STEPS=['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','인스타·쇼츠 생성 중'];
 
-function selCat(btn){
+function selectCat(btn){
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
-  curCat=btn.dataset.cat; curType=btn.dataset.type;
+  selCat=btn.dataset.cat; selType=btn.dataset.type;
+  fetchedInfo='';
   buildForm();
   document.getElementById('formCard').style.display='block';
   document.getElementById('outputEl').classList.remove('show');
   document.getElementById('loadingEl').classList.remove('show');
-  document.getElementById('formTitle').textContent=curCat+' 작성';
-  fetchedInfo='';
-  setTimeout(()=>document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+  document.getElementById('formTitle').textContent=selCat;
+  setTimeout(()=>document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
 
 function buildForm(){
-  const fs=FORMS[curCat]||[];
-  document.getElementById('dynForm').innerHTML=fs.map(f=>{
-    if(f.url){
-      return `<div class="form-row">
-        <label class="form-label">${f.label}</label>
-        <div class="url-row">
-          <input class="form-input" id="f_${f.id}" placeholder="${f.ph||''}" type="url" inputmode="url">
-          <button class="fetch-btn" onclick="fetchPlace()" id="fetchBtn">정보 가져오기</button>
-        </div>
-        <div class="form-hint">네이버 지도에서 매장 공유 URL을 붙여넣으면 자동으로 정보를 가져와요</div>
-        <div class="fetched-box" id="fetchedBox"></div>
-      </div>`;
-    }
+  const cfg=FORMS[selCat]; if(!cfg)return;
+  let html='';
+  if(cfg.seoHint) html+=`<div class="seo-tip">🔍 <strong>SEO 팁</strong> ${cfg.seoHint}</div>`;
+  html+=cfg.fields.map(f=>{
+    if(f.isUrl) return `<div class="form-row"><label class="form-label">${f.label}</label><div class="url-row"><input class="form-input" id="f_${f.id}" placeholder="${f.ph||''}" type="url" inputmode="url"></div><div class="fetched-info" id="fetchedBox"></div><div class="form-hint">URL 입력 후 초안 생성 시 자동으로 매장 정보를 분석해요</div></div>`;
     if(f.sel) return `<div class="form-row"><label class="form-label">${f.label}</label><select class="form-select" id="f_${f.id}">${f.sel.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
-    if(f.ta) return `<div class="form-row"><label class="form-label">${f.label}</label><textarea class="form-textarea" id="f_${f.id}" placeholder="${f.ph||''}"></textarea>${f.hint?`<div class="form-hint">${f.hint}</div>`:''}</div>`;
-    return `<div class="form-row"><label class="form-label">${f.label}</label><input class="form-input" id="f_${f.id}" placeholder="${f.ph||''}">${f.hint?`<div class="form-hint">${f.hint}</div>`:''}</div>`;
+    if(f.ta) return `<div class="form-row"><label class="form-label">${f.label}</label><textarea class="form-textarea" id="f_${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
+    return `<div class="form-row"><label class="form-label">${f.label}</label><input class="form-input" id="f_${f.id}" placeholder="${f.ph||''}"></div>`;
   }).join('');
+  document.getElementById('dynForm').innerHTML=html;
 }
 
-async function fetchPlace(){
-  const url=document.getElementById('f_url')?.value?.trim();
-  if(!url){ toast('URL을 입력해주세요'); return; }
-  const btn=document.getElementById('fetchBtn');
-  btn.disabled=true; btn.textContent='가져오는 중...';
-  const box=document.getElementById('fetchedBox');
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:`이 네이버 플레이스 또는 지도 URL에서 매장 정보를 가져와주세요: ${url}\n\n아래 형식으로 정리해주세요:\n매장명: \n주소: \n영업시간: \n전화번호: \n주차: \n가격대: \n분위기: \n특징: `}]
-      })
-    });
-    const d=await res.json();
-    const txt=d.content?.filter(c=>c.type==='text').map(c=>c.text).join('').trim()||'정보를 가져오지 못했어요. 수동으로 입력해주세요.';
-    fetchedInfo=txt;
-    box.textContent=txt; box.classList.add('show');
-    toast('매장 정보를 가져왔어요 ✨');
-  }catch(e){
-    box.textContent='정보를 가져오지 못했어요. 수동으로 입력해주세요.'; box.classList.add('show');
-  }finally{ btn.disabled=false; btn.textContent='정보 가져오기'; }
+function addFiles(inp){
+  Array.from(inp.files).forEach(f=>{
+    files.push(f);
+    const c=document.createElement('div'); c.className='photo-chip';
+    c.innerHTML=`📎 ${f.name} <span class="photo-remove" onclick="rmFile('${f.name}',this)">×</span>`;
+    document.getElementById('photoChips').appendChild(c);
+  });
 }
-
-function addFiles(inp){ Array.from(inp.files).forEach(f=>{ files.push(f); const c=document.createElement('div'); c.className='photo-chip'; c.innerHTML=`📎 ${f.name} <span class="photo-remove" onclick="rmFile('${f.name}',this)">×</span>`; document.getElementById('photoChips').appendChild(c); }); }
 function rmFile(n,el){ files=files.filter(f=>f.name!==n); el.parentElement.remove(); }
 
+function getVal(id){ const el=document.getElementById(`f_${id}`); return el?el.value.trim():''; }
+
 function buildPrompt(){
-  const fs=FORMS[curCat]||[];
-  let info='';
-  if(curCat==='맛집'&&fetchedInfo){ info+=`[자동 수집된 매장 정보]\n${fetchedInfo}\n\n`; }
-  info+=fs.filter(f=>!f.url).map(f=>{ const el=document.getElementById(`f_${f.id}`); return el&&el.value?`${f.label}: ${el.value}`:null; }).filter(Boolean).join('\n');
-  const ph=files.length>0?`\n\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
-  return `카테고리: ${curCat} (${curType})\n\n${info}${ph}\n\n아래 3가지를 SEO를 고려해 작성해주세요:\n\n[BLOG]\n네이버 SEO 최적화 블로그 초안 (${curCat} 구조 준수)\n\n[INSTA]\n인스타그램 캡션 + 해시태그 12개\n\n[SHORTS]\n유튜브 쇼츠 스크립트 (40초, 훅3초+본문30초+CTA7초)${files.length>0?`\n\n[PHOTO]\n사진 배치 가이드 (형식: 사진N | 배치 위치 | 이유)`:``}`;
+  const cfg=FORMS[selCat]; if(!cfg)return '';
+  const info=cfg.fields.filter(f=>!f.isUrl).map(f=>{ const v=getVal(f.id); return v?`${f.label}: ${v}`:null; }).filter(Boolean).join('\n');
+  const urlVal=getVal('url');
+  const urlPart=urlVal?`\n매장 URL (이 URL에서 매장명, 주소, 영업시간, 전화번호, 주차 정보를 분석해서 활용하세요): ${urlVal}`:'';
+  const ph=files.length>0?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
+  return `카테고리: ${selCat} (${selType})\n${info}${urlPart}${ph}\n\n다음 형식으로 작성해주세요:\n\n[BLOG]\nSEO 최적화된 블로그 초안 (제목 포함, 카테고리 구조에 맞게)\n\n[INSTA]\n인스타그램 캡션 + 해시태그\n\n[SHORTS]\n유튜브 쇼츠 스크립트 (40초 내외)${files.length>0?'\n\n[PHOTO]\n각 사진 배치 위치 안내 (사진N - [배치 위치] - [이유])':''}`;
 }
 
 async function generate(){
-  if(!curCat){ toast('카테고리를 선택해주세요'); return; }
+  if(!selCat){ toast('카테고리를 선택해주세요'); return; }
   document.getElementById('formCard').style.display='none';
   document.getElementById('loadingEl').classList.add('show');
   document.getElementById('outputEl').classList.remove('show');
@@ -480,7 +464,10 @@ async function generate(){
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SP,messages:[{role:'user',content:buildPrompt()}]})
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:1000, system:SP,
+        messages:[{role:'user',content:buildPrompt()}]
+      })
     });
     const d=await res.json();
     parse(d.content?.[0]?.text||'');
@@ -498,33 +485,50 @@ function parse(txt){
   document.getElementById('shortsTxt').textContent=shorts.trim();
   if(photo&&files.length>0){
     const lines=photo.trim().split('\n').filter(l=>l.trim());
-    document.getElementById('photoGuide').innerHTML=`<div class="photo-guide"><div class="photo-guide-title">📷 사진 배치 가이드</div>${lines.map((l,i)=>{ const p=l.split('|').map(s=>s.trim()); return `<div class="photo-guide-item"><div class="photo-num">${i+1}</div><div class="photo-desc"><div class="photo-pos">${p[1]||p[0]||''}</div>${p[2]||p.slice(1).join(' ')}</div></div>`; }).join('')}</div>`;
-  }else{ document.getElementById('photoGuide').innerHTML='<div class="empty"><div class="empty-icon">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div>'; }
-  const title=getTitle();
-  cur={cat:curCat,type:curType,blog,insta,shorts,title,date:new Date().toLocaleDateString('ko-KR'),bs:'미업로드',is:'미업로드',ss:'미업로드'};
+    document.getElementById('photoGuide').innerHTML=`<div class="photo-guide"><div class="photo-guide-title">📷 사진 배치 가이드</div>${lines.map((l,i)=>{ const p=l.split('-').map(s=>s.trim()); return `<div class="photo-guide-item"><div class="photo-num">${i+1}</div><div class="photo-desc"><div class="photo-pos">${p[0]||''}</div>${p.slice(1).join(' — ')}</div></div>`; }).join('')}</div>`;
+  } else {
+    document.getElementById('photoGuide').innerHTML='<div class="empty"><div class="empty-icon">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div>';
+  }
+  const cfg=FORMS[selCat]; const firstField=cfg?.fields[0];
+  const titleVal=firstField?getVal(firstField.id):'';
+  cur={cat:selCat,type:selType,blog,insta,shorts,title:titleVal?`${selCat} - ${titleVal}`:selCat,date:new Date().toLocaleDateString('ko-KR'),bs:'미업로드',is:'미업로드',ss:'미업로드'};
   stMap={blog:false,insta:false,shorts:false};
   updBadges();
   document.getElementById('outputEl').classList.add('show');
   switchOut('blog',document.querySelector('.out-tab'));
-  setTimeout(()=>document.getElementById('outputEl').scrollIntoView({behavior:'smooth'}),100);
+  setTimeout(()=>document.getElementById('outputEl').scrollIntoView({behavior:'smooth'}),50);
 }
 
 function sec(t,s,e){ const si=t.indexOf(`[${s}]`); if(si===-1)return null; const ei=e?t.indexOf(`[${e}]`):-1; return ei===-1?t.slice(si+s.length+2):t.slice(si+s.length+2,ei); }
 
-function getTitle(){
-  const map={임신기록:'f_week',연애회상:'f_when',맛집:'f_url',육아정보:'f_topic',육아용품:'f_product',살림재테크:'f_topic'};
-  const el=document.getElementById(map[curCat]);
-  const v=el?.value?.trim();
-  if(curCat==='맛집'&&fetchedInfo){ const m=fetchedInfo.match(/매장명:\s*(.+)/); if(m)return `${curCat} - ${m[1].trim()}`; }
-  return v?`${curCat} - ${v}`:curCat;
+function switchOut(id,btn){
+  document.querySelectorAll('.out-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.out-content').forEach(c=>c.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.getElementById(`out-${id}`)?.classList.add('active');
 }
 
-function switchOut(id,btn){ document.querySelectorAll('.out-tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.out-content').forEach(c=>c.classList.remove('active')); if(btn)btn.classList.add('active'); document.getElementById(`out-${id}`)?.classList.add('active'); }
+function toggleSt(ch){
+  stMap[ch]=!stMap[ch];
+  updBadges();
+  if(cur.cat){ if(ch==='blog')cur.bs=stMap[ch]?'완료':'미업로드'; if(ch==='insta')cur.is=stMap[ch]?'완료':'미업로드'; if(ch==='shorts')cur.ss=stMap[ch]?'완료':'미업로드'; }
+}
+function updBadges(){
+  const M={blog:'blogBadge',insta:'instaBadge',shorts:'shortsBadge'};
+  const D={blog:'blogDate',insta:'instaDate',shorts:'shortsDate'};
+  ['blog','insta','shorts'].forEach(ch=>{
+    const el=document.getElementById(M[ch]), de=document.getElementById(D[ch]);
+    if(stMap[ch]){ el.className='status-badge badge-done'; el.textContent='업로드 완료'; de.textContent=new Date().toLocaleDateString('ko-KR'); }
+    else{ el.className='status-badge badge-none'; el.textContent='미업로드'; de.textContent='-'; }
+  });
+}
 
-function toggleSt(ch){ stMap[ch]=!stMap[ch]; updBadges(); if(cur.cat){ if(ch==='blog')cur.bs=stMap[ch]?'완료':'미업로드'; if(ch==='insta')cur.is=stMap[ch]?'완료':'미업로드'; if(ch==='shorts')cur.ss=stMap[ch]?'완료':'미업로드'; } }
-function updBadges(){ ['blog','insta','shorts'].forEach(ch=>{ const bmap={blog:'blogBadge',insta:'instaBadge',shorts:'shortsBadge'}; const dmap={blog:'blogDate',insta:'instaDate',shorts:'shortsDate'}; const el=document.getElementById(bmap[ch]); const de=document.getElementById(dmap[ch]); if(stMap[ch]){el.className='status-badge badge-done';el.textContent='업로드 완료';de.textContent=new Date().toLocaleDateString('ko-KR');}else{el.className='status-badge badge-none';el.textContent='미업로드';de.textContent='-';} }); }
-
-function saveLog(){ if(!cur.cat)return; logs.unshift({...cur,id:Date.now()}); localStorage.setItem('ml',JSON.stringify(logs)); renderLog(); toast('저장됐어요 ✨'); }
+function saveLog(){
+  if(!cur.cat)return;
+  logs.unshift({...cur,id:Date.now()});
+  localStorage.setItem('ml',JSON.stringify(logs));
+  renderLog(); toast('저장됐어요 ✨');
+}
 
 function renderLog(){
   document.getElementById('sTot').textContent=logs.length;
@@ -532,19 +536,27 @@ function renderLog(){
   document.getElementById('sInsta').textContent=logs.filter(l=>l.is==='완료').length;
   document.getElementById('sShorts').textContent=logs.filter(l=>l.ss==='완료').length;
   const ll=document.getElementById('logList');
-  if(!logs.length){ll.innerHTML='<div class="empty"><div class="empty-icon">📭</div>저장된 콘텐츠가 없어요</div>';return;}
+  if(!logs.length){ ll.innerHTML='<div class="empty"><div class="empty-icon">📭</div>저장된 콘텐츠가 없어요</div>'; return; }
   ll.innerHTML=logs.map(l=>`<div class="log-item"><div class="log-header"><span class="log-cat ${l.type==='기록형'?'log-cat-rec':'log-cat-info'}">${l.cat}</span><span class="log-date">${l.date}</span></div><div class="log-title">${l.title}</div><div class="log-channels"><span class="log-ch ${l.bs==='완료'?'ch-done':'ch-none'}">📝 ${l.bs}</span><span class="log-ch ${l.is==='완료'?'ch-done':'ch-none'}">📸 ${l.is}</span><span class="log-ch ${l.ss==='완료'?'ch-done':'ch-none'}">🎬 ${l.ss}</span></div></div>`).join('');
-  const row=l=>`<div class="pending-item"><div class="pending-title">${l.date} · ${l.title}</div><div class="log-channels"><span class="log-ch ${l.bs==='완료'?'ch-done':'ch-none'}">📝 블로그</span><span class="log-ch ${l.is==='완료'?'ch-done':'ch-none'}">📸 인스타</span><span class="log-ch ${l.ss==='완료'?'ch-done':'ch-none'}">🎬 쇼츠</span></div></div>`;
   const pend=logs.filter(l=>l.bs!=='완료'||l.is!=='완료'||l.ss!=='완료');
   const done=logs.filter(l=>l.bs==='완료'&&l.is==='완료'&&l.ss==='완료');
+  const row=l=>`<div class="pending-item"><div class="pending-title">${l.date} · ${l.title}</div><div class="pending-chs"><span class="log-ch ${l.bs==='완료'?'ch-done':'ch-none'}">📝 블로그</span><span class="log-ch ${l.is==='완료'?'ch-done':'ch-none'}">📸 인스타</span><span class="log-ch ${l.ss==='완료'?'ch-done':'ch-none'}">🎬 쇼츠</span></div></div>`;
   document.getElementById('pendList').innerHTML=pend.length?pend.map(row).join(''):'<div class="empty"><div class="empty-icon">✨</div>대기 중인 콘텐츠 없음</div>';
   document.getElementById('doneList').innerHTML=done.length?done.map(row).join(''):'<div class="empty"><div class="empty-icon">🎉</div>완료된 콘텐츠 없음</div>';
 }
 
-function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active')); document.getElementById(`page-${id}`).classList.add('active'); document.getElementById(`tab-${id}`).classList.add('active'); const labels={write:'글 작성',log:'기록',status:'현황'}; document.getElementById('topBadge').textContent=labels[id]; document.querySelector('.page-wrap').scrollTop=0; if(id==='log'||id==='status')renderLog(); }
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`page-${id}`).classList.add('active');
+  document.getElementById(`tab-${id}`).classList.add('active');
+  document.getElementById('topBadge').textContent={write:'글 작성',log:'기록',status:'현황'}[id];
+  document.querySelector('.page-wrap').scrollTop=0;
+  if(id==='log'||id==='status') renderLog();
+}
+
 function copyTxt(id){ navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('복사됐어요 ✨')); }
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
-
 renderLog();
 </script>
 </body>
