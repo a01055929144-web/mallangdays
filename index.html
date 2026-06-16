@@ -522,7 +522,16 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 [육아정보] 정보85%+경험15% | 구조: 결론→상세정보→말랑이경험→주의사항→총평
 [육아용품] 정보90%+경험10% | 구조: 한줄결론→구매이유→장단점→구매정보→추천대상
 [먹고기록하기] 정보80%+경험20% | URL분석활용 | 구조: 핵심정보(주소·시간·가격·주차)→방문계기→메뉴·맛→분위기→총평
-[살림재테크] 정보90%+경험10% | 구조: 결론→조건·자격→신청방법→경험→주의사항→총평
+[살림재테크] 정보85%+경험15% | 시리즈 구성 가능 (1~3편)
+작성 방식:
+- 반드시 웹검색으로 최신 정부 정책 확인 후 작성
+- 검색 우선순위: ①정부24/고용노동부/복지로/국토교통부 공식 페이지 → ②법제처 국가법령정보센터 → ③최근 6개월 뉴스
+- 정보 출처와 기준 연도/월을 명시 (예: 2026년 기준, 고용노동부 발표)
+- 말랑파파 실제 상황/계획을 정책 설명과 자연스럽게 엮어서 작성
+- "내가 직접 알아봤더니" 톤으로 독자가 같이 알아가는 느낌
+- 숫자/금액/기간은 구체적으로 (예: 통상임금 80%, 최대 150만원, 12개월)
+- 시리즈면 이번 편 초점에 집중하되 다음 편 예고로 마무리
+구조: 훅(내 상황 공유) → 제도 핵심 요약(결론 먼저) → 상세 조건·금액 → 신청 방법 → 말랑파파 적용 계획/후기 → 주의사항 → 총평+다음편예고(시리즈일 때)
 === 채널별 출력 ===
 블로그 초안 마지막에 반드시 아래 형식으로 태그 추가 (네이버 블로그 태그용):
 [태그]
@@ -552,7 +561,12 @@ const FORMS = {
   육아정보:{fields:[{id:'topic',lb:'주제',ph:'예) 신생아 수면교육, 이유식 시작, 예방접종'},{id:'sum',lb:'핵심 내용',ta:true,ph:'주제에 대해 알고 있는 내용'},{id:'exp',lb:'말랑이 실제 경험 (선택)',ta:true,ph:'직접 적용해본 경험'},{id:'warn',lb:'주의사항 (선택)',ta:true,ph:'헷갈리기 쉬운 것'}]},
   육아용품:{fields:[{id:'product',lb:'제품명',ph:'예) 범보 멀티시트'},{id:'price',lb:'가격 / 구매처',ph:'예) 89,000원 / 쿠팡'},{id:'reason',lb:'구매 이유',ta:true,ph:''},{id:'pros',lb:'좋았던 점',ta:true,ph:''},{id:'cons',lb:'아쉬운 점',ta:true,ph:''},{id:'rec',lb:'추천 대상',ph:'예) 신생아 3개월 이상'},{id:'sp',lb:'구매 유형',sel:['내돈내산','협찬·제공']}]},
   먹고기록:{fields:[{id:'menu',lb:'주문한 메뉴 & 가격',ta:true,ph:'예) 연어사시미 35,000원\n우동 12,000원'},{id:'taste',lb:'솔직한 맛 평가',ta:true,ph:'맛있었다면 뭐가, 별로였다면 왜'},{id:'ctx',lb:'방문 계기 (선택)',ph:'예) 만삭여행 중, 제주 여행에서'}]},
-  살림재테크:{fields:[{id:'topic',lb:'주제',ph:'예) 신생아특례대출, 신혼부부 청약'},{id:'sum',lb:'핵심 내용',ta:true,ph:''},{id:'cond',lb:'조건 / 자격',ta:true,ph:''},{id:'how',lb:'신청 방법',ta:true,ph:''},{id:'exp',lb:'직접 경험 (선택)',ta:true,ph:''},{id:'warn',lb:'주의사항',ta:true,ph:''}]},
+  살림재테크:{fields:[
+    {id:'topic',lb:'주제',ph:'예) 2026년 육아휴직, 신생아특례대출, 신혼부부 청약'},
+    {id:'series',lb:'시리즈 구성',sel:['1편 (단독글)','2편 시리즈','3편 시리즈']},
+    {id:'series_focus',lb:'이번 편 초점',ph:'예) 1편-제도 총정리, 2편-신청 후기, 3편-실수령액 계산'},
+    {id:'my_situation',lb:'나의 상황 / 계획 / 경험',ta:true,ph:'예) 말랑이 출생 후 6개월 육아휴직 신청 예정. 급여는 통상임금 80%라고 들었는데 실제 계산해봤다.'},
+    {id:'extra',lb:'추가로 넣고 싶은 내용 (선택)',ta:true,ph:'궁금했던 점, 알아보면서 놀란 점 등'}]},
 };
 
 let cat='',type='',files=[],logs=JSON.parse(localStorage.getItem('ml')||'[]'),drafts=JSON.parse(localStorage.getItem('ml_drafts')||'[]'),cur={},stMap={},selTitle='';
@@ -710,6 +724,31 @@ function buildPrompt(){
   const tp=selTitle?`\n선택된 SEO 제목 (이 제목을 블로그 글 제목으로 사용): ${selTitle}`:'';
   const kp=document.getElementById('skw').value.trim()?`\nSEO 키워드: ${document.getElementById('skw').value.trim()}`:'';
   const ph=files.length>0?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
+  // 살림재테크 전용 프롬프트
+  if(cat==='살림재테크'){
+    const topic=gv('topic'), series=gv('series'), focus=gv('series_focus'), situation=gv('my_situation'), extra=gv('extra');
+    const today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+    return `오늘 날짜: ${today}
+
+[살림재테크 블로그 작성 요청]
+주제: ${topic}
+시리즈: ${series} ${focus?'/ 이번 편: '+focus:''}
+나의 상황·계획: ${situation||'없음'}
+추가 내용: ${extra||'없음'}
+
+작성 전 반드시 웹검색으로 아래 순서대로 최신 정보 확인:
+1. 정부24(gov.kr) / 고용노동부(moel.go.kr) / 복지로(bokjiro.go.kr) / 국토교통부(molit.go.kr) 공식 페이지
+2. 법제처 국가법령정보센터(law.go.kr) 최신 조문
+3. 최근 6개월 뉴스 (개정사항 확인)
+
+검색한 최신 기준으로 작성하고, 기준 연도와 출처를 본문에 명시해줘.
+
+[BLOG]
+SEO 최적화 블로그 초안 (검색한 최신 정책 기준으로 작성)
+
+[INSTA]
+인스타 캡션+해시태그`;
+  }
   return `카테고리: ${cat} (${type})${tp}${kp}\n${info}${urlPart}${ph}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+최적화 해시태그${files.length>0?'\n\n[PHOTO]\n사진 배치 안내 (사진N-[위치]-[이유])':''}`;
 }
 
