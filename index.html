@@ -8,125 +8,136 @@
 <title>말랑데이즈</title>
 <style>
 :root {
-  --bg: #FAFAF8; --surface: #FFFFFF; --border: #E8E6E0; --border-strong: #C8C4BC;
-  --text: #1A1916; --text-sub: #6B6860; --text-hint: #A8A49E;
-  --accent: #D4845A; --accent-light: #FAF0EB; --accent-dark: #B86A42;
-  --green: #5A8A5E; --green-light: #EDF4EE;
-  --purple: #7A6DB0; --purple-light: #F2F0FA;
-  --radius: 14px; --radius-sm: 8px;
-  --tab-h: 60px; --safe-b: env(safe-area-inset-bottom, 0px);
+  --bg:#FAFAF8;--surface:#FFFFFF;--border:#E8E6E0;--border-strong:#C8C4BC;
+  --text:#1A1916;--text-sub:#6B6860;--text-hint:#A8A49E;
+  --accent:#D4845A;--accent-light:#FAF0EB;--accent-dark:#B86A42;
+  --green:#5A8A5E;--green-light:#EDF4EE;
+  --purple:#7A6DB0;--purple-light:#F2F0FA;
+  --blue:#3B7DD8;--blue-light:#EBF2FD;
+  --radius:14px;--radius-sm:8px;
+  --tab-h:60px;--safe-b:env(safe-area-inset-bottom,0px);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; }
-body { font-family: 'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
-.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
-.top-bar { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 14px 18px 12px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; padding-top: calc(14px + env(safe-area-inset-top,0px)); }
-.top-logo { font-size: 17px; font-weight: 600; }
-.top-sub { font-size: 11px; color: var(--text-hint); margin-top: 1px; }
-.top-badge { background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
-.page-wrap { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-.page { display: none; padding: 16px; padding-bottom: calc(var(--tab-h) + var(--safe-b) + 20px); }
-.page.active { display: block; }
-.tab-bar { background: var(--surface); border-top: 0.5px solid var(--border); display: flex; height: calc(var(--tab-h) + var(--safe-b)); padding-bottom: var(--safe-b); flex-shrink: 0; }
-.tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; font-family: inherit; cursor: pointer; color: var(--text-hint); transition: color 0.15s; padding: 8px 0; }
-.tab-item.active { color: var(--accent); }
-.tab-icon { font-size: 22px; line-height: 1; }
-.tab-label { font-size: 10px; font-weight: 500; }
-.tab-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-top: -2px; opacity: 0; }
-.tab-item.active .tab-dot { opacity: 1; }
-.card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
-.card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-.cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.cat-btn { padding: 13px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-sub); text-align: left; transition: all 0.15s; }
-.cat-btn:active { transform: scale(0.97); }
-.cat-btn.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }
-.cat-type { display: block; font-size: 10px; font-weight: 400; margin-top: 3px; color: var(--text-hint); }
-.cat-btn.selected .cat-type { color: var(--accent); }
-.form-row { margin-bottom: 14px; }
-.form-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; display: block; }
-.form-hint { font-size: 11px; color: var(--text-hint); margin-top: 4px; line-height: 1.4; }
-.form-input, .form-textarea, .form-select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 15px; color: var(--text); background: var(--surface); outline: none; -webkit-appearance: none; transition: border-color 0.15s; }
-.form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
-.form-textarea { resize: none; min-height: 90px; }
-.url-row { display: flex; gap: 8px; }
-.url-row .form-input { flex: 1; }
-.url-fetch-btn { flex-shrink: 0; padding: 12px 14px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-.url-fetch-btn:active { background: var(--accent-dark); }
-.fetched-info { background: var(--green-light); border: 0.5px solid #A8D4AC; border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 8px; font-size: 13px; color: #2D5E32; line-height: 1.6; display: none; }
-.fetched-info.show { display: block; }
-.photo-zone { border: 1.5px dashed var(--border-strong); border-radius: var(--radius-sm); padding: 18px; text-align: center; cursor: pointer; }
-.photo-zone:active { background: var(--accent-light); border-color: var(--accent); }
-.photo-zone-icon { font-size: 28px; margin-bottom: 6px; }
-.photo-zone-text { font-size: 13px; color: var(--text-sub); }
-.photo-zone-hint { font-size: 11px; color: var(--text-hint); margin-top: 3px; }
-.photo-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.photo-chip { display: flex; align-items: center; gap: 5px; padding: 5px 10px; background: var(--bg); border: 0.5px solid var(--border); border-radius: 20px; font-size: 12px; color: var(--text-sub); }
-.photo-remove { color: var(--text-hint); font-size: 16px; padding: 0 2px; }
-.gen-btn { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 4px; transition: all 0.15s; }
-.gen-btn:active { background: var(--accent-dark); transform: scale(0.98); }
-.loading { display: none; text-align: center; padding: 48px 20px; }
-.loading.show { display: block; }
-.spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 14px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-text { font-size: 14px; color: var(--text-sub); font-weight: 500; }
-.loading-step { font-size: 12px; color: var(--text-hint); margin-top: 6px; }
-.output-area { display: none; }
-.output-area.show { display: block; }
-.out-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 12px; scrollbar-width: none; }
-.out-tabs::-webkit-scrollbar { display: none; }
-.out-tab { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; color: var(--text-sub); white-space: nowrap; }
-.out-tab.active { background: var(--text); color: white; border-color: var(--text); }
-.out-content { display: none; }
-.out-content.active { display: block; }
-.out-box { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 16px; font-size: 14px; line-height: 1.8; white-space: pre-wrap; color: var(--text); max-height: 320px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.out-actions { display: flex; gap: 8px; margin-top: 10px; }
-.out-btn { flex: 1; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; color: var(--text-sub); }
-.out-btn.primary { background: var(--text); color: white; border-color: var(--text); }
-.out-btn:active { opacity: 0.8; transform: scale(0.98); }
-.photo-guide { background: var(--purple-light); border: 0.5px solid #C4BEE0; border-radius: var(--radius-sm); padding: 14px; }
-.photo-guide-title { font-size: 12px; font-weight: 600; color: var(--purple); margin-bottom: 10px; }
-.photo-guide-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid #D8D4EE; }
-.photo-guide-item:last-child { border-bottom: none; }
-.photo-num { width: 24px; height: 24px; border-radius: 50%; background: var(--purple); color: white; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.photo-desc { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
-.photo-pos { font-size: 11px; color: var(--purple); font-weight: 600; margin-bottom: 2px; }
-.status-list { display: flex; flex-direction: column; }
-.status-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 0.5px solid var(--border); }
-.status-item:last-child { border-bottom: none; }
-.status-ch { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
-.status-icon { font-size: 20px; }
-.status-badge { padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
-.badge-none { background: var(--bg); color: var(--text-hint); border: 1px solid var(--border); }
-.badge-done { background: var(--green-light); color: var(--green); }
-.status-date { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
-.stats-row { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 14px; }
-.stat-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px; }
-.stat-num { font-size: 26px; font-weight: 700; color: var(--text); }
-.stat-label { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
-.log-item { padding: 14px 0; border-bottom: 0.5px solid var(--border); }
-.log-item:last-child { border-bottom: none; }
-.log-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.log-cat { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
-.log-cat-rec { background: #FEF3EC; color: #B86A42; }
-.log-cat-info { background: #EDF4EE; color: #3A6B3E; }
-.log-date { font-size: 11px; color: var(--text-hint); }
-.log-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
-.log-channels { display: flex; gap: 6px; }
-.log-ch { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 10px; display: flex; align-items: center; gap: 3px; }
-.ch-done { background: var(--green-light); color: var(--green); }
-.ch-none { background: var(--bg); color: var(--text-hint); border: 0.5px solid var(--border); }
-.pending-item { padding: 14px 0; border-bottom: 0.5px solid var(--border); }
-.pending-item:last-child { border-bottom: none; }
-.pending-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
-.pending-chs { display: flex; gap: 6px; flex-wrap: wrap; }
-.empty { text-align: center; padding: 40px 20px; color: var(--text-hint); font-size: 14px; }
-.empty-icon { font-size: 36px; margin-bottom: 10px; }
-.toast { position: fixed; bottom: calc(var(--tab-h) + var(--safe-b) + 12px); left: 50%; transform: translateX(-50%) translateY(10px); background: #1A1916; color: white; padding: 11px 20px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-input[type="file"] { display: none; }
-.divider { border: none; border-top: 0.5px solid var(--border); margin: 14px 0; }
-.seo-tip { background: #EDF4EE; border-radius: var(--radius-sm); padding: 10px 12px; font-size: 12px; color: #2D5E32; margin-bottom: 14px; line-height: 1.5; }
-.seo-tip strong { font-weight: 600; }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
+.top-bar{background:var(--surface);border-bottom:0.5px solid var(--border);padding:14px 18px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding-top:calc(14px + env(safe-area-inset-top,0px));}
+.top-logo{font-size:17px;font-weight:600;}
+.top-sub{font-size:11px;color:var(--text-hint);margin-top:1px;}
+.top-badge{background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
+.page-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+.page{display:none;padding:16px;padding-bottom:calc(var(--tab-h) + var(--safe-b) + 20px);}
+.page.active{display:block;}
+.tab-bar{background:var(--surface);border-top:0.5px solid var(--border);display:flex;height:calc(var(--tab-h) + var(--safe-b));padding-bottom:var(--safe-b);flex-shrink:0;}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;font-family:inherit;cursor:pointer;color:var(--text-hint);padding:8px 0;}
+.tab-item.active{color:var(--accent);}
+.tab-icon{font-size:22px;line-height:1;}
+.tab-label{font-size:10px;font-weight:500;}
+.tab-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);margin-top:-2px;opacity:0;}
+.tab-item.active .tab-dot{opacity:1;}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cat-btn{padding:13px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--text-sub);text-align:left;transition:all 0.15s;}
+.cat-btn:active{transform:scale(0.97);}
+.cat-btn.selected{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark);}
+.cat-type{display:block;font-size:10px;font-weight:400;margin-top:3px;color:var(--text-hint);}
+.cat-btn.selected .cat-type{color:var(--accent);}
+.form-row{margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:6px;display:block;}
+.form-hint{font-size:11px;color:var(--text-hint);margin-top:4px;line-height:1.4;}
+.form-input,.form-textarea,.form-select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:15px;color:var(--text);background:var(--surface);outline:none;-webkit-appearance:none;transition:border-color 0.15s;}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--accent);}
+.form-textarea{resize:none;min-height:90px;}
+
+/* SEO 제목 추천 영역 */
+.seo-section{background:var(--blue-light);border:0.5px solid #B8D0F5;border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;}
+.seo-section-title{font-size:12px;font-weight:600;color:var(--blue);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+.seo-kw-row{display:flex;gap:8px;margin-bottom:8px;}
+.seo-kw-row .form-input{flex:1;font-size:14px;padding:10px 12px;}
+.seo-gen-btn{flex-shrink:0;padding:10px 14px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.seo-gen-btn:active{opacity:0.8;}
+.seo-gen-btn:disabled{background:var(--border-strong);cursor:not-allowed;}
+.seo-titles{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
+.seo-title-opt{padding:11px 13px;border:1.5px solid #B8D0F5;border-radius:var(--radius-sm);background:var(--surface);font-size:13px;color:var(--text);cursor:pointer;text-align:left;font-family:inherit;line-height:1.4;transition:all 0.15s;}
+.seo-title-opt:active{transform:scale(0.98);}
+.seo-title-opt.selected{border-color:var(--blue);background:var(--blue-light);color:var(--blue);font-weight:500;}
+.seo-loading{text-align:center;padding:12px;font-size:12px;color:var(--text-hint);}
+.seo-hint{font-size:11px;color:#5A8AD4;margin-top:2px;}
+.selected-title-box{background:var(--surface);border:1.5px solid var(--blue);border-radius:var(--radius-sm);padding:10px 13px;font-size:13px;color:var(--blue);font-weight:500;margin-top:8px;display:none;}
+.selected-title-box.show{display:block;}
+
+.photo-zone{border:1.5px dashed var(--border-strong);border-radius:var(--radius-sm);padding:18px;text-align:center;cursor:pointer;}
+.photo-zone:active{background:var(--accent-light);border-color:var(--accent);}
+.photo-zone-icon{font-size:28px;margin-bottom:6px;}
+.photo-zone-text{font-size:13px;color:var(--text-sub);}
+.photo-zone-hint{font-size:11px;color:var(--text-hint);margin-top:3px;}
+.photo-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.photo-chip{display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--bg);border:0.5px solid var(--border);border-radius:20px;font-size:12px;color:var(--text-sub);}
+.photo-remove{color:var(--text-hint);font-size:16px;padding:0 2px;}
+.gen-btn{width:100%;padding:16px;background:var(--accent);color:white;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;margin-top:4px;transition:all 0.15s;}
+.gen-btn:active{background:var(--accent-dark);transform:scale(0.98);}
+.loading{display:none;text-align:center;padding:48px 20px;}
+.loading.show{display:block;}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-size:14px;color:var(--text-sub);font-weight:500;}
+.loading-step{font-size:12px;color:var(--text-hint);margin-top:6px;}
+.output-area{display:none;}
+.output-area.show{display:block;}
+.out-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:12px;scrollbar-width:none;}
+.out-tabs::-webkit-scrollbar{display:none;}
+.out-tab{flex-shrink:0;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--text-sub);white-space:nowrap;}
+.out-tab.active{background:var(--text);color:white;border-color:var(--text);}
+.out-content{display:none;}
+.out-content.active{display:block;}
+.out-box{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;color:var(--text);max-height:320px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.out-actions{display:flex;gap:8px;margin-top:10px;}
+.out-btn{flex:1;padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text-sub);}
+.out-btn.primary{background:var(--text);color:white;border-color:var(--text);}
+.out-btn:active{opacity:0.8;transform:scale(0.98);}
+.photo-guide{background:var(--purple-light);border:0.5px solid #C4BEE0;border-radius:var(--radius-sm);padding:14px;}
+.photo-guide-title{font-size:12px;font-weight:600;color:var(--purple);margin-bottom:10px;}
+.photo-guide-item{display:flex;gap:10px;padding:8px 0;border-bottom:0.5px solid #D8D4EE;}
+.photo-guide-item:last-child{border-bottom:none;}
+.photo-num{width:24px;height:24px;border-radius:50%;background:var(--purple);color:white;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.photo-desc{font-size:12px;color:var(--text-sub);line-height:1.5;}
+.photo-pos{font-size:11px;color:var(--purple);font-weight:600;margin-bottom:2px;}
+.status-list{display:flex;flex-direction:column;}
+.status-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:0.5px solid var(--border);}
+.status-item:last-child{border-bottom:none;}
+.status-ch{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;}
+.status-icon{font-size:20px;}
+.status-badge{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
+.badge-none{background:var(--bg);color:var(--text-hint);border:1px solid var(--border);}
+.badge-done{background:var(--green-light);color:var(--green);}
+.status-date{font-size:11px;color:var(--text-hint);margin-top:2px;}
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;}
+.stat-num{font-size:26px;font-weight:700;color:var(--text);}
+.stat-label{font-size:11px;color:var(--text-hint);margin-top:2px;}
+.log-item{padding:14px 0;border-bottom:0.5px solid var(--border);}
+.log-item:last-child{border-bottom:none;}
+.log-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.log-cat{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;}
+.log-cat-rec{background:#FEF3EC;color:#B86A42;}
+.log-cat-info{background:#EDF4EE;color:#3A6B3E;}
+.log-date{font-size:11px;color:var(--text-hint);}
+.log-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px;}
+.log-channels{display:flex;gap:6px;}
+.log-ch{font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;}
+.ch-done{background:var(--green-light);color:var(--green);}
+.ch-none{background:var(--bg);color:var(--text-hint);border:0.5px solid var(--border);}
+.pending-item{padding:14px 0;border-bottom:0.5px solid var(--border);}
+.pending-item:last-child{border-bottom:none;}
+.pending-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;}
+.pending-chs{display:flex;gap:6px;flex-wrap:wrap;}
+.empty{text-align:center;padding:40px 20px;color:var(--text-hint);font-size:14px;}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.toast{position:fixed;bottom:calc(var(--tab-h) + var(--safe-b) + 12px);left:50%;transform:translateX(-50%) translateY(10px);background:#1A1916;color:white;padding:11px 20px;border-radius:24px;font-size:13px;font-weight:500;opacity:0;transition:all 0.2s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+input[type="file"]{display:none;}
+.divider{border:none;border-top:0.5px solid var(--border);margin:14px 0;}
 </style>
 </head>
 <body>
@@ -140,35 +151,37 @@ input[type="file"] { display: none; }
   </div>
 
   <div class="page-wrap">
-
-    <!-- 글 작성 -->
     <div class="page active" id="page-write">
+
       <div class="card">
         <div class="card-title">📂 카테고리 선택</div>
         <div class="cat-grid">
-          <button class="cat-btn" data-cat="임신기록" data-type="기록형" onclick="selectCat(this)">
-            임신기록<span class="cat-type">기록형 · 감정 80%</span>
-          </button>
-          <button class="cat-btn" data-cat="연애회상" data-type="기록형" onclick="selectCat(this)">
-            연애회상<span class="cat-type">기록형 · 감정 70%</span>
-          </button>
-          <button class="cat-btn" data-cat="육아정보" data-type="정보형" onclick="selectCat(this)">
-            육아정보<span class="cat-type">정보형 · 정보 85%</span>
-          </button>
-          <button class="cat-btn" data-cat="육아용품" data-type="정보형" onclick="selectCat(this)">
-            육아용품<span class="cat-type">정보형 · 정보 90%</span>
-          </button>
-          <button class="cat-btn" data-cat="먹고기록" data-type="정보형" onclick="selectCat(this)">
-            먹고 기록하기<span class="cat-type">정보형 · 정보 80%</span>
-          </button>
-          <button class="cat-btn" data-cat="살림재테크" data-type="정보형" onclick="selectCat(this)">
-            살림·재테크<span class="cat-type">정보형 · 정보 90%</span>
-          </button>
+          <button class="cat-btn" data-cat="임신기록" data-type="기록형" onclick="selectCat(this)">임신기록<span class="cat-type">기록형 · 감정 80%</span></button>
+          <button class="cat-btn" data-cat="연애회상" data-type="기록형" onclick="selectCat(this)">연애회상<span class="cat-type">기록형 · 감정 70%</span></button>
+          <button class="cat-btn" data-cat="육아정보" data-type="정보형" onclick="selectCat(this)">육아정보<span class="cat-type">정보형 · 정보 85%</span></button>
+          <button class="cat-btn" data-cat="육아용품" data-type="정보형" onclick="selectCat(this)">육아용품<span class="cat-type">정보형 · 정보 90%</span></button>
+          <button class="cat-btn" data-cat="먹고기록" data-type="정보형" onclick="selectCat(this)">먹고 기록하기<span class="cat-type">정보형 · 정보 80%</span></button>
+          <button class="cat-btn" data-cat="살림재테크" data-type="정보형" onclick="selectCat(this)">살림·재테크<span class="cat-type">정보형 · 정보 90%</span></button>
         </div>
       </div>
 
       <div class="card" id="formCard" style="display:none;">
         <div class="card-title">✏️ <span id="formTitle">내용 입력</span></div>
+
+        <!-- SEO 제목 추천 -->
+        <div class="seo-section">
+          <div class="seo-section-title">🔍 SEO 제목 추천</div>
+          <div class="seo-kw-row">
+            <input class="form-input" id="seoKeyword" placeholder="핵심 키워드 입력 (예: 임신 34주 증상)">
+            <button class="seo-gen-btn" id="seoBtnEl" onclick="genTitles()">제목 추천</button>
+          </div>
+          <div class="seo-hint">키워드 입력 후 탭하면 제목 3개를 추천해드려요</div>
+          <div id="seoTitleArea"></div>
+          <div class="selected-title-box" id="selectedTitleBox">
+            선택된 제목: <span id="selectedTitleText"></span>
+          </div>
+        </div>
+
         <div id="dynForm"></div>
         <div class="divider"></div>
         <div class="form-row">
@@ -238,7 +251,6 @@ input[type="file"] { display: none; }
       </div>
     </div>
 
-    <!-- 기록 -->
     <div class="page" id="page-log">
       <div class="stats-row">
         <div class="stat-card"><div class="stat-num" id="sTot">0</div><div class="stat-label">전체</div></div>
@@ -252,7 +264,6 @@ input[type="file"] { display: none; }
       </div>
     </div>
 
-    <!-- 현황 -->
     <div class="page" id="page-status">
       <div class="card">
         <div class="card-title">⏳ 업로드 대기</div>
@@ -266,15 +277,9 @@ input[type="file"] { display: none; }
   </div>
 
   <div class="tab-bar">
-    <button class="tab-item active" id="tab-write" onclick="showPage('write')">
-      <span class="tab-icon">✏️</span><span class="tab-label">글 작성</span><div class="tab-dot"></div>
-    </button>
-    <button class="tab-item" id="tab-log" onclick="showPage('log')">
-      <span class="tab-icon">📋</span><span class="tab-label">기록</span><div class="tab-dot"></div>
-    </button>
-    <button class="tab-item" id="tab-status" onclick="showPage('status')">
-      <span class="tab-icon">📊</span><span class="tab-label">현황</span><div class="tab-dot"></div>
-    </button>
+    <button class="tab-item active" id="tab-write" onclick="showPage('write')"><span class="tab-icon">✏️</span><span class="tab-label">글 작성</span><div class="tab-dot"></div></button>
+    <button class="tab-item" id="tab-log" onclick="showPage('log')"><span class="tab-icon">📋</span><span class="tab-label">기록</span><div class="tab-dot"></div></button>
+    <button class="tab-item" id="tab-status" onclick="showPage('status')"><span class="tab-icon">📊</span><span class="tab-label">현황</span><div class="tab-dot"></div></button>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -287,149 +292,141 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 최종 판단: 10년 뒤 말랑이와 함께 봐도 의미 있는 기록인가?
 
 === SEO 필수 원칙 ===
-- 제목: [지역/상황 + 핵심키워드] 형식. 검색자가 실제로 검색할 단어 포함
-- 본문 첫 문단: 핵심 키워드 자연스럽게 2~3회 포함
-- 소제목(h2): 검색 의도를 반영한 질문형 또는 키워드형
-- 결론을 앞에: 검색자가 원하는 답을 먼저 주고 상세 내용 전개
-- 구체적 수치·정보 포함: 가격, 시간, 주소 등 명확하게
+- 제목: 검색자가 실제 검색할 단어 포함, [지역/상황+핵심키워드] 형식
+- 본문 첫 문단: 핵심 키워드 자연스럽게 2~3회
+- 소제목(h2): 검색 의도 반영한 질문형 또는 키워드형
+- 결론 먼저: 검색자 원하는 답 먼저 → 상세 전개
+- 구체적 수치·정보: 가격, 시간, 주소 등 명확하게
 
 === 카테고리별 원칙 ===
-
-[기록형 - 임신기록]
-비율: 감정 80% + 정보 20%
-톤: 말랑파파 시점 편지체, 짧은 문장, 여백 있게
-시작: "안녕하세요 :) 말랑파파입니다."
-구조: 오프닝(감정) → 이번 주 말랑이 → 이번 주 말랑맘 → 이번 주 우리 부부 → 요즘 생각("인용구") → 오늘의 한 줄(말랑이에게)
-SEO 제목: [임신 N주] 이번 주 가장 인상 깊었던 순간
-
-[기록형 - 연애회상]
-비율: 감정 70% + 정보 30%
-톤: 과거 회상, 말랑파파 시점, 말랑맘과의 추억 중심 (말랑이 등장 안 함)
-시작: "안녕하세요 :) 말랑파파입니다."
-구조: 오프닝(그날 분위기) → 있었던 일 → 그때 느낀 것 → 지금 돌아보면
-SEO 제목: [데이트 장소/지역] 키워드 한 줄
-
-[정보형 - 육아정보]
-비율: 정보 85% + 경험 15%
-대상 주제: 신생아용품, 수유, 수면교육, 예방접종, 이유식, 성장발달 등
-구조: 결론 먼저 → 상세 정보 → 말랑이 실제 경험 → 주의사항 → 총평
-SEO 제목: [주제 키워드] 총정리 / 실제 경험 후기
-
-[정보형 - 육아용품]
-비율: 정보 90% + 경험 10%
-구조: 한줄 결론(추천/비추/조건부) → 구매 이유 → 장점/단점 → 구매 정보 → 추천 대상
-SEO 제목: [제품명] 솔직 후기 | 장단점 총정리 (내돈내산/협찬)
-
-[정보형 - 먹고기록하기]
-비율: 정보 80% + 경험 20%
-구조: 핵심정보(주소·시간·가격·주차) → 방문 계기 한 줄 → 주문 메뉴·맛 → 분위기 → 재방문 의사·총평
-SEO 제목: [지역 + 음식종류] 매장명 | 주차·웨이팅·메뉴 총정리
-특이사항: 매장 URL에서 가져온 정보를 바탕으로 작성. 메뉴·가격은 사용자 입력 기준.
-
-[정보형 - 살림재테크]
-비율: 정보 90% + 경험 10%
-구조: 결론(해당 여부 판단) → 조건·자격 → 신청 방법 → 실제 경험 → 주의사항 → 총평
-SEO 제목: [제도명/상품명] 조건·신청방법 총정리 | 실제 후기
+[임신기록] 감정80%+정보20% | "안녕하세요 :) 말랑파파입니다." 시작 | 구조: 오프닝→이번주말랑이→이번주말랑맘→이번주우리부부→요즘생각(인용구)→오늘의한줄(말랑이에게)
+[연애회상] 감정70%+정보30% | "안녕하세요 :) 말랑파파입니다." 시작 | 과거회상, 말랑맘과의추억, 말랑이등장안함 | 구조: 오프닝(그날분위기)→있었던일→그때느낀것→지금돌아보면
+[육아정보] 정보85%+경험15% | 신생아용품·수유·수면교육·예방접종·이유식·성장발달 등 | 구조: 결론먼저→상세정보→말랑이실제경험→주의사항→총평
+[육아용품] 정보90%+경험10% | 구조: 한줄결론(추천/비추/조건부)→구매이유→장단점→구매정보→추천대상
+[먹고기록하기] 정보80%+경험20% | URL에서 매장 기본정보 분석활용 | 구조: 핵심정보(주소·시간·가격·주차)→방문계기한줄→메뉴·맛→분위기→재방문의사·총평
+[살림재테크] 정보90%+경험10% | 구조: 결론(해당여부)→조건·자격→신청방법→실제경험→주의사항→총평
 
 === 채널별 출력 ===
-인스타: 감정 한 줄 또는 핵심 정보 한 줄 → "자세한 내용은 블로그에서 확인하세요 🔗" → 해시태그 12~15개 (검색량 높은 것 포함)
-쇼츠: 훅(3초, 궁금증 유발) → 핵심내용(30초) → 마무리+CTA(7초). 총 40초 내외. 구어체로.`;
+인스타: 감정 한 줄 또는 핵심 정보 한 줄 → "자세한 내용은 블로그에서 확인하세요 🔗" → 해시태그 12~15개
+쇼츠: 훅(3초,궁금증유발)→핵심내용(30초)→마무리+CTA(7초). 총40초. 구어체.`;
+
+const SP_TITLE = `당신은 네이버 블로그 SEO 전문가입니다.
+주어진 카테고리와 키워드를 바탕으로 네이버 검색에 최적화된 블로그 제목 3개를 추천해주세요.
+
+조건:
+- 실제 사람들이 네이버에서 검색할 법한 키워드 포함
+- 클릭하고 싶은 제목 (호기심 또는 유용함 자극)
+- 20자 내외로 간결하게
+- 말랑데이즈 블로그 톤 반영 (육아·임신·신혼 라이프)
+- 번호 없이 제목만 한 줄씩, 다른 설명 없이 3개만 출력`;
 
 const FORMS = {
-  임신기록: {
-    seoHint: '예) 임신 34주 배 크기, 임신 34주 증상',
-    fields: [
-      {id:'week', label:'임신 주차', ph:'예) 34주'},
-      {id:'keyword', label:'SEO 키워드 (선택)', ph:'예) 임신 34주 증상, 배크기 변화'},
-      {id:'baby', label:'이번 주 말랑이', ta:true, ph:'태동, 태아 변화, 초음파 내용 등'},
-      {id:'mom', label:'이번 주 말랑맘', ta:true, ph:'몸 변화, 감정, 에피소드'},
-      {id:'couple', label:'이번 주 우리 부부', ta:true, ph:'준비한 것, 나눈 대화, 고민'},
-      {id:'letter', label:'말랑이에게 한마디', ph:'예) 곧 만나자, 기다리고 있어'},
-    ]
-  },
-  연애회상: {
-    seoHint: '예) 일산 호수공원 데이트, 여수 여행 커플',
-    fields: [
-      {id:'keyword', label:'SEO 키워드 / 장소', ph:'예) 일산 호수공원 데이트 코스'},
-      {id:'when', label:'그날 언제', ph:'예) 2023년 봄, 사귄 지 3개월'},
-      {id:'episode', label:'그날 있었던 일', ta:true, ph:'소소하게 자유롭게. 말랑이는 등장 안 해요.'},
-      {id:'feeling', label:'그때 느낀 것', ta:true, ph:'그날의 감정, 아내에 대해 느낀 것'},
-      {id:'now', label:'지금 돌아보면 (선택)', ph:'예) 그때 용기 내길 잘했다'},
-    ]
-  },
-  육아정보: {
-    seoHint: '예) 신생아 수면교육 방법, 모유수유 자세',
-    fields: [
-      {id:'topic', label:'주제', ph:'예) 신생아 수면교육, 이유식 시작 시기, 예방접종 순서'},
-      {id:'keyword', label:'SEO 키워드', ph:'예) 신생아 수면교육 방법 월령별'},
-      {id:'summary', label:'핵심 내용 요약', ta:true, ph:'주제에 대해 알고 있는 내용, 조사한 정보'},
-      {id:'experience', label:'말랑이 실제 경험 (선택)', ta:true, ph:'말랑이에게 적용해본 경험이 있으면'},
-      {id:'caution', label:'주의사항 (선택)', ta:true, ph:'헷갈리기 쉬운 것, 잘못된 상식 등'},
-    ]
-  },
-  육아용품: {
-    seoHint: '예) 범보의자 추천, 스토케 유모차 후기',
-    fields: [
-      {id:'product', label:'제품명', ph:'예) 범보 멀티시트, 스토케 스쿠트 유모차'},
-      {id:'keyword', label:'SEO 키워드', ph:'예) 범보의자 추천 월령 사용법'},
-      {id:'price', label:'구매 가격 / 구매처', ph:'예) 89,000원 / 쿠팡'},
-      {id:'reason', label:'구매 이유', ta:true, ph:'어떤 필요에서 샀는지'},
-      {id:'pros', label:'좋았던 점', ta:true, ph:''},
-      {id:'cons', label:'아쉬운 점', ta:true, ph:''},
-      {id:'rec', label:'추천 대상', ph:'예) 신생아 3개월 이상, 허리 힘 생긴 아기'},
-      {id:'sp', label:'구매 유형', sel:['내돈내산','협찬·제공']},
-    ]
-  },
-  먹고기록: {
-    seoHint: '네이버 플레이스 URL을 붙여넣으면 매장 정보를 자동으로 가져와요',
-    fields: [
-      {id:'url', label:'네이버 플레이스 URL', ph:'https://map.naver.com/...', isUrl:true},
-      {id:'menu', label:'주문한 메뉴 & 가격', ta:true, ph:'예) 연어사시미 35,000원\n우동 12,000원'},
-      {id:'taste', label:'솔직한 맛 평가', ta:true, ph:'맛있었다면 뭐가, 별로였다면 왜'},
-      {id:'visit_ctx', label:'방문 계기 (선택)', ph:'예) 만삭여행 중, 임신 중 생선 먹고 싶어서'},
-    ]
-  },
-  살림재테크: {
-    seoHint: '예) 신생아특례대출 조건, 청약 신혼부부',
-    fields: [
-      {id:'topic', label:'주제', ph:'예) 신생아특례대출, 신혼부부 청약, 아이 의료비 절약'},
-      {id:'keyword', label:'SEO 키워드', ph:'예) 신생아특례대출 조건 2024 신청방법'},
-      {id:'summary', label:'핵심 내용', ta:true, ph:'제도 개요, 혜택'},
-      {id:'condition', label:'조건 / 자격', ta:true, ph:'소득 기준, 대상, 필요 서류 등'},
-      {id:'how', label:'신청 방법', ta:true, ph:'어디서, 어떻게 신청하는지'},
-      {id:'experience', label:'직접 경험 (선택)', ta:true, ph:'신청해봤다면 느낀 점'},
-      {id:'caution', label:'주의사항', ta:true, ph:'놓치기 쉬운 것, 주의할 점'},
-    ]
-  },
+  임신기록:{fields:[
+    {id:'week',label:'임신 주차',ph:'예) 34주'},
+    {id:'baby',label:'이번 주 말랑이',ta:true,ph:'태동, 태아 변화, 초음파 내용 등'},
+    {id:'mom',label:'이번 주 말랑맘',ta:true,ph:'몸 변화, 감정, 에피소드'},
+    {id:'couple',label:'이번 주 우리 부부',ta:true,ph:'준비한 것, 나눈 대화, 고민'},
+    {id:'letter',label:'말랑이에게 한마디',ph:'예) 곧 만나자, 기다리고 있어'},
+  ]},
+  연애회상:{fields:[
+    {id:'when',label:'그날 언제 / 장소',ph:'예) 2023년 봄, 일산 호수공원'},
+    {id:'episode',label:'그날 있었던 일',ta:true,ph:'소소하게 자유롭게. 말랑이는 등장 안 해요.'},
+    {id:'feeling',label:'그때 느낀 것',ta:true,ph:'그날의 감정, 아내에 대해 느낀 것'},
+    {id:'now',label:'지금 돌아보면 (선택)',ph:'예) 그때 용기 내길 잘했다'},
+  ]},
+  육아정보:{fields:[
+    {id:'topic',label:'주제',ph:'예) 신생아 수면교육, 이유식 시작 시기, 예방접종 순서'},
+    {id:'summary',label:'핵심 내용',ta:true,ph:'주제에 대해 알고 있는 내용, 조사한 정보'},
+    {id:'experience',label:'말랑이 실제 경험 (선택)',ta:true,ph:'직접 경험해본 것이 있으면'},
+    {id:'caution',label:'주의사항 (선택)',ta:true,ph:'헷갈리기 쉬운 것, 잘못된 상식'},
+  ]},
+  육아용품:{fields:[
+    {id:'product',label:'제품명',ph:'예) 범보 멀티시트, 스토케 유모차'},
+    {id:'price',label:'가격 / 구매처',ph:'예) 89,000원 / 쿠팡'},
+    {id:'reason',label:'구매 이유',ta:true,ph:'어떤 필요에서 샀는지'},
+    {id:'pros',label:'좋았던 점',ta:true,ph:''},
+    {id:'cons',label:'아쉬운 점',ta:true,ph:''},
+    {id:'rec',label:'추천 대상',ph:'예) 신생아 3개월 이상'},
+    {id:'sp',label:'구매 유형',sel:['내돈내산','협찬·제공']},
+  ]},
+  먹고기록:{fields:[
+    {id:'url',label:'네이버 플레이스 URL',ph:'https://map.naver.com/... (매장 정보 자동 분석)',isUrl:true},
+    {id:'menu',label:'주문한 메뉴 & 가격',ta:true,ph:'예) 연어사시미 35,000원\n우동 12,000원'},
+    {id:'taste',label:'솔직한 맛 평가',ta:true,ph:'맛있었다면 뭐가, 별로였다면 왜'},
+    {id:'visit_ctx',label:'방문 계기 (선택)',ph:'예) 만삭여행 중, 제주 여행에서'},
+  ]},
+  살림재테크:{fields:[
+    {id:'topic',label:'주제',ph:'예) 신생아특례대출, 신혼부부 청약, 아이 의료비'},
+    {id:'summary',label:'핵심 내용',ta:true,ph:'제도 개요, 혜택'},
+    {id:'condition',label:'조건 / 자격',ta:true,ph:'소득 기준, 대상, 필요 서류'},
+    {id:'how',label:'신청 방법',ta:true,ph:'어디서, 어떻게 신청하는지'},
+    {id:'experience',label:'직접 경험 (선택)',ta:true,ph:'신청해봤다면 느낀 점'},
+    {id:'caution',label:'주의사항',ta:true,ph:'놓치기 쉬운 것'},
+  ]},
 };
 
-let selCat='', selType='', files=[], logs=JSON.parse(localStorage.getItem('ml')||'[]'), cur={}, stMap={}, fetchedInfo='';
-const STEPS=['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','인스타·쇼츠 생성 중'];
+let selCat='',selType='',files=[],logs=JSON.parse(localStorage.getItem('ml')||'[]'),cur={},stMap={},selTitle='';
+const STEPS=['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','채널별 버전 생성 중'];
 
 function selectCat(btn){
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
-  selCat=btn.dataset.cat; selType=btn.dataset.type;
-  fetchedInfo='';
+  selCat=btn.dataset.cat; selType=btn.dataset.type; selTitle='';
   buildForm();
   document.getElementById('formCard').style.display='block';
   document.getElementById('outputEl').classList.remove('show');
   document.getElementById('loadingEl').classList.remove('show');
   document.getElementById('formTitle').textContent=selCat;
+  document.getElementById('seoKeyword').value='';
+  document.getElementById('seoTitleArea').innerHTML='';
+  document.getElementById('selectedTitleBox').classList.remove('show');
   setTimeout(()=>document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
 
 function buildForm(){
   const cfg=FORMS[selCat]; if(!cfg)return;
-  let html='';
-  if(cfg.seoHint) html+=`<div class="seo-tip">🔍 <strong>SEO 팁</strong> ${cfg.seoHint}</div>`;
-  html+=cfg.fields.map(f=>{
-    if(f.isUrl) return `<div class="form-row"><label class="form-label">${f.label}</label><div class="url-row"><input class="form-input" id="f_${f.id}" placeholder="${f.ph||''}" type="url" inputmode="url"></div><div class="fetched-info" id="fetchedBox"></div><div class="form-hint">URL 입력 후 초안 생성 시 자동으로 매장 정보를 분석해요</div></div>`;
+  document.getElementById('dynForm').innerHTML=cfg.fields.map(f=>{
+    if(f.isUrl) return `<div class="form-row"><label class="form-label">${f.label}</label><input class="form-input" id="f_${f.id}" placeholder="${f.ph||''}" type="url" inputmode="url"><div class="form-hint">URL 입력 시 매장명·주소·영업시간 자동 분석</div></div>`;
     if(f.sel) return `<div class="form-row"><label class="form-label">${f.label}</label><select class="form-select" id="f_${f.id}">${f.sel.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
     if(f.ta) return `<div class="form-row"><label class="form-label">${f.label}</label><textarea class="form-textarea" id="f_${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
     return `<div class="form-row"><label class="form-label">${f.label}</label><input class="form-input" id="f_${f.id}" placeholder="${f.ph||''}"></div>`;
   }).join('');
-  document.getElementById('dynForm').innerHTML=html;
+}
+
+async function genTitles(){
+  const kw=document.getElementById('seoKeyword').value.trim();
+  if(!kw){ toast('키워드를 입력해주세요'); return; }
+  if(!selCat){ toast('카테고리를 먼저 선택해주세요'); return; }
+  const btn=document.getElementById('seoBtnEl');
+  btn.disabled=true; btn.textContent='생성 중...';
+  document.getElementById('seoTitleArea').innerHTML='<div class="seo-loading">⏳ 제목 추천 중...</div>';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:1000, system:SP_TITLE,
+        messages:[{role:'user',content:`카테고리: ${selCat}\n키워드: ${kw}\n\n위 카테고리와 키워드로 네이버 블로그 SEO 제목 3개 추천해줘. 제목만 한 줄씩, 번호 없이.`}]
+      })
+    });
+    const d=await res.json();
+    const txt=d.content?.[0]?.text||'';
+    const titles=txt.split('\n').map(t=>t.trim()).filter(t=>t&&t.length>2).slice(0,3);
+    document.getElementById('seoTitleArea').innerHTML=`<div class="seo-titles">${titles.map((t,i)=>`<button class="seo-title-opt" onclick="pickTitle(this,'${t.replace(/'/g,"\\'")}')">📌 ${t}</button>`).join('')}</div>`;
+  }catch(e){
+    document.getElementById('seoTitleArea').innerHTML='<div class="seo-loading" style="color:#C0392B">오류가 발생했어요</div>';
+  }finally{
+    btn.disabled=false; btn.textContent='제목 추천';
+  }
+}
+
+function pickTitle(el, title){
+  document.querySelectorAll('.seo-title-opt').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  selTitle=title;
+  document.getElementById('selectedTitleText').textContent=title;
+  document.getElementById('selectedTitleBox').classList.add('show');
+  toast('제목 선택됐어요 ✓');
 }
 
 function addFiles(inp){
@@ -446,11 +443,11 @@ function getVal(id){ const el=document.getElementById(`f_${id}`); return el?el.v
 
 function buildPrompt(){
   const cfg=FORMS[selCat]; if(!cfg)return '';
-  const info=cfg.fields.filter(f=>!f.isUrl).map(f=>{ const v=getVal(f.id); return v?`${f.label}: ${v}`:null; }).filter(Boolean).join('\n');
-  const urlVal=getVal('url');
-  const urlPart=urlVal?`\n매장 URL (이 URL에서 매장명, 주소, 영업시간, 전화번호, 주차 정보를 분석해서 활용하세요): ${urlVal}`:'';
+  const info=cfg.fields.map(f=>{ const v=getVal(f.id); return v?`${f.label}: ${v}`:null; }).filter(Boolean).join('\n');
+  const titlePart=selTitle?`\n선택된 SEO 제목 (이 제목을 블로그 글 제목으로 사용해주세요): ${selTitle}`:'';
+  const kwPart=document.getElementById('seoKeyword').value.trim()?`\nSEO 키워드: ${document.getElementById('seoKeyword').value.trim()}`:'';
   const ph=files.length>0?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
-  return `카테고리: ${selCat} (${selType})\n${info}${urlPart}${ph}\n\n다음 형식으로 작성해주세요:\n\n[BLOG]\nSEO 최적화된 블로그 초안 (제목 포함, 카테고리 구조에 맞게)\n\n[INSTA]\n인스타그램 캡션 + 해시태그\n\n[SHORTS]\n유튜브 쇼츠 스크립트 (40초 내외)${files.length>0?'\n\n[PHOTO]\n각 사진 배치 위치 안내 (사진N - [배치 위치] - [이유])':''}`;
+  return `카테고리: ${selCat} (${selType})${titlePart}${kwPart}\n${info}${ph}\n\n[BLOG]\nSEO 최적화된 블로그 초안 (위 제목 사용, 카테고리 구조에 맞게)\n\n[INSTA]\n인스타그램 캡션 + 해시태그\n\n[SHORTS]\n유튜브 쇼츠 스크립트 (40초 내외)${files.length>0?'\n\n[PHOTO]\n사진 배치 위치 안내 (사진N - [배치 위치] - [이유])':''}`;
 }
 
 async function generate(){
@@ -464,10 +461,7 @@ async function generate(){
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6', max_tokens:1000, system:SP,
-        messages:[{role:'user',content:buildPrompt()}]
-      })
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SP,messages:[{role:'user',content:buildPrompt()}]})
     });
     const d=await res.json();
     parse(d.content?.[0]?.text||'');
@@ -489,9 +483,8 @@ function parse(txt){
   } else {
     document.getElementById('photoGuide').innerHTML='<div class="empty"><div class="empty-icon">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div>';
   }
-  const cfg=FORMS[selCat]; const firstField=cfg?.fields[0];
-  const titleVal=firstField?getVal(firstField.id):'';
-  cur={cat:selCat,type:selType,blog,insta,shorts,title:titleVal?`${selCat} - ${titleVal}`:selCat,date:new Date().toLocaleDateString('ko-KR'),bs:'미업로드',is:'미업로드',ss:'미업로드'};
+  const cfg=FORMS[selCat]; const fv=cfg?.fields[0]?getVal(cfg.fields[0].id):'';
+  cur={cat:selCat,type:selType,blog,insta,shorts,title:selTitle||(fv?`${selCat} - ${fv}`:selCat),date:new Date().toLocaleDateString('ko-KR'),bs:'미업로드',is:'미업로드',ss:'미업로드'};
   stMap={blog:false,insta:false,shorts:false};
   updBadges();
   document.getElementById('outputEl').classList.add('show');
@@ -500,43 +493,17 @@ function parse(txt){
 }
 
 function sec(t,s,e){ const si=t.indexOf(`[${s}]`); if(si===-1)return null; const ei=e?t.indexOf(`[${e}]`):-1; return ei===-1?t.slice(si+s.length+2):t.slice(si+s.length+2,ei); }
-
-function switchOut(id,btn){
-  document.querySelectorAll('.out-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.out-content').forEach(c=>c.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  document.getElementById(`out-${id}`)?.classList.add('active');
-}
-
-function toggleSt(ch){
-  stMap[ch]=!stMap[ch];
-  updBadges();
-  if(cur.cat){ if(ch==='blog')cur.bs=stMap[ch]?'완료':'미업로드'; if(ch==='insta')cur.is=stMap[ch]?'완료':'미업로드'; if(ch==='shorts')cur.ss=stMap[ch]?'완료':'미업로드'; }
-}
-function updBadges(){
-  const M={blog:'blogBadge',insta:'instaBadge',shorts:'shortsBadge'};
-  const D={blog:'blogDate',insta:'instaDate',shorts:'shortsDate'};
-  ['blog','insta','shorts'].forEach(ch=>{
-    const el=document.getElementById(M[ch]), de=document.getElementById(D[ch]);
-    if(stMap[ch]){ el.className='status-badge badge-done'; el.textContent='업로드 완료'; de.textContent=new Date().toLocaleDateString('ko-KR'); }
-    else{ el.className='status-badge badge-none'; el.textContent='미업로드'; de.textContent='-'; }
-  });
-}
-
-function saveLog(){
-  if(!cur.cat)return;
-  logs.unshift({...cur,id:Date.now()});
-  localStorage.setItem('ml',JSON.stringify(logs));
-  renderLog(); toast('저장됐어요 ✨');
-}
-
+function switchOut(id,btn){ document.querySelectorAll('.out-tab').forEach(t=>t.classList.remove('active')); document.querySelectorAll('.out-content').forEach(c=>c.classList.remove('active')); if(btn)btn.classList.add('active'); document.getElementById(`out-${id}`)?.classList.add('active'); }
+function toggleSt(ch){ stMap[ch]=!stMap[ch]; updBadges(); if(cur.cat){ if(ch==='blog')cur.bs=stMap[ch]?'완료':'미업로드'; if(ch==='insta')cur.is=stMap[ch]?'완료':'미업로드'; if(ch==='shorts')cur.ss=stMap[ch]?'완료':'미업로드'; } }
+function updBadges(){ const M={blog:'blogBadge',insta:'instaBadge',shorts:'shortsBadge'}; const D={blog:'blogDate',insta:'instaDate',shorts:'shortsDate'}; ['blog','insta','shorts'].forEach(ch=>{ const el=document.getElementById(M[ch]),de=document.getElementById(D[ch]); if(stMap[ch]){el.className='status-badge badge-done';el.textContent='업로드 완료';de.textContent=new Date().toLocaleDateString('ko-KR');}else{el.className='status-badge badge-none';el.textContent='미업로드';de.textContent='-';} }); }
+function saveLog(){ if(!cur.cat)return; logs.unshift({...cur,id:Date.now()}); localStorage.setItem('ml',JSON.stringify(logs)); renderLog(); toast('저장됐어요 ✨'); }
 function renderLog(){
   document.getElementById('sTot').textContent=logs.length;
   document.getElementById('sBlog').textContent=logs.filter(l=>l.bs==='완료').length;
   document.getElementById('sInsta').textContent=logs.filter(l=>l.is==='완료').length;
   document.getElementById('sShorts').textContent=logs.filter(l=>l.ss==='완료').length;
   const ll=document.getElementById('logList');
-  if(!logs.length){ ll.innerHTML='<div class="empty"><div class="empty-icon">📭</div>저장된 콘텐츠가 없어요</div>'; return; }
+  if(!logs.length){ll.innerHTML='<div class="empty"><div class="empty-icon">📭</div>저장된 콘텐츠가 없어요</div>';return;}
   ll.innerHTML=logs.map(l=>`<div class="log-item"><div class="log-header"><span class="log-cat ${l.type==='기록형'?'log-cat-rec':'log-cat-info'}">${l.cat}</span><span class="log-date">${l.date}</span></div><div class="log-title">${l.title}</div><div class="log-channels"><span class="log-ch ${l.bs==='완료'?'ch-done':'ch-none'}">📝 ${l.bs}</span><span class="log-ch ${l.is==='완료'?'ch-done':'ch-none'}">📸 ${l.is}</span><span class="log-ch ${l.ss==='완료'?'ch-done':'ch-none'}">🎬 ${l.ss}</span></div></div>`).join('');
   const pend=logs.filter(l=>l.bs!=='완료'||l.is!=='완료'||l.ss!=='완료');
   const done=logs.filter(l=>l.bs==='완료'&&l.is==='완료'&&l.ss==='완료');
@@ -544,17 +511,7 @@ function renderLog(){
   document.getElementById('pendList').innerHTML=pend.length?pend.map(row).join(''):'<div class="empty"><div class="empty-icon">✨</div>대기 중인 콘텐츠 없음</div>';
   document.getElementById('doneList').innerHTML=done.length?done.map(row).join(''):'<div class="empty"><div class="empty-icon">🎉</div>완료된 콘텐츠 없음</div>';
 }
-
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
-  document.getElementById(`page-${id}`).classList.add('active');
-  document.getElementById(`tab-${id}`).classList.add('active');
-  document.getElementById('topBadge').textContent={write:'글 작성',log:'기록',status:'현황'}[id];
-  document.querySelector('.page-wrap').scrollTop=0;
-  if(id==='log'||id==='status') renderLog();
-}
-
+function showPage(id){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active')); document.getElementById(`page-${id}`).classList.add('active'); document.getElementById(`tab-${id}`).classList.add('active'); document.getElementById('topBadge').textContent={write:'글 작성',log:'기록',status:'현황'}[id]; document.querySelector('.page-wrap').scrollTop=0; if(id==='log'||id==='status')renderLog(); }
 function copyTxt(id){ navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('복사됐어요 ✨')); }
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
 renderLog();
