@@ -549,7 +549,7 @@ async function genTitles(){
   btn.disabled=true; btn.textContent='생성 중...';
   document.getElementById('staArea').innerHTML='<div class="seold">⏳ 제목 추천 중...</div>';
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join(''),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SP_TITLE,messages:[{role:'user',content:`카테고리: ${cat}\n키워드: ${kw}\n제목 3개만 추천해줘.`}]})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join(''),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:SP_TITLE,messages:[{role:'user',content:`카테고리: ${cat}\n키워드: ${kw}\n제목 3개만 추천해줘.`}]})});
     const d=await res.json();
     const titles=(d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
     document.getElementById('staArea').innerHTML=`<div class="seotitles">${titles.map(t=>`<button class="seoto" onclick="pickTitle(this,'${t.replace(/'/g,"\\'")}')">📌 ${t}</button>`).join('')}</div>`;
@@ -587,10 +587,17 @@ async function generate(){
   document.getElementById('oaEl').classList.remove('show');
   let si=0;const iv=setInterval(()=>{si=(si+1)%STEPS.length;document.getElementById('ldStep').textContent=STEPS[si];},1400);
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join(''),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SP,messages:[{role:'user',content:buildPrompt()}]})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join(''),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,system:SP,messages:[{role:'user',content:buildPrompt()}]})});
     const d=await res.json();
-    parseOut(d.content?.[0]?.text||'');
-  }catch(e){toast('오류가 발생했어요');document.getElementById('fc').style.display='block';}
+    if(d.error){throw new Error(d.error.message||JSON.stringify(d.error));}
+    const txt=d.content?.[0]?.text||'';
+    if(!txt){throw new Error('응답이 비어있어요');}
+    parseOut(txt);
+  }catch(e){
+    console.error('generate error:', e);
+    toast('오류: ' + (e.message||'다시 시도해주세요'));
+    document.getElementById('fc').style.display='block';
+  }
   finally{clearInterval(iv);document.getElementById('ldEl').classList.remove('show');}
 }
 
