@@ -594,9 +594,13 @@ async function searchPlace(){
   }
 }
 
+// 검색된 매장 정보 임시 저장
+let lastPlaceInfo = null;
+
 function renderPlaceCard(info){
+  lastPlaceInfo = info; // 전역에 저장
   const pr = document.getElementById('placeResults');
-  pr.innerHTML = `<div class="place-card" onclick="selectPlace(${JSON.stringify(info).replace(/'/g,"&#39;")})">
+  pr.innerHTML = `<div class="place-card" id="placeCard" onclick="selectPlace()">
     <div class="place-name">🏪 ${info.name||'매장명 없음'}</div>
     <div class="place-addr">📍 ${info.address||'-'}</div>
     <div class="place-addr">🕐 ${info.hours||'-'} | 🅿️ ${info.parking||'-'}</div>
@@ -605,8 +609,9 @@ function renderPlaceCard(info){
   </div>`;
 }
 
-function selectPlace(info){
-  if(typeof info === 'string') info = JSON.parse(info);
+function selectPlace(){
+  const info = lastPlaceInfo;
+  if(!info){ toast('매장 정보가 없어요'); return; }
   selectedPlaceInfo = `매장명: ${info.name||''}
 주소: ${info.address||''}
 영업시간: ${info.hours||''}
@@ -614,10 +619,15 @@ function selectPlace(info){
 전화번호: ${info.phone||''}
 가격대: ${info.price||''}
 카테고리: ${info.category||''}
-웨이팅: ${info.waiting||''}`;
+웨이팅: ${info.waiting||''}`.trim();
   const ps = document.getElementById('placeSelected');
-  ps.style.display='block';
-  ps.innerHTML = `✅ <strong>${info.name}</strong> 선택됨<br>📍 ${info.address||''}<br>🕐 ${info.hours||''} | 🅿️ ${info.parking||''}`;
+  if(ps){
+    ps.style.display='block';
+    ps.innerHTML = `✅ <strong>${info.name}</strong> 선택됨<br>📍 ${info.address||''}<br>🕐 ${info.hours||''} | 🅿️ ${info.parking||'-'}`;
+  }
+  // 카드 선택 표시
+  const card = document.getElementById('placeCard');
+  if(card) card.classList.add('selected');
   document.getElementById('placeResults').innerHTML='';
   toast(`${info.name} 선택됐어요 ✓`);
 }
@@ -639,6 +649,7 @@ function selCat(btn){
   if(psa) psa.style.display = cat==='먹고기록' ? 'block' : 'none';
   // 매장 선택 초기화
   selectedPlaceInfo = '';
+  lastPlaceInfo = null;
   const ps = document.getElementById('placeSelected');
   const pr = document.getElementById('placeResults');
   const pi = document.getElementById('placeSearchInput');
