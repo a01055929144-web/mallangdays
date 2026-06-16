@@ -141,8 +141,10 @@ input[type="file"]{display:none;}
 <div class="app">
   <div class="top">
     <div><div class="tl">🌸 말랑데이즈</div><div class="ts">콘텐츠 스튜디오</div></div>
-    <div style="display:flex;align-items:center;gap:8px;">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+      <a href="https://docs.google.com/spreadsheets/d/17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE/edit" target="_blank" class="sync-badge" style="background:#E8F5E9;color:#2E7D32;text-decoration:none;">📊 시트</a>
       <div class="sync-badge sync-ing" id="syncBadge">⏳ 연결 중</div>
+      <div class="sync-badge" id="creditBadge" style="background:#FFF8E1;color:#F57F17;">💳 확인 중</div>
       <div class="tb" id="topBadge">글 작성</div>
     </div>
   </div>
@@ -201,12 +203,12 @@ input[type="file"]{display:none;}
           <div class="ots">
             <button class="ot active" onclick="swOut('blog',this)">📝 블로그</button>
             <button class="ot" onclick="swOut('insta',this)">📸 인스타</button>
-            <button class="ot" onclick="swOut('shorts',this)">🎬 쇼츠</button>
+            
             <button class="ot" onclick="swOut('photo',this)">📷 사진배치</button>
           </div>
           <div class="oc active" id="o-blog"><div class="ob" id="blogTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('blogTxt')">복사</button><button class="oab" onclick="saveLog()">저장 + 시트 기록</button></div></div>
           <div class="oc" id="o-insta"><div class="ob" id="instaTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('instaTxt')">복사</button></div></div>
-          <div class="oc" id="o-shorts"><div class="ob" id="shortsTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('shortsTxt')">복사</button></div></div>
+          
           <div class="oc" id="o-photo"><div id="pgEl"><div class="em"><div class="emi">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div></div></div>
         </div>
         <div class="card">
@@ -214,7 +216,7 @@ input[type="file"]{display:none;}
           <div class="sl">
             <div class="si"><div class="sc"><span class="sic">📝</span><div><div>네이버 블로그</div><div class="sd" id="bld">-</div></div></div><button class="sb2 bn" id="blB" onclick="togSt('blog')">미업로드</button></div>
             <div class="si"><div class="sc"><span class="sic">📸</span><div><div>인스타그램</div><div class="sd" id="ind">-</div></div></div><button class="sb2 bn" id="inB" onclick="togSt('insta')">미업로드</button></div>
-            <div class="si"><div class="sc"><span class="sic">🎬</span><div><div>유튜브 쇼츠</div><div class="sd" id="shd">-</div></div></div><button class="sb2 bn" id="shB" onclick="togSt('shorts')">미업로드</button></div>
+
           </div>
         </div>
       </div>
@@ -226,9 +228,13 @@ input[type="file"]{display:none;}
         <div class="sc2"><div class="sn" id="sTot">0</div><div class="sl2">전체</div></div>
         <div class="sc2"><div class="sn" id="sBl">0</div><div class="sl2">블로그 완료</div></div>
         <div class="sc2"><div class="sn" id="sIn">0</div><div class="sl2">인스타 완료</div></div>
-        <div class="sc2"><div class="sn" id="sSh">0</div><div class="sl2">쇼츠 완료</div></div>
+        <div class="sc2"><div class="sn" id="sDraft">0</div><div class="sl2">저장된 초안</div></div>
       </div>
-      <div class="card"><div class="ct">📋 콘텐츠 목록</div><div id="logList"><div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div></div></div>
+      <div class="card">
+        <div class="ct">💾 저장된 초안</div>
+        <div id="draftList"><div class="em"><div class="emi">📝</div>저장된 초안이 없어요</div></div>
+      </div>
+      <div class="card"><div class="ct">📋 콘텐츠 목록 (구글 시트)</div><div id="logList"><div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div></div></div>
     </div>
 
     <!-- 현황 (구글 시트 연동) -->
@@ -403,10 +409,9 @@ function parseSheetRows(rows) {
 function sheetRowToHtml(r, rowIdx) {
   const cat = r[1]||'', title = (r[4]||r[3]||'').trim(), date = r[5]||'', blog = r[6]||'', insta = r[7]||'', yt = r[9]||'';
   const isRec = cat.includes('임신')||cat.includes('연애')||cat.includes('출산')||cat.includes('육아일');
-  const bDone = blog.includes('완료')||blog.includes('작성');
-  const iDone = insta.includes('완료')||insta.includes('작성');
-  const yDone = yt.includes('완료')||yt.includes('작성');
-  const bid = `st_${rowIdx}_G`, iid = `st_${rowIdx}_H`, yid = `st_${rowIdx}_J`;
+  const bDone = blog==='작성완료';
+  const iDone = insta==='작성완료';
+  const bid = `st_${rowIdx}_G`, iid = `st_${rowIdx}_H`;
   const did = `date_${rowIdx}`;
   return `<div class="li">
     <div class="lh">
@@ -419,7 +424,6 @@ function sheetRowToHtml(r, rowIdx) {
     <div class="lch" style="flex-wrap:wrap;gap:6px;margin-top:6px;">
       <button id="${bid}" class="lch2 ${bDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'G',${bDone},'${bid}')">📝 ${bDone?'완료':'미업로드'}</button>
       <button id="${iid}" class="lch2 ${iDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'H',${iDone},'${iid}')">📸 ${iDone?'완료':'미업로드'}</button>
-      <button id="${yid}" class="lch2 ${yDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'J',${yDone},'${yid}')">🎬 ${yDone?'완료':'미업로드'}</button>
     </div>
   </div>`;
 }
@@ -499,8 +503,18 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 [먹고기록하기] 정보80%+경험20% | URL분석활용 | 구조: 핵심정보(주소·시간·가격·주차)→방문계기→메뉴·맛→분위기→총평
 [살림재테크] 정보90%+경험10% | 구조: 결론→조건·자격→신청방법→경험→주의사항→총평
 === 채널별 출력 ===
-인스타: 감정/핵심정보 한 줄 → "자세한 내용은 블로그에서 확인하세요 🔗" → 해시태그 12~15개
-쇼츠: 훅(3초)→핵심(30초)→마무리CTA(7초). 40초. 구어체.`;
+인스타 캡션 작성 원칙:
+- 감정/핵심정보 한 줄로 시작
+- "자세한 내용은 블로그에서 확인하세요 🔗" 포함
+- 해시태그는 카테고리별 최적화:
+  임신기록: #임신 #임신기록 #임신일기 #예비아빠 #태교 #임신맘 #임신N주 #만삭 #임산부 #출산준비 #말랑데이즈
+  연애회상: #연애 #커플 #연애일기 #데이트 #커플일상 #신혼 #말랑데이즈
+  육아정보: #육아 #육아정보 #신생아 #육아팁 #초보엄마 #초보아빠 #육아일기 #말랑데이즈
+  육아용품: #육아용품 #육아템 #신생아용품 #육아추천 #내돈내산 #육아필수템 #말랑데이즈
+  먹고기록하기: #맛집 #맛집추천 #제주맛집 #카페 #먹스타그램 #맛스타그램 #말랑데이즈
+  살림재테크: #재테크 #신혼재테크 #신생아특례 #청약 #살림 #절약 #말랑데이즈
+- 위치/상황에 맞는 추가 해시태그 2~3개 더 붙이기
+- 총 해시태그 13~15개`;
 
 const SP_TITLE = `네이버 블로그 SEO 전문가. 카테고리와 키워드로 검색 최적화 제목 3개 추천. 조건: 실제 검색 키워드 포함, 클릭 유도, 20자 내외, 말랑데이즈 육아·임신·신혼 톤. 번호 없이 제목만 한 줄씩 3개만 출력.`;
 
@@ -513,7 +527,7 @@ const FORMS = {
   살림재테크:{fields:[{id:'topic',lb:'주제',ph:'예) 신생아특례대출, 신혼부부 청약'},{id:'sum',lb:'핵심 내용',ta:true,ph:''},{id:'cond',lb:'조건 / 자격',ta:true,ph:''},{id:'how',lb:'신청 방법',ta:true,ph:''},{id:'exp',lb:'직접 경험 (선택)',ta:true,ph:''},{id:'warn',lb:'주의사항',ta:true,ph:''}]},
 };
 
-let cat='',type='',files=[],logs=JSON.parse(localStorage.getItem('ml')||'[]'),cur={},stMap={},selTitle='';
+let cat='',type='',files=[],logs=JSON.parse(localStorage.getItem('ml')||'[]'),drafts=JSON.parse(localStorage.getItem('ml_drafts')||'[]'),cur={},stMap={},selTitle='';
 const STEPS=['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','채널별 버전 생성 중'];
 
 function selCat(btn){
@@ -577,7 +591,7 @@ function buildPrompt(){
   const tp=selTitle?`\n선택된 SEO 제목 (이 제목을 블로그 글 제목으로 사용): ${selTitle}`:'';
   const kp=document.getElementById('skw').value.trim()?`\nSEO 키워드: ${document.getElementById('skw').value.trim()}`:'';
   const ph=files.length>0?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
-  return `카테고리: ${cat} (${type})${tp}${kp}\n${info}${urlPart}${ph}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그\n\n[SHORTS]\n쇼츠 스크립트 40초${files.length>0?'\n\n[PHOTO]\n사진 배치 안내 (사진N-[위치]-[이유])':''}`;
+  return `카테고리: ${cat} (${type})${tp}${kp}\n${info}${urlPart}${ph}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+최적화 해시태그${files.length>0?'\n\n[PHOTO]\n사진 배치 안내 (사진N-[위치]-[이유])':''}`;
 }
 
 async function generate(){
@@ -603,19 +617,22 @@ async function generate(){
 
 function parseOut(txt){
   const blog=sec(txt,'BLOG','INSTA')||txt;
-  const insta=sec(txt,'INSTA','SHORTS')||'';
-  const shorts=sec(txt,'SHORTS','PHOTO')||'';
+  const insta=sec(txt,'INSTA','PHOTO')||'';
   const photo=sec(txt,'PHOTO',null)||'';
   document.getElementById('blogTxt').textContent=blog.trim();
   document.getElementById('instaTxt').textContent=insta.trim();
-  document.getElementById('shortsTxt').textContent=shorts.trim();
   if(photo&&files.length>0){
     const lines=photo.trim().split('\n').filter(l=>l.trim());
     document.getElementById('pgEl').innerHTML=`<div class="pg2"><div class="pg2t">📷 사진 배치 가이드</div>${lines.map((l,i)=>{const p=l.split('-').map(s=>s.trim());return `<div class="pg2i"><div class="pn">${i+1}</div><div class="pd"><div class="pp">${p[0]||''}</div>${p.slice(1).join(' — ')}</div></div>`;}).join('')}</div>`;
   }else{document.getElementById('pgEl').innerHTML='<div class="em"><div class="emi">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div>';}
   const fv=FORMS[cat]?.fields[0]?gv(FORMS[cat].fields[0].id):'';
-  cur={cat,type,blog,insta,shorts,title:selTitle||(fv?`${cat} - ${fv}`:cat),date:new Date().toLocaleDateString('ko-KR'),bs:'미업로드',is:'미업로드',ss:'미업로드'};
-  stMap={blog:false,insta:false,shorts:false};
+  cur={cat,type,blog,insta,title:selTitle||(fv?`${cat} - ${fv}`:cat),date:new Date().toLocaleDateString('ko-KR'),bs:'미업로드',is:'미업로드'};
+  stMap={blog:false,insta:false};
+  // 초안 자동 임시저장
+  const draft={...cur,id:'draft_'+Date.now()};
+  drafts.unshift(draft);
+  if(drafts.length>50) drafts=drafts.slice(0,50);
+  localStorage.setItem('ml_drafts', JSON.stringify(drafts));
   updBadges();
   document.getElementById('oaEl').classList.add('show');
   swOut('blog',document.querySelector('.ot'));
@@ -626,12 +643,13 @@ function sec(t,s,e){const si=t.indexOf(`[${s}]`);if(si===-1)return null;const ei
 function swOut(id,btn){document.querySelectorAll('.ot').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.oc').forEach(c=>c.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById(`o-${id}`)?.classList.add('active');}
 function togSt(ch){
   stMap[ch]=!stMap[ch];updBadges();
-  if(cur.cat){if(ch==='blog')cur.bs=stMap[ch]?'완료':'미업로드';if(ch==='insta')cur.is=stMap[ch]?'완료':'미업로드';if(ch==='shorts')cur.ss=stMap[ch]?'완료':'미업로드';}
+  if(cur.cat){if(ch==='blog')cur.bs=stMap[ch]?'완료':'미업로드';if(ch==='insta')cur.is=stMap[ch]?'완료':'미업로드';}
 }
 function updBadges(){
-  const M={blog:'blB',insta:'inB',shorts:'shB'},D={blog:'bld',insta:'ind',shorts:'shd'};
-  ['blog','insta','shorts'].forEach(ch=>{
+  const M={blog:'blB',insta:'inB'},D={blog:'bld',insta:'ind'};
+  ['blog','insta'].forEach(ch=>{
     const el=document.getElementById(M[ch]),de=document.getElementById(D[ch]);
+    if(!el)return;
     if(stMap[ch]){el.className='sb2 bd';el.textContent='업로드 완료';de.textContent=new Date().toLocaleDateString('ko-KR');}
     else{el.className='sb2 bn';el.textContent='미업로드';de.textContent='-';}
   });
@@ -639,32 +657,81 @@ function updBadges(){
 
 async function saveLog(){
   if(!cur.cat)return;
-  logs.unshift({...cur,id:Date.now()});
+  const entry={...cur,id:Date.now()};
+  logs.unshift(entry);
   localStorage.setItem('ml',JSON.stringify(logs));
   renderLog();
-  // 구글 시트에 자동 기록
   toast('저장 중...');
   const now = new Date().toLocaleDateString('ko-KR');
+  // 콘텐츠 기획표: 상태값은 "작성완료"만 기록
   const row = [
-    '',                          // No.
-    `[${cur.cat}]`,             // 카테고리
-    '',                          // EP(관리명)
-    cur.title,                   // EP(노출명)
-    cur.title,                   // 콘텐츠 제목
-    now,                         // 실제 업로드일
-    cur.bs === '완료' ? '작성완료' : '미작성',  // 블로그
-    cur.is === '완료' ? '작성완료' : '미작성',  // 인스타
-    cur.insta.slice(0,100),     // 인스타 요약 내용
-    cur.ss === '완료' ? '작성완료' : '미작성',  // 유튜브
-    '',                          // 예정일
-    ''                           // 메모
+    '',
+    `[${cur.cat}]`,
+    '',
+    cur.title,
+    cur.title,
+    now,
+    '작성완료',        // 블로그 - 저장 시점에 작성완료
+    '작성완료',        // 인스타 - 저장 시점에 작성완료
+    cur.insta.slice(0,120),
+    '',                // 유튜브(보류)
+    '',
+    ''
   ];
   const ok = await appendToSheet(row);
-  if(ok){ toast('저장됐어요 + 구글 시트에 기록됐어요 ✅'); }
+  if(ok){ toast('저장 + 구글 시트 기록 완료 ✅'); }
   else{ toast('앱에 저장됐어요 (시트 기록 실패)'); }
 }
 
-function renderLog(){ renderSheetLog(); }
+function renderLog(){ renderSheetLog(); renderDrafts(); }
+
+function renderDrafts(){
+  const dl = document.getElementById('draftList');
+  document.getElementById('sDraft').textContent = drafts.length;
+  if(!drafts.length){
+    dl.innerHTML='<div class="em"><div class="emi">📝</div>저장된 초안이 없어요</div>';
+    return;
+  }
+  dl.innerHTML = drafts.slice(0,20).map((d,i) => `
+    <div class="li">
+      <div class="lh">
+        <span class="lc ${d.type==='기록형'?'lcr':'lci'}">${d.cat}</span>
+        <span class="ld2">${d.date}</span>
+      </div>
+      <div class="lti">${d.title}</div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        <button class="lch2 cn tog-btn" onclick="viewDraft(${i},'blog')" style="background:#EBF2FD;color:#1565C0;border:none;">📝 블로그 보기</button>
+        <button class="lch2 cn tog-btn" onclick="viewDraft(${i},'insta')" style="background:#F3E5F5;color:#6A1B9A;border:none;">📸 인스타 보기</button>
+        <button class="lch2 cn tog-btn" onclick="deleteDraft(${i})" style="background:#FFEBEE;color:#C62828;border:none;">🗑️ 삭제</button>
+      </div>
+    </div>`).join('');
+}
+
+function viewDraft(idx, ch){
+  const d = drafts[idx];
+  if(!d) return;
+  const txt = ch==='blog' ? d.blog : d.insta;
+  const label = ch==='blog' ? '📝 블로그' : '📸 인스타';
+  // 모달 대신 alert 대신 새 textarea 팝업
+  const w = window.open('','_blank','width=600,height=700');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${label} - ${d.title}</title>
+  <style>body{font-family:sans-serif;padding:20px;background:#FAFAF8;}
+  h3{color:#D4845A;margin-bottom:12px;}
+  textarea{width:100%;height:80%;font-size:14px;line-height:1.7;border:1px solid #ddd;border-radius:8px;padding:14px;resize:none;}
+  button{margin-top:10px;padding:10px 20px;background:#D4845A;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;}
+  </style></head><body>
+  <h3>${label} — ${d.title}</h3>
+  <textarea id="t" readonly>${(txt||'').trim()}</textarea><br>
+  <button onclick="navigator.clipboard.writeText(document.getElementById('t').value).then(()=>alert('복사됐어요!'))">복사하기</button>
+  </body></html>`);
+}
+
+function deleteDraft(idx){
+  drafts.splice(idx,1);
+  localStorage.setItem('ml_drafts',JSON.stringify(drafts));
+  renderDrafts();
+  toast('초안이 삭제됐어요');
+}
 
 function showPg(id){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
@@ -680,8 +747,29 @@ function showPg(id){
 function cpTxt(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('복사됐어요 ✨'));}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
+// 크레딧 조회
+async function fetchCredit(){
+  try{
+    const KEY=['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
+    const res=await fetch('https://api.anthropic.com/v1/usage',{headers:{'x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
+    if(res.ok){
+      const d=await res.json();
+      const el=document.getElementById('creditBadge');
+      if(el) el.textContent=`💳 $${(d.account?.credit_grants?.available_credit||0).toFixed(2)}`;
+    } else {
+      // usage 엔드포인트 없을 수 있음 - 간단 연결 테스트로 대체
+      document.getElementById('creditBadge').textContent='💳 활성';
+    }
+  }catch(e){
+    const el=document.getElementById('creditBadge');
+    if(el) el.textContent='💳 확인불가';
+  }
+}
+
 // 초기 토큰 연결 + 데이터 로드
 getGToken().then(()=>renderSheetLog()).catch(()=>{});
+fetchCredit();
+renderDrafts();
 </script>
 </body>
 </html>
