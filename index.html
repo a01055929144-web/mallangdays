@@ -628,11 +628,19 @@ function parseOut(txt){
   const fv=FORMS[cat]?.fields[0]?gv(FORMS[cat].fields[0].id):'';
   cur={cat,type,blog,insta,title:selTitle||(fv?`${cat} - ${fv}`:cat),date:new Date().toLocaleDateString('ko-KR'),bs:'미업로드',is:'미업로드'};
   stMap={blog:false,insta:false};
-  // 초안 자동 임시저장
-  const draft={...cur,id:'draft_'+Date.now()};
+  // 초안 자동 임시저장 (blog, insta 반드시 포함)
+  const draft={
+    id:'draft_'+Date.now(),
+    cat, type,
+    title: selTitle||(fv?`${cat} - ${fv}`:cat),
+    date: new Date().toLocaleDateString('ko-KR'),
+    blog: blog.trim(),
+    insta: insta.trim()
+  };
   drafts.unshift(draft);
   if(drafts.length>50) drafts=drafts.slice(0,50);
   localStorage.setItem('ml_drafts', JSON.stringify(drafts));
+  renderDrafts();
   updBadges();
   document.getElementById('oaEl').classList.add('show');
   swOut('blog',document.querySelector('.ot'));
@@ -663,7 +671,11 @@ async function saveLog(){
   renderLog();
   toast('저장 중...');
   const now = new Date().toLocaleDateString('ko-KR');
-  // 콘텐츠 기획표: 상태값은 "작성완료"만 기록
+  // 블로그 초안 앞 300자 + 인스타 전체를 시트에 저장
+  // 상태값은 미작성 - 실제 업로드 후 토글로 변경
+  const blogSummary = cur.blog ? cur.blog.slice(0, 300).replace(/
+/g,' ') : '';
+  const instaFull = cur.insta || '';
   const row = [
     '',
     `[${cur.cat}]`,
@@ -671,12 +683,12 @@ async function saveLog(){
     cur.title,
     cur.title,
     now,
-    '작성완료',        // 블로그 - 저장 시점에 작성완료
-    '작성완료',        // 인스타 - 저장 시점에 작성완료
-    cur.insta.slice(0,120),
+    '미작성',          // 블로그 - 실제 업로드 전까지 미작성
+    '미작성',          // 인스타 - 실제 업로드 전까지 미작성
+    instaFull.slice(0, 500),   // 인스타 요약 (해시태그 포함)
     '',                // 유튜브(보류)
     '',
-    ''
+    blogSummary        // 메모에 블로그 초안 앞부분 저장
   ];
   const ok = await appendToSheet(row);
   if(ok){ toast('저장 + 구글 시트 기록 완료 ✅'); }
@@ -769,7 +781,12 @@ async function fetchCredit(){
 // 초기 토큰 연결 + 데이터 로드
 getGToken().then(()=>renderSheetLog()).catch(()=>{});
 fetchCredit();
-renderDrafts();
+// DOM 준비 후 초안 렌더링
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', renderDrafts);
+} else {
+  renderDrafts();
+}
 </script>
 </body>
 </html>
