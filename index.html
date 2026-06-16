@@ -524,6 +524,11 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 [먹고기록하기] 정보80%+경험20% | URL분석활용 | 구조: 핵심정보(주소·시간·가격·주차)→방문계기→메뉴·맛→분위기→총평
 [살림재테크] 정보90%+경험10% | 구조: 결론→조건·자격→신청방법→경험→주의사항→총평
 === 채널별 출력 ===
+블로그 초안 마지막에 반드시 아래 형식으로 태그 추가 (네이버 블로그 태그용):
+[태그]
+태그1 태그2 태그3 태그4 태그5 태그6 태그7 태그8
+(카테고리 관련 핵심 검색 키워드 6~8개, 띄어쓰기로 구분)
+
 인스타 캡션 작성 원칙:
 - 1~2줄의 강렬한 훅으로 시작 (공감 또는 궁금증 유발)
 - 감정이 느껴지는 짧은 문장 3~5줄 (줄바꿈 자주)
@@ -546,7 +551,7 @@ const FORMS = {
   연애회상:{fields:[{id:'when',lb:'그날 언제 / 장소',ph:'예) 2023년 봄, 일산 호수공원'},{id:'ep',lb:'그날 있었던 일',ta:true,ph:'소소하게 자유롭게. 말랑이는 등장 안 해요.'},{id:'feel',lb:'그때 느낀 것',ta:true,ph:'그날의 감정, 아내에 대해 느낀 것'},{id:'now',lb:'지금 돌아보면 (선택)',ph:'예) 그때 용기 내길 잘했다'}]},
   육아정보:{fields:[{id:'topic',lb:'주제',ph:'예) 신생아 수면교육, 이유식 시작, 예방접종'},{id:'sum',lb:'핵심 내용',ta:true,ph:'주제에 대해 알고 있는 내용'},{id:'exp',lb:'말랑이 실제 경험 (선택)',ta:true,ph:'직접 적용해본 경험'},{id:'warn',lb:'주의사항 (선택)',ta:true,ph:'헷갈리기 쉬운 것'}]},
   육아용품:{fields:[{id:'product',lb:'제품명',ph:'예) 범보 멀티시트'},{id:'price',lb:'가격 / 구매처',ph:'예) 89,000원 / 쿠팡'},{id:'reason',lb:'구매 이유',ta:true,ph:''},{id:'pros',lb:'좋았던 점',ta:true,ph:''},{id:'cons',lb:'아쉬운 점',ta:true,ph:''},{id:'rec',lb:'추천 대상',ph:'예) 신생아 3개월 이상'},{id:'sp',lb:'구매 유형',sel:['내돈내산','협찬·제공']}]},
-  먹고기록:{fields:[{id:'url',lb:'네이버 플레이스 URL',ph:'https://map.naver.com/... (매장 정보 자동 분석)',isUrl:true},{id:'menu',lb:'주문한 메뉴 & 가격',ta:true,ph:'예) 연어사시미 35,000원'},{id:'taste',lb:'솔직한 맛 평가',ta:true,ph:''},{id:'ctx',lb:'방문 계기 (선택)',ph:'예) 만삭여행 중'}]},
+  먹고기록:{fields:[{id:'menu',lb:'주문한 메뉴 & 가격',ta:true,ph:'예) 연어사시미 35,000원\n우동 12,000원'},{id:'taste',lb:'솔직한 맛 평가',ta:true,ph:'맛있었다면 뭐가, 별로였다면 왜'},{id:'ctx',lb:'방문 계기 (선택)',ph:'예) 만삭여행 중, 제주 여행에서'}]},
   살림재테크:{fields:[{id:'topic',lb:'주제',ph:'예) 신생아특례대출, 신혼부부 청약'},{id:'sum',lb:'핵심 내용',ta:true,ph:''},{id:'cond',lb:'조건 / 자격',ta:true,ph:''},{id:'how',lb:'신청 방법',ta:true,ph:''},{id:'exp',lb:'직접 경험 (선택)',ta:true,ph:''},{id:'warn',lb:'주의사항',ta:true,ph:''}]},
 };
 
@@ -662,7 +667,7 @@ function selCat(btn){
 function buildForm(){
   const cfg=FORMS[cat]; if(!cfg)return;
   document.getElementById('dynForm').innerHTML=cfg.fields.map(f=>{
-    if(f.isUrl) return `<div class="fr"><label class="fl">${f.lb}</label><input class="fi" id="f_${f.id}" placeholder="${f.ph||''}" type="url" inputmode="url"><div class="fh">URL을 입력하면 Claude가 매장명·주소·영업시간·주차 정보를 검색해서 글에 반영해요</div></div>`;
+
     if(f.sel) return `<div class="fr"><label class="fl">${f.lb}</label><select class="fsel" id="f_${f.id}">${f.sel.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
     if(f.ta) return `<div class="fr"><label class="fl">${f.lb}</label><textarea class="fta" id="f_${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
     return `<div class="fr"><label class="fl">${f.lb}</label><input class="fi" id="f_${f.id}" placeholder="${f.ph||''}"></div>`;
@@ -701,7 +706,7 @@ function buildPrompt(){
   const cfg=FORMS[cat];if(!cfg)return '';
   // 매장 검색으로 가져온 정보
   const urlPart = selectedPlaceInfo ? `\n\n[매장 기본 정보 - 블로그 상단에 반드시 포함]\n${selectedPlaceInfo}` : '';
-  const info=cfg.fields.filter(f=>!f.isUrl).map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
+  const info=cfg.fields.map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const tp=selTitle?`\n선택된 SEO 제목 (이 제목을 블로그 글 제목으로 사용): ${selTitle}`:'';
   const kp=document.getElementById('skw').value.trim()?`\nSEO 키워드: ${document.getElementById('skw').value.trim()}`:'';
   const ph=files.length>0?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
