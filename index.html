@@ -2,407 +2,557 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>말랑데이즈 콘텐츠 스튜디오</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>말랑데이즈</title>
 <style>
-  :root {
-    --bg: #FAFAF8;
-    --surface: #FFFFFF;
-    --border: #E8E6E0;
-    --border-strong: #C8C4BC;
-    --text: #1A1916;
-    --text-sub: #6B6860;
-    --text-hint: #A8A49E;
-    --accent: #D4845A;
-    --accent-light: #FAF0EB;
-    --accent-dark: #B86A42;
-    --green: #5A8A5E;
-    --green-light: #EDF4EE;
-    --purple: #7A6DB0;
-    --purple-light: #F2F0FA;
-    --tag-rec: #FEF3EC;
-    --tag-rec-text: #B86A42;
-    --tag-info: #EDF4EE;
-    --tag-info-text: #3A6B3E;
-    --radius: 10px;
-    --radius-sm: 6px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+:root {
+  --bg: #FAFAF8;
+  --surface: #FFFFFF;
+  --border: #E8E6E0;
+  --border-strong: #C8C4BC;
+  --text: #1A1916;
+  --text-sub: #6B6860;
+  --text-hint: #A8A49E;
+  --accent: #D4845A;
+  --accent-light: #FAF0EB;
+  --accent-dark: #B86A42;
+  --green: #5A8A5E;
+  --green-light: #EDF4EE;
+  --purple: #7A6DB0;
+  --purple-light: #F2F0FA;
+  --red: #C0392B;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --tab-h: 60px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+}
 
-  /* Layout */
-  .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
-  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
-  .main { padding: 32px; max-width: 900px; }
+/* App shell */
+.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
 
-  /* Sidebar */
-  .logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
-  .logo-name { font-size: 15px; font-weight: 600; color: var(--text); }
-  .logo-sub { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
-  .nav-section { padding: 0 12px; margin-bottom: 8px; }
-  .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-hint); padding: 8px 8px 4px; }
-  .nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; color: var(--text-sub); font-size: 13px; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; }
-  .nav-item:hover { background: var(--bg); color: var(--text); }
-  .nav-item.active { background: var(--accent-light); color: var(--accent-dark); font-weight: 500; }
-  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; }
-  .nav-item.active .nav-dot { background: var(--accent); }
-  .nav-badge { margin-left: auto; font-size: 10px; background: var(--accent-light); color: var(--accent); padding: 1px 6px; border-radius: 10px; font-weight: 500; }
+/* Top header */
+.top-bar {
+  background: var(--surface);
+  border-bottom: 0.5px solid var(--border);
+  padding: 14px 18px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+}
+.top-logo { font-size: 17px; font-weight: 600; color: var(--text); }
+.top-sub { font-size: 11px; color: var(--text-hint); margin-top: 1px; }
+.top-badge { background: var(--accent-light); color: var(--accent); font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
 
-  /* Header */
-  .page-header { margin-bottom: 28px; }
-  .page-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .page-sub { font-size: 13px; color: var(--text-sub); }
+/* Scrollable content */
+.page-wrap {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.page { display: none; padding: 16px; padding-bottom: calc(var(--tab-h) + var(--safe-bottom) + 16px); }
+.page.active { display: block; }
 
-  /* Tabs */
-  .tab-bar { display: flex; gap: 4px; background: var(--border); padding: 3px; border-radius: var(--radius-sm); margin-bottom: 24px; width: fit-content; }
-  .tab-btn { padding: 6px 14px; border-radius: 5px; border: none; background: none; font-size: 13px; color: var(--text-sub); cursor: pointer; font-family: inherit; transition: all 0.15s; }
-  .tab-btn.active { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: var(--shadow); }
+/* Bottom tab */
+.tab-bar {
+  background: var(--surface);
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  height: calc(var(--tab-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  flex-shrink: 0;
+}
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  color: var(--text-hint);
+  transition: color 0.15s;
+  padding: 8px 0;
+}
+.tab-item.active { color: var(--accent); }
+.tab-icon { font-size: 22px; line-height: 1; }
+.tab-label { font-size: 10px; font-weight: 500; }
+.tab-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent);
+  margin-top: -2px;
+  opacity: 0;
+}
+.tab-item.active .tab-dot { opacity: 1; }
 
-  /* Cards */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+/* Section title */
+.section-title { font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 10px; letter-spacing: 0.02em; }
 
-  /* Category selector */
-  .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
-  .cat-btn { padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 500; color: var(--text-sub); transition: all 0.15s; text-align: left; }
-  .cat-btn:hover { border-color: var(--accent); color: var(--accent-dark); }
-  .cat-btn.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }
-  .cat-type { display: block; font-size: 10px; font-weight: 400; margin-top: 2px; }
-  .cat-btn.selected .cat-type { color: var(--accent); }
-  .cat-type-rec { color: var(--tag-rec-text); }
-  .cat-type-info { color: var(--tag-info-text); }
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
 
-  /* Form */
-  .form-row { margin-bottom: 14px; }
-  .form-label { font-size: 12px; font-weight: 500; color: var(--text-sub); margin-bottom: 6px; display: block; }
-  .form-input, .form-textarea, .form-select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; color: var(--text); background: var(--surface); transition: border-color 0.15s; outline: none; }
-  .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
-  .form-textarea { resize: vertical; min-height: 80px; }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .form-hint { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
+/* Category grid */
+.cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cat-btn {
+  padding: 13px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-sub);
+  text-align: left;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.cat-btn:active { transform: scale(0.97); }
+.cat-btn.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent-dark); }
+.cat-type { display: block; font-size: 10px; font-weight: 400; margin-top: 3px; color: var(--text-hint); }
+.cat-btn.selected .cat-type { color: var(--accent); }
 
-  /* Photo upload */
-  .photo-zone { border: 1.5px dashed var(--border-strong); border-radius: var(--radius); padding: 20px; text-align: center; cursor: pointer; transition: all 0.15s; }
-  .photo-zone:hover { border-color: var(--accent); background: var(--accent-light); }
-  .photo-zone-icon { font-size: 24px; margin-bottom: 8px; }
-  .photo-zone-text { font-size: 13px; color: var(--text-sub); }
-  .photo-zone-hint { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
-  .photo-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .photo-chip { display: flex; align-items: center; gap: 6px; padding: 5px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; font-size: 12px; color: var(--text-sub); }
-  .photo-remove { color: var(--text-hint); cursor: pointer; font-size: 14px; line-height: 1; }
+/* Form */
+.form-row { margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; display: block; }
+.form-input, .form-textarea, .form-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+.form-textarea { resize: none; min-height: 90px; }
 
-  /* Generate button */
-  .gen-btn { width: 100%; padding: 13px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; margin-top: 8px; }
-  .gen-btn:hover { background: var(--accent-dark); }
-  .gen-btn:disabled { background: var(--border-strong); cursor: not-allowed; }
+/* Photo zone */
+.photo-zone {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 18px;
+  text-align: center;
+  cursor: pointer;
+}
+.photo-zone:active { background: var(--accent-light); border-color: var(--accent); }
+.photo-zone-icon { font-size: 28px; margin-bottom: 6px; }
+.photo-zone-text { font-size: 13px; color: var(--text-sub); }
+.photo-zone-hint { font-size: 11px; color: var(--text-hint); margin-top: 3px; }
+.photo-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.photo-chip {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px;
+  background: var(--bg); border: 0.5px solid var(--border);
+  border-radius: 20px; font-size: 12px; color: var(--text-sub);
+}
+.photo-remove { color: var(--text-hint); font-size: 16px; padding: 0 2px; }
 
-  /* Output area */
-  .output-area { display: none; }
-  .output-area.visible { display: block; }
-  .output-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-  .output-tab { padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; color: var(--text-sub); transition: all 0.15s; }
-  .output-tab.active { background: var(--text); color: white; border-color: var(--text); }
-  .output-content { display: none; }
-  .output-content.active { display: block; }
-  .output-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; font-size: 13px; line-height: 1.8; white-space: pre-wrap; min-height: 200px; max-height: 500px; overflow-y: auto; color: var(--text); }
-  .output-actions { display: flex; gap: 8px; margin-top: 12px; }
-  .action-btn { padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; color: var(--text-sub); transition: all 0.15s; }
-  .action-btn:hover { background: var(--bg); }
-  .action-btn.primary { background: var(--text); color: white; border-color: var(--text); }
-  .action-btn.primary:hover { background: #333; }
+/* Generate button */
+.gen-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.15s, transform 0.1s;
+}
+.gen-btn:active { background: var(--accent-dark); transform: scale(0.98); }
 
-  /* Photo placement */
-  .photo-placement { background: var(--purple-light); border: 1px solid #C4BEE0; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
-  .photo-placement-title { font-size: 12px; font-weight: 600; color: var(--purple); margin-bottom: 8px; }
-  .photo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid #D8D4EE; }
-  .photo-item:last-child { border-bottom: none; }
-  .photo-num { width: 22px; height: 22px; border-radius: 50%; background: var(--purple); color: white; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .photo-desc { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
-  .photo-pos { font-size: 11px; color: var(--purple); font-weight: 500; }
+/* Loading */
+.loading { display: none; text-align: center; padding: 48px 20px; }
+.loading.show { display: block; }
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--text-sub); font-weight: 500; }
+.loading-step { font-size: 12px; color: var(--text-hint); margin-top: 6px; }
 
-  /* Status tracker */
-  .status-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .status-row:last-child { border-bottom: none; }
-  .status-ch { font-size: 13px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 8px; }
-  .status-icon { font-size: 16px; }
-  .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
-  .badge-done { background: var(--green-light); color: var(--green); }
-  .badge-pending { background: #FFF8E6; color: #8A7020; }
-  .badge-none { background: var(--bg); color: var(--text-hint); border: 1px solid var(--border); }
-  .status-date { font-size: 11px; color: var(--text-hint); }
+/* Output */
+.output-area { display: none; }
+.output-area.show { display: block; }
+.out-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 12px; scrollbar-width: none; }
+.out-tabs::-webkit-scrollbar { display: none; }
+.out-tab {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+.out-tab.active { background: var(--text); color: white; border-color: var(--text); }
+.out-content { display: none; }
+.out-content.active { display: block; }
+.out-box {
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  color: var(--text);
+  max-height: 320px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.out-actions { display: flex; gap: 8px; margin-top: 10px; }
+.out-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  color: var(--text-sub);
+}
+.out-btn.primary { background: var(--text); color: white; border-color: var(--text); }
+.out-btn:active { opacity: 0.8; transform: scale(0.98); }
 
-  /* Log table */
-  .log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .log-table th { font-size: 11px; font-weight: 600; color: var(--text-hint); padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); background: var(--bg); }
-  .log-table td { padding: 10px 10px; border-bottom: 1px solid var(--border); color: var(--text-sub); vertical-align: middle; }
-  .log-table tr:last-child td { border-bottom: none; }
-  .log-cat { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 500; }
-  .log-cat-rec { background: var(--tag-rec); color: var(--tag-rec-text); }
-  .log-cat-info { background: var(--tag-info); color: var(--tag-info-text); }
-  .ch-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 3px; }
-  .dot-done { background: var(--green); }
-  .dot-pending { background: #E8B840; }
-  .dot-none { background: var(--border-strong); }
+/* Photo placement */
+.photo-guide {
+  background: var(--purple-light);
+  border: 0.5px solid #C4BEE0;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+.photo-guide-title { font-size: 12px; font-weight: 600; color: var(--purple); margin-bottom: 10px; }
+.photo-guide-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid #D8D4EE; }
+.photo-guide-item:last-child { border-bottom: none; }
+.photo-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--purple); color: white;
+  font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.photo-desc { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
+.photo-pos { font-size: 11px; color: var(--purple); font-weight: 600; margin-bottom: 2px; }
 
-  /* Loading */
-  .loading { display: none; text-align: center; padding: 40px; }
-  .loading.visible { display: block; }
-  .spinner { width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-sub); }
-  .loading-step { font-size: 12px; color: var(--text-hint); margin-top: 6px; }
+/* Status toggles */
+.status-list { display: flex; flex-direction: column; gap: 0; }
+.status-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.status-item:last-child { border-bottom: none; }
+.status-ch { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
+.status-icon { font-size: 20px; }
+.status-badge {
+  padding: 5px 13px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit;
+  transition: all 0.15s;
+}
+.badge-none { background: var(--bg); color: var(--text-hint); border: 1px solid var(--border); }
+.badge-done { background: var(--green-light); color: var(--green); }
+.status-date { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
 
-  /* Stats */
-  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-  .stat-num { font-size: 24px; font-weight: 600; color: var(--text); }
-  .stat-label { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
-  .stat-change { font-size: 11px; color: var(--green); margin-top: 4px; }
+/* Stats */
+.stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+.stat-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px; }
+.stat-num { font-size: 26px; font-weight: 700; color: var(--text); }
+.stat-label { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
 
-  /* Toast */
-  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: white; padding: 12px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 100; }
-  .toast.show { opacity: 1; transform: translateY(0); }
+/* Log list */
+.log-item {
+  padding: 14px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.log-item:last-child { border-bottom: none; }
+.log-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.log-cat { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+.log-cat-rec { background: #FEF3EC; color: #B86A42; }
+.log-cat-info { background: #EDF4EE; color: #3A6B3E; }
+.log-date { font-size: 11px; color: var(--text-hint); }
+.log-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+.log-channels { display: flex; gap: 6px; }
+.log-ch {
+  font-size: 10px; font-weight: 600;
+  padding: 3px 8px; border-radius: 10px;
+  display: flex; align-items: center; gap: 3px;
+}
+.ch-done { background: var(--green-light); color: var(--green); }
+.ch-none { background: var(--bg); color: var(--text-hint); border: 0.5px solid var(--border); }
 
-  .section-gap { margin-bottom: 24px; }
-  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-  input[type="file"] { display: none; }
+/* Empty state */
+.empty { text-align: center; padding: 48px 20px; color: var(--text-hint); font-size: 14px; }
+.empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+/* Pending items */
+.pending-item {
+  padding: 14px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.pending-item:last-child { border-bottom: none; }
+.pending-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+.pending-chs { display: flex; gap: 6px; flex-wrap: wrap; }
+.pending-ch {
+  font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 10px;
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: calc(var(--tab-h) + var(--safe-bottom) + 12px); left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: #1A1916; color: white;
+  padding: 11px 20px; border-radius: 24px;
+  font-size: 13px; font-weight: 500;
+  opacity: 0; transition: all 0.2s;
+  pointer-events: none; z-index: 999;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+input[type="file"] { display: none; }
+.divider { border: none; border-top: 0.5px solid var(--border); margin: 14px 0; }
 </style>
 </head>
 <body>
 
 <div class="app">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-name">🌸 말랑데이즈</div>
-      <div class="logo-sub">콘텐츠 스튜디오</div>
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div>
+      <div class="top-logo">🌸 말랑데이즈</div>
+      <div class="top-sub">콘텐츠 스튜디오</div>
     </div>
-    <div class="nav-section">
-      <div class="nav-label">메뉴</div>
-      <button class="nav-item active" onclick="showPage('write')">
-        <span class="nav-dot"></span> 글 작성하기
-      </button>
-      <button class="nav-item" onclick="showPage('log')">
-        <span class="nav-dot"></span> 콘텐츠 기록
-        <span class="nav-badge" id="logCount">0</span>
-      </button>
-      <button class="nav-item" onclick="showPage('status')">
-        <span class="nav-dot"></span> 업로드 현황
-      </button>
-    </div>
-    <div class="nav-section" style="margin-top: 12px;">
-      <div class="nav-label">카테고리</div>
-      <button class="nav-item" onclick="selectCatFromNav('임신기록')"><span class="nav-dot"></span> 임신기록</button>
-      <button class="nav-item" onclick="selectCatFromNav('연애회상')"><span class="nav-dot"></span> 연애회상</button>
-      <button class="nav-item" onclick="selectCatFromNav('맛집')"><span class="nav-dot"></span> 먹고 기록하기</button>
-      <button class="nav-item" onclick="selectCatFromNav('육아용품')"><span class="nav-dot"></span> 육아용품</button>
-      <button class="nav-item" onclick="selectCatFromNav('살림재테크')"><span class="nav-dot"></span> 살림·재테크</button>
-    </div>
-  </aside>
+    <div class="top-badge" id="topBadge">글 작성</div>
+  </div>
 
-  <!-- Main -->
-  <main class="main">
+  <!-- Pages -->
+  <div class="page-wrap">
 
-    <!-- 글 작성 페이지 -->
-    <div id="page-write">
-      <div class="page-header">
-        <div class="page-title">글 작성하기</div>
-        <div class="page-sub">카테고리를 선택하고 정보를 입력하면 블로그·인스타·쇼츠 초안을 생성해요</div>
-      </div>
+    <!-- 글 작성 -->
+    <div class="page active" id="page-write">
 
-      <!-- 카테고리 선택 -->
+      <!-- 카테고리 -->
       <div class="card">
         <div class="card-title">📂 카테고리 선택</div>
         <div class="cat-grid">
           <button class="cat-btn" data-cat="임신기록" data-type="기록형" onclick="selectCat(this)">
             임신기록
-            <span class="cat-type cat-type-rec">기록형 · 감정 80%</span>
+            <span class="cat-type">기록형 · 감정 80%</span>
           </button>
           <button class="cat-btn" data-cat="출산후기" data-type="기록형" onclick="selectCat(this)">
             출산후기
-            <span class="cat-type cat-type-rec">기록형 · 감정 60%</span>
+            <span class="cat-type">기록형 · 감정 60%</span>
           </button>
           <button class="cat-btn" data-cat="연애회상" data-type="기록형" onclick="selectCat(this)">
             연애회상
-            <span class="cat-type cat-type-rec">기록형 · 감정 70%</span>
+            <span class="cat-type">기록형 · 감정 70%</span>
           </button>
           <button class="cat-btn" data-cat="맛집" data-type="정보형" onclick="selectCat(this)">
             먹고 기록하기
-            <span class="cat-type cat-type-info">정보형 · 정보 80%</span>
+            <span class="cat-type">정보형 · 정보 80%</span>
           </button>
           <button class="cat-btn" data-cat="육아용품" data-type="정보형" onclick="selectCat(this)">
             육아용품
-            <span class="cat-type cat-type-info">정보형 · 정보 90%</span>
+            <span class="cat-type">정보형 · 정보 90%</span>
           </button>
           <button class="cat-btn" data-cat="살림재테크" data-type="정보형" onclick="selectCat(this)">
             살림·재테크
-            <span class="cat-type cat-type-info">정보형 · 정보 90%</span>
+            <span class="cat-type">정보형 · 정보 90%</span>
           </button>
         </div>
       </div>
 
       <!-- 입력 폼 -->
-      <div class="card" id="formArea" style="display:none;">
-        <div class="card-title">✏️ 내용 입력</div>
-        <div id="dynamicForm"></div>
-
-        <!-- 사진/영상 -->
-        <hr class="divider">
+      <div class="card" id="formCard" style="display:none;">
+        <div class="card-title">✏️ <span id="formTitle">내용 입력</span></div>
+        <div id="dynForm"></div>
+        <div class="divider"></div>
         <div class="form-row">
-          <label class="form-label">📷 사진 / 영상 첨부</label>
-          <div class="photo-zone" onclick="document.getElementById('fileInput').click()">
+          <label class="form-label">📷 사진 / 영상</label>
+          <div class="photo-zone" onclick="document.getElementById('fileIn').click()">
             <div class="photo-zone-icon">📁</div>
-            <div class="photo-zone-text">사진·영상을 여기에 드래그하거나 클릭해서 추가</div>
-            <div class="photo-zone-hint">Claude가 사진을 분석해서 글 속 적절한 위치를 알려줘요</div>
+            <div class="photo-zone-text">탭해서 사진·영상 추가</div>
+            <div class="photo-zone-hint">Claude가 사진 위치까지 알려드려요</div>
           </div>
-          <input type="file" id="fileInput" multiple accept="image/*,video/*" onchange="addFiles(this)">
-          <div class="photo-list" id="photoList"></div>
+          <input type="file" id="fileIn" multiple accept="image/*,video/*" onchange="addFiles(this)">
+          <div class="photo-chips" id="photoChips"></div>
         </div>
-
-        <button class="gen-btn" id="genBtn" onclick="generateContent()">✨ 초안 생성하기</button>
+        <button class="gen-btn" onclick="generate()">✨ 초안 생성하기</button>
       </div>
 
       <!-- 로딩 -->
-      <div class="loading" id="loadingArea">
+      <div class="loading" id="loadingEl">
         <div class="spinner"></div>
         <div class="loading-text">초안 작성 중...</div>
-        <div class="loading-step" id="loadingStep">카테고리 분석 중</div>
+        <div class="loading-step" id="loadStep">카테고리 분석 중</div>
       </div>
 
       <!-- 결과 -->
-      <div class="output-area" id="outputArea">
+      <div class="output-area" id="outputEl">
         <div class="card">
           <div class="card-title">📝 생성된 초안</div>
-          <div class="output-tabs">
-            <button class="output-tab active" onclick="switchOutput('blog', this)">📝 블로그</button>
-            <button class="output-tab" onclick="switchOutput('insta', this)">📸 인스타</button>
-            <button class="output-tab" onclick="switchOutput('shorts', this)">🎬 쇼츠 스크립트</button>
-            <button class="output-tab" onclick="switchOutput('photo', this)">📷 사진 배치</button>
+          <div class="out-tabs">
+            <button class="out-tab active" onclick="switchOut('blog',this)">📝 블로그</button>
+            <button class="out-tab" onclick="switchOut('insta',this)">📸 인스타</button>
+            <button class="out-tab" onclick="switchOut('shorts',this)">🎬 쇼츠</button>
+            <button class="out-tab" onclick="switchOut('photo',this)">📷 사진배치</button>
           </div>
-
-          <div class="output-content active" id="out-blog">
-            <div class="output-box" id="blogText"></div>
-            <div class="output-actions">
-              <button class="action-btn primary" onclick="copyText('blogText')">복사하기</button>
-              <button class="action-btn" onclick="saveToLog()">기록 저장</button>
+          <div class="out-content active" id="out-blog">
+            <div class="out-box" id="blogTxt"></div>
+            <div class="out-actions">
+              <button class="out-btn primary" onclick="copyTxt('blogTxt')">복사</button>
+              <button class="out-btn" onclick="saveLog()">저장</button>
             </div>
           </div>
-          <div class="output-content" id="out-insta">
-            <div class="output-box" id="instaText"></div>
-            <div class="output-actions">
-              <button class="action-btn primary" onclick="copyText('instaText')">복사하기</button>
+          <div class="out-content" id="out-insta">
+            <div class="out-box" id="instaTxt"></div>
+            <div class="out-actions">
+              <button class="out-btn primary" onclick="copyTxt('instaTxt')">복사</button>
             </div>
           </div>
-          <div class="output-content" id="out-shorts">
-            <div class="output-box" id="shortsText"></div>
-            <div class="output-actions">
-              <button class="action-btn primary" onclick="copyText('shortsText')">복사하기</button>
+          <div class="out-content" id="out-shorts">
+            <div class="out-box" id="shortsTxt"></div>
+            <div class="out-actions">
+              <button class="out-btn primary" onclick="copyTxt('shortsTxt')">복사</button>
             </div>
           </div>
-          <div class="output-content" id="out-photo">
-            <div id="photoPlacement"></div>
+          <div class="out-content" id="out-photo">
+            <div id="photoGuide"><div class="empty"><div class="empty-icon">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div></div>
           </div>
         </div>
 
         <!-- 업로드 상태 -->
         <div class="card">
-          <div class="card-title">📤 업로드 상태 체크</div>
-          <div class="status-row">
-            <div class="status-ch"><span class="status-icon">📝</span> 네이버 블로그</div>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span class="status-date" id="blogDate">-</span>
-              <span class="status-badge badge-none" id="blogStatus" onclick="toggleStatus('blog')">미업로드</span>
+          <div class="card-title">📤 업로드 체크</div>
+          <div class="status-list">
+            <div class="status-item">
+              <div class="status-ch">
+                <span class="status-icon">📝</span>
+                <div>
+                  <div>네이버 블로그</div>
+                  <div class="status-date" id="blogDate">-</div>
+                </div>
+              </div>
+              <button class="status-badge badge-none" id="blogBadge" onclick="toggleSt('blog')">미업로드</button>
             </div>
-          </div>
-          <div class="status-row">
-            <div class="status-ch"><span class="status-icon">📸</span> 인스타그램</div>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span class="status-date" id="instaDate">-</span>
-              <span class="status-badge badge-none" id="instaStatus" onclick="toggleStatus('insta')">미업로드</span>
+            <div class="status-item">
+              <div class="status-ch">
+                <span class="status-icon">📸</span>
+                <div>
+                  <div>인스타그램</div>
+                  <div class="status-date" id="instaDate">-</div>
+                </div>
+              </div>
+              <button class="status-badge badge-none" id="instaBadge" onclick="toggleSt('insta')">미업로드</button>
             </div>
-          </div>
-          <div class="status-row">
-            <div class="status-ch"><span class="status-icon">🎬</span> 유튜브 쇼츠</div>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span class="status-date" id="shortsDate">-</span>
-              <span class="status-badge badge-none" id="shortsStatus" onclick="toggleStatus('shorts')">미업로드</span>
+            <div class="status-item">
+              <div class="status-ch">
+                <span class="status-icon">🎬</span>
+                <div>
+                  <div>유튜브 쇼츠</div>
+                  <div class="status-date" id="shortsDate">-</div>
+                </div>
+              </div>
+              <button class="status-badge badge-none" id="shortsBadge" onclick="toggleSt('shorts')">미업로드</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 콘텐츠 기록 페이지 -->
-    <div id="page-log" style="display:none;">
-      <div class="page-header">
-        <div class="page-title">콘텐츠 기록</div>
-        <div class="page-sub">작성된 콘텐츠 히스토리</div>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-num" id="totalCount">0</div>
-          <div class="stat-label">전체 콘텐츠</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="blogCount">0</div>
-          <div class="stat-label">블로그 업로드</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="instaCount">0</div>
-          <div class="stat-label">인스타 업로드</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="shortsCount">0</div>
-          <div class="stat-label">쇼츠 업로드</div>
-        </div>
+    <!-- 기록 -->
+    <div class="page" id="page-log">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="sTot">0</div><div class="stat-label">전체</div></div>
+        <div class="stat-card"><div class="stat-num" id="sBlog">0</div><div class="stat-label">블로그 완료</div></div>
+        <div class="stat-card"><div class="stat-num" id="sInsta">0</div><div class="stat-label">인스타 완료</div></div>
+        <div class="stat-card"><div class="stat-num" id="sShorts">0</div><div class="stat-label">쇼츠 완료</div></div>
       </div>
       <div class="card">
-        <table class="log-table">
-          <thead>
-            <tr>
-              <th>날짜</th>
-              <th>카테고리</th>
-              <th>제목</th>
-              <th>블로그</th>
-              <th>인스타</th>
-              <th>쇼츠</th>
-            </tr>
-          </thead>
-          <tbody id="logTableBody">
-            <tr><td colspan="6" style="text-align:center;color:var(--text-hint);padding:30px;">아직 저장된 콘텐츠가 없어요</td></tr>
-          </tbody>
-        </table>
+        <div class="card-title">📋 콘텐츠 목록</div>
+        <div id="logList"><div class="empty"><div class="empty-icon">📭</div>저장된 콘텐츠가 없어요</div></div>
       </div>
     </div>
 
-    <!-- 업로드 현황 페이지 -->
-    <div id="page-status" style="display:none;">
-      <div class="page-header">
-        <div class="page-title">업로드 현황</div>
-        <div class="page-sub">채널별 업로드 현황을 한눈에 확인해요</div>
+    <!-- 현황 -->
+    <div class="page" id="page-status">
+      <div class="card">
+        <div class="card-title">⏳ 업로드 대기</div>
+        <div id="pendList"><div class="empty"><div class="empty-icon">✨</div>대기 중인 콘텐츠 없음</div></div>
       </div>
       <div class="card">
-        <div class="card-title">⏳ 업로드 대기 중</div>
-        <div id="pendingList">
-          <div style="text-align:center;color:var(--text-hint);padding:20px;font-size:13px;">대기 중인 콘텐츠가 없어요 ✨</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">✅ 완료된 콘텐츠</div>
-        <div id="doneList">
-          <div style="text-align:center;color:var(--text-hint);padding:20px;font-size:13px;">아직 완료된 콘텐츠가 없어요</div>
-        </div>
+        <div class="card-title">✅ 완료</div>
+        <div id="doneList"><div class="empty"><div class="empty-icon">🎉</div>완료된 콘텐츠 없음</div></div>
       </div>
     </div>
 
-  </main>
+  </div>
+
+  <!-- Bottom tab -->
+  <div class="tab-bar">
+    <button class="tab-item active" id="tab-write" onclick="showPage('write')">
+      <span class="tab-icon">✏️</span>
+      <span class="tab-label">글 작성</span>
+      <div class="tab-dot"></div>
+    </button>
+    <button class="tab-item" id="tab-log" onclick="showPage('log')">
+      <span class="tab-icon">📋</span>
+      <span class="tab-label">기록</span>
+      <div class="tab-dot"></div>
+    </button>
+    <button class="tab-item" id="tab-status" onclick="showPage('status')">
+      <span class="tab-icon">📊</span>
+      <span class="tab-label">현황</span>
+      <div class="tab-dot"></div>
+    </button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const SYSTEM_PROMPT = `당신은 말랑데이즈 블로그의 전담 글쓰기 파트너입니다.
+const SP = `당신은 말랑데이즈 블로그의 전담 글쓰기 파트너입니다.
 
 브랜드: 말랑데이즈 (mallangdayz)
 운영자: 말랑파파 (남편·아빠 시점)
@@ -410,355 +560,217 @@ const SYSTEM_PROMPT = `당신은 말랑데이즈 블로그의 전담 글쓰기 �
 미션: 남편에서 아빠가 되어가는 과정을 기록하고 가족의 성장 순간들을 아카이브로 남긴다.
 최종 판단 기준: 10년 뒤 말랑이와 함께 봐도 의미 있는 기록인가?
 
-카테고리별 작성 원칙:
+카테고리별 원칙:
 - 기록형(임신기록·출산후기·연애회상): 감정 70~80% + 정보 20~30%, 말랑파파 시점 편지체, 문장 짧게, 마지막은 말랑이에게 한 줄
 - 정보형(맛집·육아용품·살림재테크): 정보 85~90% + 경험 10~15%, 결론 먼저, 구체적으로
 
 공통 문체:
 - "안녕하세요 :) 말랑파파입니다." 로 시작 (기록형만)
-- 문장 짧게, 한 문단 2~3문장 이내
-- 줄바꿈 자주 사용
-- 이모지 최소화
+- 문장 짧게, 한 문단 2~3문장 이내, 줄바꿈 자주
 
-블로그 임신기록 구조: 오프닝(감정) → 이번 주 말랑이 → 이번 주 말랑맘 → 이번 주 우리 부부 → 요즘 가장 많이 하는 생각(인용구) → 오늘의 한 줄(말랑이에게)
-블로그 맛집 구조: 기본정보(주소·영업시간·가격·주차) → 방문계기(한줄) → 메뉴&맛 → 분위기 → 총평&추천대상
-블로그 육아용품 구조: 한줄결론 → 구매이유 → 장점/단점 → 구매정보 → 추천대상
-블로그 살림재테크 구조: 한줄결론 → 조건&자격 → 신청방법 → 실제경험 → 주의사항 → 총평
+구조:
+임신기록: 오프닝(감정) → 이번 주 말랑이 → 이번 주 말랑맘 → 이번 주 우리 부부 → 요즘 생각(인용구) → 오늘의 한 줄(말랑이에게)
+맛집: 기본정보(주소·시간·가격·주차) → 방문계기 → 메뉴&맛 → 분위기 → 총평
+육아용품: 한줄결론 → 구매이유 → 장단점 → 구매정보 → 추천대상
+살림재테크: 결론 → 조건 → 신청방법 → 경험 → 주의사항
 
 인스타: 감정 한 줄 + "전문은 블로그에" + 해시태그 10~15개
-쇼츠 스크립트: 훅(3초) → 핵심내용(30초) → 마무리+CTA(7초), 40초 내외`;
+쇼츠 스크립트: 훅(3초)+본문(30초)+마무리CTA(7초), 40초 내외`;
 
-let selectedCat = '';
-let selectedType = '';
-let uploadedFiles = [];
-let logs = JSON.parse(localStorage.getItem('mallang_logs') || '[]');
-let currentContent = {};
-let currentStatusMap = {};
-
-const forms = {
+const FORMS = {
   임신기록: [
-    { id: 'week', label: '임신 주차', type: 'input', placeholder: '예) 34주' },
-    { id: 'baby', label: '이번 주 말랑이', type: 'textarea', placeholder: '태동, 태아 변화, 초음파 내용 등' },
-    { id: 'mom', label: '이번 주 말랑맘', type: 'textarea', placeholder: '몸 변화, 감정, 에피소드' },
-    { id: 'couple', label: '이번 주 우리 부부', type: 'textarea', placeholder: '준비한 것, 나눈 대화, 고민' },
-    { id: 'letter', label: '말랑이에게 한마디', type: 'input', placeholder: '예) 곧 만나자, 기다리고 있어' },
+    {id:'week', label:'임신 주차', ph:'예) 34주'},
+    {id:'baby', label:'이번 주 말랑이', ta:true, ph:'태동, 태아 변화, 초음파 내용 등'},
+    {id:'mom', label:'이번 주 말랑맘', ta:true, ph:'몸 변화, 감정, 에피소드'},
+    {id:'couple', label:'이번 주 우리 부부', ta:true, ph:'준비한 것, 나눈 대화, 고민'},
+    {id:'letter', label:'말랑이에게 한마디', ph:'예) 곧 만나자, 기다리고 있어'},
   ],
   출산후기: [
-    { id: 'date', label: '출산일', type: 'input', placeholder: '예) 2026년 7월 15일' },
-    { id: 'method', label: '출산 방법', type: 'select', options: ['자연분만', '제왕절개', '유도분만'] },
-    { id: 'timeline', label: '당일 흐름', type: 'textarea', placeholder: '진통 시작 → 입원 → 출산 순서로' },
-    { id: 'moment', label: '가장 인상 깊었던 순간', type: 'textarea', placeholder: '분만실에서 있었던 일, 말랑이를 처음 봤을 때' },
-    { id: 'feeling', label: '아빠로서 느낀 것', type: 'textarea', placeholder: '그 순간의 감정' },
-    { id: 'letter', label: '말랑이에게 한마디', type: 'input', placeholder: '' },
+    {id:'date', label:'출산일', ph:'예) 2026년 7월 15일'},
+    {id:'method', label:'출산 방법', sel:['자연분만','제왕절개','유도분만']},
+    {id:'timeline', label:'당일 흐름', ta:true, ph:'진통 시작 → 입원 → 출산'},
+    {id:'moment', label:'가장 인상 깊었던 순간', ta:true, ph:'말랑이를 처음 봤을 때'},
+    {id:'feeling', label:'아빠로서 느낀 것', ta:true, ph:'그 순간의 감정'},
+    {id:'letter', label:'말랑이에게 한마디', ph:''},
   ],
   연애회상: [
-    { id: 'ep', label: 'EP 번호', type: 'input', placeholder: '예) 01' },
-    { id: 'date_when', label: '그날 언제', type: 'input', placeholder: '예) 2023년 봄, 처음 만난 날' },
-    { id: 'episode', label: '그날 있었던 일', type: 'textarea', placeholder: '에피소드 중심으로 자유롭게' },
-    { id: 'feeling', label: '그때 느낀 것', type: 'textarea', placeholder: '그날의 감정, 아내에 대해 느낀 것' },
-    { id: 'letter', label: '말랑맘 또는 말랑이에게', type: 'input', placeholder: '' },
+    {id:'ep', label:'EP 번호', ph:'예) 01'},
+    {id:'when', label:'그날 언제', ph:'예) 2023년 봄, 처음 만난 날'},
+    {id:'episode', label:'그날 있었던 일', ta:true, ph:'에피소드 중심으로 자유롭게'},
+    {id:'feeling', label:'그때 느낀 것', ta:true, ph:'그날의 감정'},
+    {id:'letter', label:'말랑맘 또는 말랑이에게', ph:''},
   ],
   맛집: [
-    { id: 'name', label: '가게 이름', type: 'input', placeholder: '예) 스시연' },
-    { id: 'location', label: '위치 (주소)', type: 'input', placeholder: '예) 제주 애월읍 ...' },
-    { id: 'hours', label: '영업시간', type: 'input', placeholder: '예) 11:00 - 21:00' },
-    { id: 'parking', label: '주차 가능 여부', type: 'select', options: ['가능', '불가', '유료주차'] },
-    { id: 'waiting', label: '웨이팅', type: 'input', placeholder: '예) 평균 30분, 웨이팅 없음' },
-    { id: 'menu', label: '주문 메뉴 & 가격', type: 'textarea', placeholder: '예) 연어사시미 35,000원, 우동 12,000원' },
-    { id: 'taste', label: '맛 평가', type: 'textarea', placeholder: '솔직하게' },
-    { id: 'revisit', label: '재방문 의사', type: 'select', options: ['재방문 O', '조건부 재방문', '재방문 X'] },
-    { id: 'context', label: '방문 계기 (한 줄)', type: 'input', placeholder: '예) 만삭여행 중 들른 곳' },
+    {id:'name', label:'가게 이름', ph:'예) 스시연'},
+    {id:'loc', label:'위치 (주소)', ph:'예) 제주 애월읍 ...'},
+    {id:'hours', label:'영업시간', ph:'예) 11:00~21:00'},
+    {id:'parking', label:'주차', sel:['가능','불가','유료주차']},
+    {id:'waiting', label:'웨이팅', ph:'예) 평균 30분, 없음'},
+    {id:'menu', label:'주문 메뉴 & 가격', ta:true, ph:'예) 연어사시미 35,000원'},
+    {id:'taste', label:'맛 평가', ta:true, ph:'솔직하게'},
+    {id:'revisit', label:'재방문 의사', sel:['재방문 O','조건부','재방문 X']},
+    {id:'ctx', label:'방문 계기 (한 줄)', ph:'예) 만삭여행 중 들른 곳'},
   ],
   육아용품: [
-    { id: 'product', label: '제품명', type: 'input', placeholder: '예) 스토케 유모차' },
-    { id: 'price', label: '구매 가격 / 구매처', type: 'input', placeholder: '예) 89,000원 / 쿠팡' },
-    { id: 'reason', label: '구매 이유', type: 'textarea', placeholder: '어떤 필요에서 샀는지' },
-    { id: 'pros', label: '좋았던 점', type: 'textarea', placeholder: '' },
-    { id: 'cons', label: '아쉬운 점', type: 'textarea', placeholder: '' },
-    { id: 'recommend', label: '추천 대상', type: 'input', placeholder: '예) 신생아 0-6개월, 이동 많은 가정' },
-    { id: 'sponsored', label: '내돈내산 여부', type: 'select', options: ['내돈내산', '협찬'] },
+    {id:'product', label:'제품명', ph:'예) 스토케 유모차'},
+    {id:'price', label:'가격 / 구매처', ph:'예) 89,000원 / 쿠팡'},
+    {id:'reason', label:'구매 이유', ta:true, ph:'어떤 필요에서 샀는지'},
+    {id:'pros', label:'좋았던 점', ta:true, ph:''},
+    {id:'cons', label:'아쉬운 점', ta:true, ph:''},
+    {id:'rec', label:'추천 대상', ph:'예) 신생아 0~6개월'},
+    {id:'sp', label:'내돈내산 여부', sel:['내돈내산','협찬']},
   ],
   살림재테크: [
-    { id: 'topic', label: '주제', type: 'input', placeholder: '예) 신생아특례대출, 청약, 절약법' },
-    { id: 'summary', label: '핵심 내용 요약', type: 'textarea', placeholder: '뭔지, 얼마나 도움 되는지' },
-    { id: 'condition', label: '조건 / 자격 요건', type: 'textarea', placeholder: '' },
-    { id: 'method', label: '신청 방법 / 절차', type: 'textarea', placeholder: '' },
-    { id: 'experience', label: '직접 경험 또는 준비 과정', type: 'textarea', placeholder: '' },
-    { id: 'caution', label: '주의사항', type: 'textarea', placeholder: '' },
+    {id:'topic', label:'주제', ph:'예) 신생아특례대출, 청약'},
+    {id:'sum', label:'핵심 내용', ta:true, ph:'뭔지, 얼마나 도움 되는지'},
+    {id:'cond', label:'조건 / 자격', ta:true, ph:''},
+    {id:'how', label:'신청 방법', ta:true, ph:''},
+    {id:'exp', label:'직접 경험', ta:true, ph:''},
+    {id:'warn', label:'주의사항', ta:true, ph:''},
   ],
 };
 
-function selectCat(btn) {
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+let selCat='', selType='', files=[], logs=JSON.parse(localStorage.getItem('ml')||'[]'), cur={}, stMap={};
+const STEPS=['카테고리 분석 중','정보 수집 중','초안 작성 중','인스타·쇼츠 생성 중','마무리 중'];
+
+function selectCat(btn){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
-  selectedCat = btn.dataset.cat;
-  selectedType = btn.dataset.type;
-  renderForm();
-  document.getElementById('formArea').style.display = 'block';
-  document.getElementById('outputArea').classList.remove('visible');
-  document.getElementById('loadingArea').classList.remove('visible');
+  selCat=btn.dataset.cat; selType=btn.dataset.type;
+  buildForm();
+  document.getElementById('formCard').style.display='block';
+  document.getElementById('outputEl').classList.remove('show');
+  document.getElementById('loadingEl').classList.remove('show');
+  document.getElementById('formTitle').textContent=selCat+' 입력';
+  document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function selectCatFromNav(cat) {
-  showPage('write');
-  const btn = document.querySelector(`.cat-btn[data-cat="${cat}"]`);
-  if (btn) selectCat(btn);
+function buildForm(){
+  const fs=FORMS[selCat]||[];
+  document.getElementById('dynForm').innerHTML=fs.map(f=>{
+    if(f.sel) return `<div class="form-row"><label class="form-label">${f.label}</label><select class="form-select" id="f_${f.id}">${f.sel.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+    if(f.ta) return `<div class="form-row"><label class="form-label">${f.label}</label><textarea class="form-textarea" id="f_${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
+    return `<div class="form-row"><label class="form-label">${f.label}</label><input class="form-input" id="f_${f.id}" placeholder="${f.ph||''}"></div>`;
+  }).join('');
 }
 
-function renderForm() {
-  const fields = forms[selectedCat] || [];
-  let html = '';
-  fields.forEach(f => {
-    html += `<div class="form-row"><label class="form-label">${f.label}</label>`;
-    if (f.type === 'textarea') {
-      html += `<textarea class="form-textarea" id="field_${f.id}" placeholder="${f.placeholder || ''}"></textarea>`;
-    } else if (f.type === 'select') {
-      html += `<select class="form-select" id="field_${f.id}">${f.options.map(o => `<option>${o}</option>`).join('')}</select>`;
-    } else {
-      html += `<input class="form-input" id="field_${f.id}" placeholder="${f.placeholder || ''}">`;
-    }
-    html += '</div>';
-  });
-  document.getElementById('dynamicForm').innerHTML = html;
-}
-
-function addFiles(input) {
-  Array.from(input.files).forEach(f => {
-    uploadedFiles.push(f);
-    const chip = document.createElement('div');
-    chip.className = 'photo-chip';
-    chip.innerHTML = `📎 ${f.name} <span class="photo-remove" onclick="removeFile('${f.name}', this)">×</span>`;
-    document.getElementById('photoList').appendChild(chip);
+function addFiles(inp){
+  Array.from(inp.files).forEach(f=>{
+    files.push(f);
+    const c=document.createElement('div'); c.className='photo-chip';
+    c.innerHTML=`📎 ${f.name} <span class="photo-remove" onclick="rmFile('${f.name}',this)">×</span>`;
+    document.getElementById('photoChips').appendChild(c);
   });
 }
+function rmFile(n,el){ files=files.filter(f=>f.name!==n); el.parentElement.remove(); }
 
-function removeFile(name, el) {
-  uploadedFiles = uploadedFiles.filter(f => f.name !== name);
-  el.parentElement.remove();
+function buildPrompt(){
+  const fs=FORMS[selCat]||[];
+  const info=fs.map(f=>{ const el=document.getElementById(`f_${f.id}`); return el&&el.value?`${f.label}: ${el.value}`:null; }).filter(Boolean).join('\n');
+  const ph=files.length>0?`\n첨부: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
+  return `카테고리: ${selCat} (${selType})\n${info}${ph}\n\n아래 형식으로 작성:\n[BLOG]\n블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그\n\n[SHORTS]\n쇼츠 스크립트(40초)\n${files.length>0?`\n[PHOTO]\n사진 배치 가이드 (사진N - [위치] - [이유])`:``}`;
 }
 
-function buildPrompt() {
-  const fields = forms[selectedCat] || [];
-  let info = fields.map(f => {
-    const el = document.getElementById(`field_${f.id}`);
-    return el && el.value ? `${f.label}: ${el.value}` : null;
-  }).filter(Boolean).join('\n');
-
-  const photoInfo = uploadedFiles.length > 0
-    ? `\n첨부 사진/영상: ${uploadedFiles.map((f,i) => `사진${i+1}(${f.name})`).join(', ')}`
-    : '';
-
-  return `카테고리: ${selectedCat} (${selectedType})
-${info}${photoInfo}
-
-위 정보를 바탕으로 아래 3가지를 작성해주세요:
-
-[BLOG]
-말랑데이즈 블로그 초안 (${selectedCat} 카테고리 구조에 맞게)
-
-[INSTA]
-인스타그램 캡션 + 해시태그
-
-[SHORTS]
-유튜브 쇼츠 스크립트 (40초 내외, 훅3초+본문30초+마무리7초)
-
-${uploadedFiles.length > 0 ? `[PHOTO]
-사진 배치 가이드 - 각 사진이 글의 어느 위치에 들어가면 좋을지 설명해주세요.
-형식: 사진N - [위치] - [이유]` : ''}`;
-}
-
-const loadingSteps = ['카테고리 분석 중', '웹에서 정보 수집 중', '말랑데이즈 스타일로 초안 작성 중', '인스타·쇼츠 버전 생성 중', '마무리 중'];
-
-async function generateContent() {
-  if (!selectedCat) { showToast('카테고리를 먼저 선택해주세요'); return; }
-
-  document.getElementById('formArea').style.display = 'none';
-  document.getElementById('loadingArea').classList.add('visible');
-  document.getElementById('outputArea').classList.remove('visible');
-
-  let stepIdx = 0;
-  const stepInterval = setInterval(() => {
-    stepIdx = (stepIdx + 1) % loadingSteps.length;
-    document.getElementById('loadingStep').textContent = loadingSteps[stepIdx];
-  }, 1500);
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: buildPrompt() }]
-      })
+async function generate(){
+  if(!selCat){ toast('카테고리를 선택해주세요'); return; }
+  document.getElementById('formCard').style.display='none';
+  document.getElementById('loadingEl').classList.add('show');
+  document.getElementById('outputEl').classList.remove('show');
+  let si=0;
+  const iv=setInterval(()=>{ si=(si+1)%STEPS.length; document.getElementById('loadStep').textContent=STEPS[si]; },1500);
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SP,messages:[{role:'user',content:buildPrompt()}]})
     });
-    const data = await res.json();
-    const text = data.content?.[0]?.text || '';
-    parseAndDisplay(text);
-  } catch(e) {
-    showToast('오류가 발생했어요. 다시 시도해주세요.');
-    document.getElementById('formArea').style.display = 'block';
-  } finally {
-    clearInterval(stepInterval);
-    document.getElementById('loadingArea').classList.remove('visible');
+    const d=await res.json();
+    parse(d.content?.[0]?.text||'');
+  }catch(e){ toast('오류가 발생했어요. 다시 시도해주세요.'); document.getElementById('formCard').style.display='block'; }
+  finally{ clearInterval(iv); document.getElementById('loadingEl').classList.remove('show'); }
+}
+
+function parse(txt){
+  const blog=sec(txt,'BLOG','INSTA')||txt;
+  const insta=sec(txt,'INSTA','SHORTS')||'';
+  const shorts=sec(txt,'SHORTS','PHOTO')||'';
+  const photo=sec(txt,'PHOTO',null)||'';
+  document.getElementById('blogTxt').textContent=blog.trim();
+  document.getElementById('instaTxt').textContent=insta.trim();
+  document.getElementById('shortsTxt').textContent=shorts.trim();
+  if(photo&&files.length>0){
+    const lines=photo.trim().split('\n').filter(l=>l.trim());
+    document.getElementById('photoGuide').innerHTML=`<div class="photo-guide"><div class="photo-guide-title">📷 사진 배치 가이드</div>${lines.map((l,i)=>{const p=l.split('-').map(s=>s.trim());return `<div class="photo-guide-item"><div class="photo-num">${i+1}</div><div class="photo-desc"><div class="photo-pos">${p[0]||''}</div>${p.slice(1).join(' — ')}</div></div>`;}).join('')}</div>`;
   }
+  cur={cat:selCat,type:selType,blog,insta,shorts,title:getTitle(),date:new Date().toLocaleDateString('ko-KR'),bs:'미업로드',is:'미업로드',ss:'미업로드'};
+  stMap={blog:false,insta:false,shorts:false};
+  updBadges();
+  document.getElementById('outputEl').classList.add('show');
+  switchOut('blog',document.querySelector('.out-tab'));
+  document.getElementById('outputEl').scrollIntoView({behavior:'smooth'});
 }
 
-function parseAndDisplay(text) {
-  const blog = extractSection(text, 'BLOG', 'INSTA') || text;
-  const insta = extractSection(text, 'INSTA', 'SHORTS') || '';
-  const shorts = extractSection(text, 'SHORTS', 'PHOTO') || '';
-  const photo = extractSection(text, 'PHOTO', null) || '';
+function sec(t,s,e){ const si=t.indexOf(`[${s}]`); if(si===-1)return null; const ei=e?t.indexOf(`[${e}]`):-1; return ei===-1?t.slice(si+s.length+2):t.slice(si+s.length+2,ei); }
+function getTitle(){ const f=FORMS[selCat]?.[0]; if(!f)return selCat; const el=document.getElementById(`f_${f.id}`); return el?.value?`${selCat} - ${el.value}`:selCat; }
 
-  document.getElementById('blogText').textContent = blog.trim();
-  document.getElementById('instaText').textContent = insta.trim();
-  document.getElementById('shortsText').textContent = shorts.trim();
-
-  if (photo && uploadedFiles.length > 0) {
-    const lines = photo.trim().split('\n').filter(l => l.trim());
-    let photoHTML = '<div class="photo-placement"><div class="photo-placement-title">📷 사진 배치 가이드</div>';
-    lines.forEach((line, i) => {
-      const parts = line.split('-').map(s => s.trim());
-      photoHTML += `<div class="photo-item"><div class="photo-num">${i+1}</div><div class="photo-desc"><div class="photo-pos">${parts[0] || ''}</div>${parts.slice(1).join(' — ')}</div></div>`;
-    });
-    photoHTML += '</div>';
-    document.getElementById('photoPlacement').innerHTML = photoHTML;
-  } else {
-    document.getElementById('photoPlacement').innerHTML = '<div style="color:var(--text-hint);font-size:13px;padding:16px;">사진을 첨부하면 배치 가이드가 나와요</div>';
-  }
-
-  currentContent = {
-    cat: selectedCat,
-    type: selectedType,
-    blog, insta, shorts,
-    title: getTitle(),
-    date: new Date().toLocaleDateString('ko-KR'),
-    blog_status: '미업로드',
-    insta_status: '미업로드',
-    shorts_status: '미업로드',
-  };
-
-  currentStatusMap = { blog: false, insta: false, shorts: false };
-  updateStatusBadges();
-  document.getElementById('outputArea').classList.add('visible');
-  switchOutput('blog', document.querySelector('.output-tab'));
-}
-
-function extractSection(text, start, end) {
-  const s = text.indexOf(`[${start}]`);
-  if (s === -1) return null;
-  const e = end ? text.indexOf(`[${end}]`) : -1;
-  return e === -1 ? text.slice(s + start.length + 2) : text.slice(s + start.length + 2, e);
-}
-
-function getTitle() {
-  const f = forms[selectedCat]?.[0];
-  if (!f) return selectedCat;
-  const el = document.getElementById(`field_${f.id}`);
-  return el?.value ? `${selectedCat} - ${el.value}` : selectedCat;
-}
-
-function switchOutput(id, btn) {
-  document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.output-content').forEach(c => c.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+function switchOut(id,btn){
+  document.querySelectorAll('.out-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.out-content').forEach(c=>c.classList.remove('active'));
+  if(btn)btn.classList.add('active');
   document.getElementById(`out-${id}`)?.classList.add('active');
 }
 
-function toggleStatus(ch) {
-  currentStatusMap[ch] = !currentStatusMap[ch];
-  updateStatusBadges();
-  if (currentContent.cat) {
-    currentContent[`${ch}_status`] = currentStatusMap[ch] ? '업로드완료' : '미업로드';
-  }
+function toggleSt(ch){
+  stMap[ch]=!stMap[ch];
+  updBadges();
+  if(cur.cat){ if(ch==='blog')cur.bs=stMap[ch]?'완료':'미업로드'; if(ch==='insta')cur.is=stMap[ch]?'완료':'미업로드'; if(ch==='shorts')cur.ss=stMap[ch]?'완료':'미업로드'; }
 }
-
-function updateStatusBadges() {
-  ['blog', 'insta', 'shorts'].forEach(ch => {
-    const el = document.getElementById(`${ch}Status`);
-    const dateEl = document.getElementById(`${ch}Date`);
-    if (currentStatusMap[ch]) {
-      el.className = 'status-badge badge-done';
-      el.textContent = '업로드완료';
-      dateEl.textContent = new Date().toLocaleDateString('ko-KR');
-    } else {
-      el.className = 'status-badge badge-none';
-      el.textContent = '미업로드';
-      dateEl.textContent = '-';
-    }
+function updBadges(){
+  ['blog','insta','shorts'].forEach(ch=>{
+    const map={blog:'blogBadge',insta:'instaBadge',shorts:'shortsBadge'};
+    const dmap={blog:'blogDate',insta:'instaDate',shorts:'shortsDate'};
+    const el=document.getElementById(map[ch]);
+    const de=document.getElementById(dmap[ch]);
+    if(stMap[ch]){ el.className='status-badge badge-done'; el.textContent='업로드 완료'; de.textContent=new Date().toLocaleDateString('ko-KR'); }
+    else{ el.className='status-badge badge-none'; el.textContent='미업로드'; de.textContent='-'; }
   });
 }
 
-function saveToLog() {
-  if (!currentContent.cat) return;
-  const entry = { ...currentContent, id: Date.now() };
-  logs.unshift(entry);
-  localStorage.setItem('mallang_logs', JSON.stringify(logs));
-  renderLog();
-  showToast('기록에 저장됐어요 ✨');
+function saveLog(){
+  if(!cur.cat)return;
+  logs.unshift({...cur,id:Date.now()});
+  localStorage.setItem('ml',JSON.stringify(logs));
+  renderLog(); toast('저장됐어요 ✨');
 }
 
-function renderLog() {
-  const tbody = document.getElementById('logTableBody');
-  document.getElementById('logCount').textContent = logs.length;
-  document.getElementById('totalCount').textContent = logs.length;
-  document.getElementById('blogCount').textContent = logs.filter(l => l.blog_status === '업로드완료').length;
-  document.getElementById('instaCount').textContent = logs.filter(l => l.insta_status === '업로드완료').length;
-  document.getElementById('shortsCount').textContent = logs.filter(l => l.shorts_status === '업로드완료').length;
-
-  if (!logs.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-hint);padding:30px;">아직 저장된 콘텐츠가 없어요</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = logs.map(l => `
-    <tr>
-      <td>${l.date}</td>
-      <td><span class="log-cat ${l.type === '기록형' ? 'log-cat-rec' : 'log-cat-info'}">${l.cat}</span></td>
-      <td style="color:var(--text);font-weight:500;">${l.title}</td>
-      <td><span class="ch-dot ${l.blog_status === '업로드완료' ? 'dot-done' : 'dot-none'}"></span>${l.blog_status}</td>
-      <td><span class="ch-dot ${l.insta_status === '업로드완료' ? 'dot-done' : 'dot-none'}"></span>${l.insta_status}</td>
-      <td><span class="ch-dot ${l.shorts_status === '업로드완료' ? 'dot-done' : 'dot-none'}"></span>${l.shorts_status}</td>
-    </tr>`).join('');
-
-  renderStatusPage();
+function renderLog(){
+  document.getElementById('sTot').textContent=logs.length;
+  document.getElementById('sBlog').textContent=logs.filter(l=>l.bs==='완료').length;
+  document.getElementById('sInsta').textContent=logs.filter(l=>l.is==='완료').length;
+  document.getElementById('sShorts').textContent=logs.filter(l=>l.ss==='완료').length;
+  const ll=document.getElementById('logList');
+  if(!logs.length){ ll.innerHTML='<div class="empty"><div class="empty-icon">📭</div>저장된 콘텐츠가 없어요</div>'; return; }
+  ll.innerHTML=logs.map(l=>`<div class="log-item"><div class="log-header"><span class="log-cat ${l.type==='기록형'?'log-cat-rec':'log-cat-info'}">${l.cat}</span><span class="log-date">${l.date}</span></div><div class="log-title">${l.title}</div><div class="log-channels"><span class="log-ch ${l.bs==='완료'?'ch-done':'ch-none'}">📝 ${l.bs}</span><span class="log-ch ${l.is==='완료'?'ch-done':'ch-none'}">📸 ${l.is}</span><span class="log-ch ${l.ss==='완료'?'ch-done':'ch-none'}">🎬 ${l.ss}</span></div></div>`).join('');
+  const pend=logs.filter(l=>l.bs!=='완료'||l.is!=='완료'||l.ss!=='완료');
+  const done=logs.filter(l=>l.bs==='완료'&&l.is==='완료'&&l.ss==='완료');
+  const row=l=>`<div class="pending-item"><div class="pending-title">${l.date} · ${l.title}</div><div class="pending-chs"><span class="log-ch ${l.bs==='완료'?'ch-done':'ch-none'}">📝 블로그</span><span class="log-ch ${l.is==='완료'?'ch-done':'ch-none'}">📸 인스타</span><span class="log-ch ${l.ss==='완료'?'ch-done':'ch-none'}">🎬 쇼츠</span></div></div>`;
+  document.getElementById('pendList').innerHTML=pend.length?pend.map(row).join(''):'<div class="empty"><div class="empty-icon">✨</div>대기 중인 콘텐츠 없음</div>';
+  document.getElementById('doneList').innerHTML=done.length?done.map(row).join(''):'<div class="empty"><div class="empty-icon">🎉</div>완료된 콘텐츠 없음</div>';
 }
 
-function renderStatusPage() {
-  const pending = logs.filter(l => l.blog_status !== '업로드완료' || l.insta_status !== '업로드완료' || l.shorts_status !== '업로드완료');
-  const done = logs.filter(l => l.blog_status === '업로드완료' && l.insta_status === '업로드완료' && l.shorts_status === '업로드완료');
-
-  const toRow = l => `<div class="status-row"><div class="status-ch" style="font-size:12px;">${l.date} · ${l.title}</div><div style="display:flex;gap:6px;font-size:11px;">
-    <span class="${l.blog_status === '업로드완료' ? 'status-badge badge-done' : 'status-badge badge-none'}">블로그</span>
-    <span class="${l.insta_status === '업로드완료' ? 'status-badge badge-done' : 'status-badge badge-none'}">인스타</span>
-    <span class="${l.shorts_status === '업로드완료' ? 'status-badge badge-done' : 'status-badge badge-none'}">쇼츠</span>
-  </div></div>`;
-
-  document.getElementById('pendingList').innerHTML = pending.length ? pending.map(toRow).join('') : '<div style="text-align:center;color:var(--text-hint);padding:20px;font-size:13px;">대기 중인 콘텐츠가 없어요 ✨</div>';
-  document.getElementById('doneList').innerHTML = done.length ? done.map(toRow).join('') : '<div style="text-align:center;color:var(--text-hint);padding:20px;font-size:13px;">아직 완료된 콘텐츠가 없어요</div>';
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`page-${id}`).classList.add('active');
+  document.getElementById(`tab-${id}`).classList.add('active');
+  const labels={write:'글 작성',log:'기록',status:'현황'};
+  document.getElementById('topBadge').textContent=labels[id];
+  document.querySelector('.page-wrap').scrollTop=0;
+  if(id==='log'||id==='status') renderLog();
 }
 
-function copyText(id) {
-  const text = document.getElementById(id).textContent;
-  navigator.clipboard.writeText(text).then(() => showToast('복사됐어요 ✨'));
-}
-
-function showPage(id) {
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  ['page-write','page-log','page-status'].forEach(p => document.getElementById(p).style.display = 'none');
-  document.getElementById(`page-${id}`).style.display = 'block';
-  document.querySelector(`.nav-item[onclick="showPage('${id}')"]`)?.classList.add('active');
-  if (id === 'log') renderLog();
-  if (id === 'status') renderStatusPage();
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
+function copyTxt(id){ navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('복사됐어요 ✨')); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
 
 renderLog();
 </script>
