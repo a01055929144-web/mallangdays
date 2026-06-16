@@ -314,6 +314,53 @@ async function appendToSheet(row) {
   }
 }
 
+async function updateSheetCell(rowIdx, col, value) {
+  // rowIdx: 시트에서의 실제 행 번호 (1부터, 헤더 포함)
+  // col: 컬럼 알파벳 (G=블로그, H=인스타, J=유튜브)
+  try {
+    const tok = await getGToken();
+    const range = `${encodeURIComponent(SHEET_NAME)}!${col}${rowIdx}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=USER_ENTERED`;
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: {'Authorization': 'Bearer '+tok, 'Content-Type': 'application/json'},
+      body: JSON.stringify({values: [[value]]})
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return true;
+  } catch(e) {
+    console.error('Sheet update error:', e);
+    return false;
+  }
+}
+
+async function toggleSheetStatus(rowIdx, col, currentDone, elId) {
+  const newVal = currentDone ? '미작성' : '작성완료';
+  const el = document.getElementById(elId);
+  if (el) { el.textContent = '⏳'; el.className = 'lch2 cn'; }
+  const ok = await updateSheetCell(rowIdx, col, newVal);
+  if (ok) {
+    // 캐시 업데이트
+    const colMap = {G:6, H:7, J:9};
+    const cIdx = colMap[col];
+    if (sheetCache && sheetCache[rowIdx-1] && cIdx !== undefined) {
+      sheetCache[rowIdx-1][cIdx] = newVal;
+    }
+    if (el) {
+      const done = newVal === '작성완료';
+      el.className = `lch2 ${done?'cd':'cn'}`;
+      el.textContent = col==='G'?`📝 ${done?'완료':'미업로드'}`:col==='H'?`📸 ${done?'완료':'미업로드'}`:`🎬 ${done?'완료':'미업로드'}`;
+    }
+    toast(newVal === '작성완료' ? '✅ 업로드 완료로 변경됐어요' : '↩️ 미업로드로 변경됐어요');
+  } else {
+    toast('❌ 변경 실패. 다시 시도해주세요.');
+    if (el) {
+      el.className = `lch2 ${currentDone?'cd':'cn'}`;
+      el.textContent = col==='G'?`📝 ${currentDone?'완료':'미업로드'}`:col==='H'?`📸 ${currentDone?'완료':'미업로드'}`:`🎬 ${currentDone?'완료':'미업로드'}`;
+    }
+  }
+}
+
 async function loadSheetData() {
   try {
     const tok = await getGToken();
@@ -328,20 +375,27 @@ async function loadSheetData() {
 }
 
 function parseSheetRows(rows) {
-  // 헤더 제외, 제목(4번째 컬럼)이 있는 행만 필터링
-  return rows.slice(1).filter(r => {
-    const title = (r[4]||r[3]||'').trim();
-    return title.length > 0;
-  });
+  // 헤더 제외, 제목이 있는 행만 필터링. rowIdx = 실제 시트 행 번호(1=헤더)
+  return rows.slice(1).map((r, i) => ({row: r, rowIdx: i+2}))
+    .filter(({row}) => (row[4]||row[3]||'').trim().length > 0);
 }
 
-function sheetRowToHtml(r) {
+function sheetRowToHtml(r, rowIdx) {
   const cat = r[1]||'', title = (r[4]||r[3]||'').trim(), date = r[5]||'', blog = r[6]||'', insta = r[7]||'', yt = r[9]||'';
   const isRec = cat.includes('임신')||cat.includes('연애')||cat.includes('출산')||cat.includes('육아일');
   const bDone = blog.includes('완료')||blog.includes('작성');
   const iDone = insta.includes('완료')||insta.includes('작성');
   const yDone = yt.includes('완료')||yt.includes('작성');
-  return `<div class="li"><div class="lh"><span class="lc ${isRec?'lcr':'lci'}">${cat.replace(/[\[\]]/g,'')}</span><span class="ld2">${date}</span></div><div class="lti">${title}</div><div class="lch"><span class="lch2 ${bDone?'cd':'cn'}">📝 ${bDone?'완료':'미업로드'}</span><span class="lch2 ${iDone?'cd':'cn'}">📸 ${iDone?'완료':'미업로드'}</span><span class="lch2 ${yDone?'cd':'cn'}">🎬 ${yDone?'완료':'미업로드'}</span></div></div>`;
+  const bid = `st_${rowIdx}_G`, iid = `st_${rowIdx}_H`, yid = `st_${rowIdx}_J`;
+  return `<div class="li">
+    <div class="lh"><span class="lc ${isRec?'lcr':'lci'}">${cat.replace(/[\[\]]/g,'')}</span><span class="ld2">${date}</span></div>
+    <div class="lti">${title}</div>
+    <div class="lch" style="flex-wrap:wrap;gap:6px;">
+      <button id="${bid}" class="lch2 ${bDone?'cd':'cn'}" onclick="toggleSheetStatus(${rowIdx},'G',${bDone},'${bid}')" style="cursor:pointer;border:none;font-family:inherit;">📝 ${bDone?'완료':'미업로드'}</button>
+      <button id="${iid}" class="lch2 ${iDone?'cd':'cn'}" onclick="toggleSheetStatus(${rowIdx},'H',${iDone},'${iid}')" style="cursor:pointer;border:none;font-family:inherit;">📸 ${iDone?'완료':'미업로드'}</button>
+      <button id="${yid}" class="lch2 ${yDone?'cd':'cn'}" onclick="toggleSheetStatus(${rowIdx},'J',${yDone},'${yid}')" style="cursor:pointer;border:none;font-family:inherit;">🎬 ${yDone?'완료':'미업로드'}</button>
+    </div>
+  </div>`;
 }
 
 let sheetCache = null;
@@ -361,34 +415,32 @@ async function renderSheetData() {
     badge.className='sync-badge sync-err'; badge.textContent='데이터 없음';
     return;
   }
-  const dataRows = parseSheetRows(rows).reverse().slice(0,30);
-  badge.className='sync-badge sync-ok'; badge.textContent=`${dataRows.length}개 콘텐츠`;
-  el.innerHTML = dataRows.length ? dataRows.map(sheetRowToHtml).join('') : '<div class="em"><div class="emi">📭</div>데이터가 없어요</div>';
+  const items = parseSheetRows(rows).reverse().slice(0,30);
+  badge.className='sync-badge sync-ok'; badge.textContent=`${items.length}개 콘텐츠`;
+  el.innerHTML = items.length ? items.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('') : '<div class="em"><div class="emi">📭</div>데이터가 없어요</div>';
 }
 
 async function renderSheetLog() {
   const ll = document.getElementById('logList');
-  // 로컬 + 시트 합산 통계
   let rows = sheetCache;
   if (!rows) rows = await loadAndCacheSheet();
-  const sheetRows = rows ? parseSheetRows(rows) : [];
-  const total = sheetRows.length;
-  const blDone = sheetRows.filter(r=>(r[6]||'').includes('완료')||(r[6]||'').includes('작성')).length;
-  const inDone = sheetRows.filter(r=>(r[7]||'').includes('완료')||(r[7]||'').includes('작성')).length;
-  const ytDone = sheetRows.filter(r=>(r[9]||'').includes('완료')||(r[9]||'').includes('작성')).length;
+  const items = rows ? parseSheetRows(rows) : [];
+  const total = items.length;
+  const blDone = items.filter(({row})=>(row[6]||'').includes('완료')||(row[6]||'').includes('작성')).length;
+  const inDone = items.filter(({row})=>(row[7]||'').includes('완료')||(row[7]||'').includes('작성')).length;
+  const ytDone = items.filter(({row})=>(row[9]||'').includes('완료')||(row[9]||'').includes('작성')).length;
   document.getElementById('sTot').textContent = total;
   document.getElementById('sBl').textContent = blDone;
   document.getElementById('sIn').textContent = inDone;
   document.getElementById('sSh').textContent = ytDone;
-  // 목록: 시트 데이터 최근 30개
-  const recent = sheetRows.reverse().slice(0,30);
-  ll.innerHTML = recent.length ? recent.map(sheetRowToHtml).join('') : '<div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div>';
-  // 현황 탭 pending/done도 업데이트
-  const pend = sheetRows.filter(r=>!((r[6]||'').includes('완료')||(r[6]||'').includes('작성'))||!((r[7]||'').includes('완료')||(r[7]||'').includes('작성'))||!((r[9]||'').includes('완료')||(r[9]||'').includes('작성')));
-  const done = sheetRows.filter(r=>((r[6]||'').includes('완료')||(r[6]||'').includes('작성'))&&((r[7]||'').includes('완료')||(r[7]||'').includes('작성'))&&((r[9]||'').includes('완료')||(r[9]||'').includes('작성')));
-  const row2=r=>`<div class="pi"><div class="pit">${r[5]||''} · ${(r[4]||r[3]||'').trim()}</div><div class="pic"><span class="lch2 ${(r[6]||'').includes('완료')||(r[6]||'').includes('작성')?'cd':'cn'}">📝 블로그</span><span class="lch2 ${(r[7]||'').includes('완료')||(r[7]||'').includes('작성')?'cd':'cn'}">📸 인스타</span><span class="lch2 ${(r[9]||'').includes('완료')||(r[9]||'').includes('작성')?'cd':'cn'}">🎬 쇼츠</span></div></div>`;
-  document.getElementById('pendList').innerHTML=pend.length?pend.map(row2).join(''):'<div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div>';
-  document.getElementById('doneList').innerHTML=done.length?done.map(row2).join(''):'<div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div>';
+  // 기록 탭: 최근 30개
+  const recent = [...items].reverse().slice(0,30);
+  ll.innerHTML = recent.length ? recent.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('') : '<div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div>';
+  // 현황 탭 pending/done
+  const pend = items.filter(({row})=>!((row[6]||'').includes('완료')||(row[6]||'').includes('작성'))||!((row[7]||'').includes('완료')||(row[7]||'').includes('작성'))||!((row[9]||'').includes('완료')||(row[9]||'').includes('작성')));
+  const done = items.filter(({row})=>((row[6]||'').includes('완료')||(row[6]||'').includes('작성'))&&((row[7]||'').includes('완료')||(row[7]||'').includes('작성'))&&((row[9]||'').includes('완료')||(row[9]||'').includes('작성')));
+  document.getElementById('pendList').innerHTML=pend.length?pend.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join(''):'<div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div>';
+  document.getElementById('doneList').innerHTML=done.length?done.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join(''):'<div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div>';
 }
 
 // ===== Claude API =====
