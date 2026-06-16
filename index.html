@@ -221,14 +221,21 @@ input[type="file"]{display:none;}
       <div class="oa" id="oaEl">
         <div class="card">
           <div class="ct">📝 생성된 초안</div>
-          <div class="ots">
-            <button class="ot active" onclick="swOut('blog',this)">📝 블로그</button>
-            <button class="ot" onclick="swOut('insta',this)">📸 인스타</button>
-            
-            <button class="ot" onclick="swOut('photo',this)">📷 사진배치</button>
+          <div class="ots" id="outTabBar">
+            <button class="ot active" id="tab-blog" onclick="swOut('blog',this)">📝 블로그</button>
+            <button class="ot" id="tab-insta" onclick="swOut('insta',this)">📸 인스타</button>
+            <button class="ot" id="tab-s1" onclick="swOut('s1',this)" style="display:none;">📝 1편</button>
+            <button class="ot" id="tab-s2" onclick="swOut('s2',this)" style="display:none;">📝 2편</button>
+            <button class="ot" id="tab-s3" onclick="swOut('s3',this)" style="display:none;">📝 3편</button>
+            <button class="ot" id="tab-sinsta" onclick="swOut('sinsta',this)" style="display:none;">📸 인스타(시리즈)</button>
+            <button class="ot" id="tab-photo" onclick="swOut('photo',this)">📷 사진배치</button>
           </div>
           <div class="oc active" id="o-blog"><div class="ob" id="blogTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('blogTxt')">복사</button><button class="oab" onclick="saveLog()">저장 + 시트 기록</button></div></div>
           <div class="oc" id="o-insta"><div class="ob" id="instaTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('instaTxt')">복사</button></div></div>
+          <div class="oc" id="o-s1"><div class="ob" id="s1Txt"></div><div class="oas"><button class="oab p" onclick="cpTxt('s1Txt')">복사</button><button class="oab" onclick="saveSeriesLog(1)">저장</button></div></div>
+          <div class="oc" id="o-s2"><div class="ob" id="s2Txt"></div><div class="oas"><button class="oab p" onclick="cpTxt('s2Txt')">복사</button><button class="oab" onclick="saveSeriesLog(2)">저장</button></div></div>
+          <div class="oc" id="o-s3"><div class="ob" id="s3Txt"></div><div class="oas"><button class="oab p" onclick="cpTxt('s3Txt')">복사</button><button class="oab" onclick="saveSeriesLog(3)">저장</button></div></div>
+          <div class="oc" id="o-sinsta"><div class="ob" id="sinstaTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('sinstaTxt')">복사</button></div></div>
           
           <div class="oc" id="o-photo"><div id="pgEl"><div class="em"><div class="emi">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div></div></div>
         </div>
@@ -564,7 +571,7 @@ const FORMS = {
   살림재테크:{fields:[
     {id:'topic',lb:'주제',ph:'예) 2026년 육아휴직, 신생아특례대출, 신혼부부 청약'},
     {id:'series',lb:'시리즈 구성',sel:['1편 (단독글)','2편 시리즈','3편 시리즈']},
-    {id:'series_focus',lb:'이번 편 초점',ph:'예) 1편-제도 총정리, 2편-신청 후기, 3편-실수령액 계산'},
+    
     {id:'my_situation',lb:'나의 상황 / 계획 / 경험',ta:true,ph:'예) 말랑이 출생 후 6개월 육아휴직 신청 예정. 급여는 통상임금 80%라고 들었는데 실제 계산해봤다.'},
     {id:'extra',lb:'추가로 넣고 싶은 내용 (선택)',ta:true,ph:'궁금했던 점, 알아보면서 놀란 점 등'}]},
 };
@@ -726,28 +733,62 @@ function buildPrompt(){
   const ph=files.length>0?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
   // 살림재테크 전용 프롬프트
   if(cat==='살림재테크'){
-    const topic=gv('topic'), series=gv('series'), focus=gv('series_focus'), situation=gv('my_situation'), extra=gv('extra');
+    const topic=gv('topic'), series=gv('series'), situation=gv('my_situation'), extra=gv('extra');
     const today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+    const seriesNum = series.startsWith('1') ? 1 : series.startsWith('2') ? 2 : 3;
+
+    let seriesGuide = '';
+    if(seriesNum===1){
+      seriesGuide = `[BLOG_1]
+1편: ${topic} 제도 총정리 (정책 중심, 결론→조건→금액→신청방법→주의사항 구조)
+
+[INSTA_SERIES]
+1편 인스타 캡션+해시태그`;
+    } else if(seriesNum===2){
+      seriesGuide = `아래 2편을 각각 완성도 있게 작성해줘.
+
+[BLOG_1]
+1편: ${topic} 제도 총정리 (정책·숫자 중심, 결론→조건→금액→신청방법→주의사항, 마지막에 "2편에서는 실제 신청 과정을 공유할게요" 예고)
+
+[BLOG_2]
+2편: 말랑파파 실제 신청/준비 후기 (경험 중심, 오프닝→준비과정→신청→결과→느낀점, 마지막에 "다음 편도 이어집니다" 멘트)
+
+[INSTA_SERIES]
+시리즈 공통 인스타 캡션+해시태그 (두 편 업로드 시 재사용 가능하게)`;
+    } else {
+      seriesGuide = `아래 3편을 각각 완성도 있게 작성해줘.
+
+[BLOG_1]
+1편: ${topic} 제도 총정리 (정책·숫자 중심, 결론→조건→금액→신청방법→주의사항, 2편 예고)
+
+[BLOG_2]
+2편: 말랑파파 실제 신청/준비 후기 (경험 중심, 준비→신청→결과, 3편 예고)
+
+[BLOG_3]
+3편: 실수령액 계산·꿀팁 총정리 (실용 정보, 계산법·절세팁·자주묻는질문, 시리즈 마무리)
+
+[INSTA_SERIES]
+시리즈 공통 인스타 캡션+해시태그`;
+    }
+
     return `오늘 날짜: ${today}
 
-[살림재테크 블로그 작성 요청]
+[살림재테크 시리즈 작성 요청]
 주제: ${topic}
-시리즈: ${series} ${focus?'/ 이번 편: '+focus:''}
-나의 상황·계획: ${situation||'없음'}
-추가 내용: ${extra||'없음'}
+시리즈: ${seriesNum}편 구성
+나의 상황·계획·경험: ${situation||'없음'}
+추가로 넣을 내용: ${extra||'없음'}
 
-작성 전 반드시 웹검색으로 아래 순서대로 최신 정보 확인:
-1. 정부24(gov.kr) / 고용노동부(moel.go.kr) / 복지로(bokjiro.go.kr) / 국토교통부(molit.go.kr) 공식 페이지
-2. 법제처 국가법령정보센터(law.go.kr) 최신 조문
-3. 최근 6개월 뉴스 (개정사항 확인)
+작성 전 반드시 웹검색으로 최신 정보 확인:
+1순위: 정부24(gov.kr) / 고용노동부(moel.go.kr) / 복지로(bokjiro.go.kr) / 국토교통부(molit.go.kr)
+2순위: 법제처 국가법령정보센터(law.go.kr)
+3순위: 최근 6개월 뉴스
 
-검색한 최신 기준으로 작성하고, 기준 연도와 출처를 본문에 명시해줘.
+★ 검색한 최신 기준으로 작성하고 기준연도·출처 본문에 명시
+★ 말랑파파 시점, 독자가 같이 알아가는 "내가 직접 알아봤더니" 톤
+★ 숫자·금액·기간은 최대한 구체적으로
 
-[BLOG]
-SEO 최적화 블로그 초안 (검색한 최신 정책 기준으로 작성)
-
-[INSTA]
-인스타 캡션+해시태그`;
+${seriesGuide}`;
   }
   return `카테고리: ${cat} (${type})${tp}${kp}\n${info}${urlPart}${ph}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+최적화 해시태그${files.length>0?'\n\n[PHOTO]\n사진 배치 안내 (사진N-[위치]-[이유])':''}`;
 }
@@ -774,17 +815,25 @@ async function generate(){
 }
 
 function parseOut(txt){
+  // 살림재테크 시리즈 모드
+  if(cat==='살림재테크' && txt.includes('[BLOG_1]')){
+    parseSeries(txt);
+    return;
+  }
   const blog=sec(txt,'BLOG','INSTA')||txt;
   const insta=sec(txt,'INSTA','PHOTO')||'';
   const photo=sec(txt,'PHOTO',null)||'';
   document.getElementById('blogTxt').textContent=blog.trim();
   document.getElementById('instaTxt').textContent=insta.trim();
+  // 일반 탭 표시
+  showNormalTabs();
   if(photo&&files.length>0){
     const lines=photo.trim().split('\n').filter(l=>l.trim());
     document.getElementById('pgEl').innerHTML=`<div class="pg2"><div class="pg2t">📷 사진 배치 가이드</div>${lines.map((l,i)=>{const p=l.split('-').map(s=>s.trim());return `<div class="pg2i"><div class="pn">${i+1}</div><div class="pd"><div class="pp">${p[0]||''}</div>${p.slice(1).join(' — ')}</div></div>`;}).join('')}</div>`;
   }else{document.getElementById('pgEl').innerHTML='<div class="em"><div class="emi">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div>';}
   const fv=FORMS[cat]?.fields[0]?gv(FORMS[cat].fields[0].id):'';
-  cur={cat,type,blog,insta,title:selTitle||(fv?`${cat} - ${fv}`:cat),date:new Date().toLocaleDateString('ko-KR'),bs:'미업로드',is:'미업로드'};
+  showNormalTabs();
+  cur={cat,type,blog,insta,title:selTitle||(fv?`${cat} - ${fv}`:cat),date:new Date().toLocaleDateString('ko-KR'),bs:'',is:''};
   stMap={blog:false,insta:false};
   // 초안 자동 임시저장 (blog, insta 반드시 포함)
   const draft={
@@ -803,6 +852,97 @@ function parseOut(txt){
   document.getElementById('oaEl').classList.add('show');
   swOut('blog',document.querySelector('.ot'));
   setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
+}
+
+function showNormalTabs(){
+  // 일반 탭 보이기, 시리즈 탭 숨기기
+  ['blog','insta','photo'].forEach(id=>{
+    const t=document.getElementById('tab-'+id);
+    if(t) t.style.display='';
+  });
+  ['s1','s2','s3','sinsta'].forEach(id=>{
+    const t=document.getElementById('tab-'+id);
+    if(t) t.style.display='none';
+  });
+  swOut('blog', document.getElementById('tab-blog'));
+}
+
+function showSeriesTabs(count){
+  // 시리즈 탭 보이기, 일반 탭 숨기기
+  ['blog','insta'].forEach(id=>{
+    const t=document.getElementById('tab-'+id);
+    if(t) t.style.display='none';
+  });
+  document.getElementById('tab-photo').style.display='none';
+  for(let i=1;i<=3;i++){
+    const t=document.getElementById('tab-s'+i);
+    if(t) t.style.display = i<=count ? '' : 'none';
+  }
+  const si=document.getElementById('tab-sinsta');
+  if(si) si.style.display='';
+  swOut('s1', document.getElementById('tab-s1'));
+}
+
+function parseSeries(txt){
+  const s1=sec(txt,'BLOG_1','BLOG_2')||sec(txt,'BLOG_1','INSTA_SERIES')||'';
+  const s2=sec(txt,'BLOG_2','BLOG_3')||sec(txt,'BLOG_2','INSTA_SERIES')||'';
+  const s3=sec(txt,'BLOG_3','INSTA_SERIES')||'';
+  const sinsta=sec(txt,'INSTA_SERIES',null)||'';
+  const count = s3.trim() ? 3 : s2.trim() ? 2 : 1;
+
+  document.getElementById('s1Txt').textContent=s1.trim();
+  document.getElementById('s2Txt').textContent=s2.trim();
+  document.getElementById('s3Txt').textContent=s3.trim();
+  document.getElementById('sinstaTxt').textContent=sinsta.trim();
+
+  // 라벨 업데이트
+  const topic=gv('topic')||'살림재테크';
+  const t1=document.getElementById('tab-s1'), t2=document.getElementById('tab-s2'), t3=document.getElementById('tab-s3');
+  if(t1) t1.textContent=`📝 1편`;
+  if(t2) t2.textContent=`📝 2편`;
+  if(t3) t3.textContent=`📝 3편`;
+
+  showSeriesTabs(count);
+
+  // cur에 시리즈 저장
+  const fv=gv('topic');
+  cur={cat,type,blog:s1,insta:sinsta,s1:s1.trim(),s2:s2.trim(),s3:s3.trim(),isSeries:true,seriesCount:count,
+    title:fv?`${cat} - ${fv}`:cat,date:new Date().toLocaleDateString('ko-KR'),bs:'',is:''};
+  stMap={blog:false,insta:false};
+
+  // 초안 자동저장
+  const draft={id:'draft_'+Date.now(),cat,type,title:cur.title,date:cur.date,
+    blog:`[1편]\n${s1.trim()}${s2?'\n\n[2편]\n'+s2.trim():''}${s3?'\n\n[3편]\n'+s3.trim():''}`,
+    insta:sinsta.trim()};
+  drafts.unshift(draft);
+  if(drafts.length>50) drafts=drafts.slice(0,50);
+  localStorage.setItem('ml_drafts',JSON.stringify(drafts));
+  renderDrafts();
+
+  document.getElementById('oaEl').classList.add('show');
+  setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
+}
+
+async function saveSeriesLog(num){
+  if(!cur.cat)return;
+  const entry={...cur,id:Date.now()};
+  logs.unshift(entry);
+  localStorage.setItem('ml',JSON.stringify(logs));
+  renderLog();
+  toast('저장 중...');
+  const now=new Date().toLocaleDateString('ko-KR');
+  const blogContent = cur['s'+num]||'';
+  const row=[
+    '',`[${cur.cat}]`,'',
+    `${cur.title} ${num}편`,
+    `${cur.title} ${num}편`,
+    now,'','',
+    cur.insta||'',
+    blogContent,
+    '','',''
+  ];
+  const ok=await appendToSheet(row);
+  toast(ok?`${num}편 저장 + 시트 기록 완료 ✅`:`앱에 저장됐어요 (시트 기록 실패)`);
 }
 
 function sec(t,s,e){const si=t.indexOf(`[${s}]`);if(si===-1)return null;const ei=e?t.indexOf(`[${e}]`):-1;return ei===-1?t.slice(si+s.length+2):t.slice(si+s.length+2,ei);}
