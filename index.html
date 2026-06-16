@@ -534,7 +534,7 @@ function selCat(btn){
 function buildForm(){
   const cfg=FORMS[cat]; if(!cfg)return;
   document.getElementById('dynForm').innerHTML=cfg.fields.map(f=>{
-    if(f.isUrl) return `<div class="fr"><label class="fl">${f.lb}</label><input class="fi" id="f_${f.id}" placeholder="${f.ph||''}" type="url" inputmode="url"><div class="fh">URL 입력 시 매장명·주소·영업시간 자동 분석</div></div>`;
+    if(f.isUrl) return `<div class="fr"><label class="fl">${f.lb}</label><input class="fi" id="f_${f.id}" placeholder="${f.ph||''}" type="url" inputmode="url"><div class="fh">URL을 입력하면 Claude가 매장명·주소·영업시간·주차 정보를 검색해서 글에 반영해요</div></div>`;
     if(f.sel) return `<div class="fr"><label class="fl">${f.lb}</label><select class="fsel" id="f_${f.id}">${f.sel.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
     if(f.ta) return `<div class="fr"><label class="fl">${f.lb}</label><textarea class="fta" id="f_${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
     return `<div class="fr"><label class="fl">${f.lb}</label><input class="fi" id="f_${f.id}" placeholder="${f.ph||''}"></div>`;
@@ -549,7 +549,7 @@ async function genTitles(){
   btn.disabled=true; btn.textContent='생성 중...';
   document.getElementById('staArea').innerHTML='<div class="seold">⏳ 제목 추천 중...</div>';
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SP_TITLE,messages:[{role:'user',content:`카테고리: ${cat}\n키워드: ${kw}\n제목 3개만 추천해줘.`}]})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SP_TITLE,messages:[{role:'user',content:`카테고리: ${cat}\n키워드: ${kw}\n제목 3개만 추천해줘.`}]})});
     const d=await res.json();
     const titles=(d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
     document.getElementById('staArea').innerHTML=`<div class="seotitles">${titles.map(t=>`<button class="seoto" onclick="pickTitle(this,'${t.replace(/'/g,"\\'")}')">📌 ${t}</button>`).join('')}</div>`;
@@ -571,11 +571,13 @@ function gv(id){const el=document.getElementById(`f_${id}`);return el?el.value.t
 
 function buildPrompt(){
   const cfg=FORMS[cat];if(!cfg)return '';
-  const info=cfg.fields.map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
+  const urlVal=cat==='먹고기록'?gv('url'):'';
+  const urlPart=urlVal?`\n\n[매장 정보]\n네이버 플레이스 URL: ${urlVal}\n이 URL 매장의 이름·주소·영업시간·주차·전화번호를 파악해서 블로그 기본정보 섹션에 기입해주세요.`:'';
+  const info=cfg.fields.filter(f=>!f.isUrl).map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const tp=selTitle?`\n선택된 SEO 제목 (이 제목을 블로그 글 제목으로 사용): ${selTitle}`:'';
   const kp=document.getElementById('skw').value.trim()?`\nSEO 키워드: ${document.getElementById('skw').value.trim()}`:'';
   const ph=files.length>0?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
-  return `카테고리: ${cat} (${type})${tp}${kp}\n${info}${ph}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그\n\n[SHORTS]\n쇼츠 스크립트 40초${files.length>0?'\n\n[PHOTO]\n사진 배치 안내 (사진N-[위치]-[이유])':''}`;
+  return `카테고리: ${cat} (${type})${tp}${kp}\n${info}${urlPart}${ph}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그\n\n[SHORTS]\n쇼츠 스크립트 40초${files.length>0?'\n\n[PHOTO]\n사진 배치 안내 (사진N-[위치]-[이유])':''}`;
 }
 
 async function generate(){
@@ -585,7 +587,7 @@ async function generate(){
   document.getElementById('oaEl').classList.remove('show');
   let si=0;const iv=setInterval(()=>{si=(si+1)%STEPS.length;document.getElementById('ldStep').textContent=STEPS[si];},1400);
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SP,messages:[{role:'user',content:buildPrompt()}]})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:SP,messages:[{role:'user',content:buildPrompt()}]})});
     const d=await res.json();
     parseOut(d.content?.[0]?.text||'');
   }catch(e){toast('오류가 발생했어요');document.getElementById('fc').style.display='block';}
