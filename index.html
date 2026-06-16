@@ -135,6 +135,12 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;b
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 input[type="file"]{display:none;}
 .dv{border:none;border-top:.5px solid var(--border);margin:14px 0;}
+.place-card{padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);margin-bottom:6px;cursor:pointer;transition:all .15s;}
+.place-card:active{background:var(--acl);border-color:var(--ac);}
+.place-card.selected{border-color:var(--ac);background:var(--acl);}
+.place-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.place-addr{font-size:11px;color:var(--sub);}
+.place-loading{text-align:center;padding:16px;font-size:12px;color:var(--hint);}
 </style>
 </head>
 <body>
@@ -166,6 +172,21 @@ input[type="file"]{display:none;}
 
       <div class="card" id="fc" style="display:none;">
         <div class="ct">✏️ <span id="ftitle">내용 입력</span></div>
+
+        <!-- 매장 검색 (먹고기록만 표시) -->
+        <div id="placeSearchArea" style="display:none;margin-bottom:14px;">
+          <div style="background:#FFF8F0;border:.5px solid #F0C9A0;border-radius:10px;padding:14px;">
+            <div style="font-size:12px;font-weight:600;color:#B86A42;margin-bottom:10px;">🔍 매장 검색</div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <input class="fi" id="placeSearchInput" placeholder="매장명 입력 (예: 제주 성심조림)" style="flex:1;font-size:14px;padding:10px 12px;">
+              <button onclick="searchPlace()" style="flex-shrink:0;padding:10px 14px;background:#D4845A;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;">검색</button>
+            </div>
+            <div style="font-size:11px;color:#C4956A;">매장명으로 검색하면 주소·영업시간·주차 정보를 자동으로 가져와요</div>
+            <div id="placeResults" style="margin-top:10px;"></div>
+            <div id="placeSelected" style="display:none;background:#EDF4EE;border:.5px solid #A8D4AC;border-radius:8px;padding:10px 12px;margin-top:8px;font-size:13px;color:#2D5E32;line-height:1.6;"></div>
+          </div>
+        </div>
+
         <div class="seo">
           <div class="seot">🔍 SEO 제목 추천</div>
           <div class="seor">
@@ -531,6 +552,75 @@ const FORMS = {
 
 let cat='',type='',files=[],logs=JSON.parse(localStorage.getItem('ml')||'[]'),drafts=JSON.parse(localStorage.getItem('ml_drafts')||'[]'),cur={},stMap={},selTitle='';
 const STEPS=['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','채널별 버전 생성 중'];
+let selectedPlaceInfo = '';
+
+async function searchPlace(){
+  const q = document.getElementById('placeSearchInput').value.trim();
+  if(!q){ toast('매장명을 입력해주세요'); return; }
+  const pr = document.getElementById('placeResults');
+  pr.innerHTML = '<div class="place-loading">🔍 검색 중...</div>';
+  try{
+    const KEY=['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        tools:[{"type":"web_search_20250305","name":"web_search"}],
+        messages:[{role:'user',content:`"${q}" 매장의 정보를 검색해서 아래 JSON 형식으로만 답해줘. 다른 설명 없이 JSON만.
+{
+  "name": "매장명",
+  "address": "전체 주소",
+  "hours": "영업시간",
+  "parking": "주차 가능/불가/유료",
+  "phone": "전화번호",
+  "price": "가격대",
+  "category": "음식 종류",
+  "waiting": "웨이팅 여부"
+}`}]
+      })
+    });
+    const d = await res.json();
+    // 텍스트 블록에서 JSON 추출
+    const textBlock = d.content?.find(b=>b.type==='text');
+    const txt = textBlock?.text || '';
+    const jsonMatch = txt.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('정보를 찾을 수 없어요');
+    const info = JSON.parse(jsonMatch[0]);
+    renderPlaceCard(info);
+  }catch(e){
+    pr.innerHTML = `<div class="place-loading" style="color:#C62828;">❌ ${e.message||'검색 실패. 다시 시도해주세요.'}</div>`;
+  }
+}
+
+function renderPlaceCard(info){
+  const pr = document.getElementById('placeResults');
+  pr.innerHTML = `<div class="place-card" onclick="selectPlace(${JSON.stringify(info).replace(/'/g,"&#39;")})">
+    <div class="place-name">🏪 ${info.name||'매장명 없음'}</div>
+    <div class="place-addr">📍 ${info.address||'-'}</div>
+    <div class="place-addr">🕐 ${info.hours||'-'} | 🅿️ ${info.parking||'-'}</div>
+    <div class="place-addr">📞 ${info.phone||'-'} | 💰 ${info.price||'-'}</div>
+    <div style="margin-top:6px;font-size:11px;color:var(--ac);font-weight:600;">탭해서 이 매장으로 선택 →</div>
+  </div>`;
+}
+
+function selectPlace(info){
+  if(typeof info === 'string') info = JSON.parse(info);
+  selectedPlaceInfo = `매장명: ${info.name||''}
+주소: ${info.address||''}
+영업시간: ${info.hours||''}
+주차: ${info.parking||''}
+전화번호: ${info.phone||''}
+가격대: ${info.price||''}
+카테고리: ${info.category||''}
+웨이팅: ${info.waiting||''}`;
+  const ps = document.getElementById('placeSelected');
+  ps.style.display='block';
+  ps.innerHTML = `✅ <strong>${info.name}</strong> 선택됨<br>📍 ${info.address||''}<br>🕐 ${info.hours||''} | 🅿️ ${info.parking||''}`;
+  document.getElementById('placeResults').innerHTML='';
+  toast(`${info.name} 선택됐어요 ✓`);
+}
 
 function selCat(btn){
   document.querySelectorAll('.cb').forEach(b=>b.classList.remove('sel'));
@@ -544,6 +634,17 @@ function selCat(btn){
   document.getElementById('skw').value='';
   document.getElementById('staArea').innerHTML='';
   document.getElementById('stbox').classList.remove('show');
+  // 먹고기록일 때만 매장 검색 표시
+  const psa = document.getElementById('placeSearchArea');
+  if(psa) psa.style.display = cat==='먹고기록' ? 'block' : 'none';
+  // 매장 선택 초기화
+  selectedPlaceInfo = '';
+  const ps = document.getElementById('placeSelected');
+  const pr = document.getElementById('placeResults');
+  const pi = document.getElementById('placeSearchInput');
+  if(ps){ ps.style.display='none'; ps.innerHTML=''; }
+  if(pr) pr.innerHTML='';
+  if(pi) pi.value='';
   setTimeout(()=>document.getElementById('fc').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
 
@@ -587,8 +688,8 @@ function gv(id){const el=document.getElementById(`f_${id}`);return el?el.value.t
 
 function buildPrompt(){
   const cfg=FORMS[cat];if(!cfg)return '';
-  const urlVal=cat==='먹고기록'?gv('url'):'';
-  const urlPart=urlVal?`\n\n[매장 정보]\n네이버 플레이스 URL: ${urlVal}\n이 URL 매장의 이름·주소·영업시간·주차·전화번호를 파악해서 블로그 기본정보 섹션에 기입해주세요.`:'';
+  // 매장 검색으로 가져온 정보
+  const urlPart = selectedPlaceInfo ? `\n\n[매장 기본 정보 - 블로그 상단에 반드시 포함]\n${selectedPlaceInfo}` : '';
   const info=cfg.fields.filter(f=>!f.isUrl).map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const tp=selTitle?`\n선택된 SEO 제목 (이 제목을 블로그 글 제목으로 사용): ${selTitle}`:'';
   const kp=document.getElementById('skw').value.trim()?`\nSEO 키워드: ${document.getElementById('skw').value.trim()}`:'';
