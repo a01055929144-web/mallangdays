@@ -315,7 +315,7 @@ function setSyncBadge(state) {
 async function appendToSheet(row) {
   try {
     const tok = await getGToken();
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:L:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:M:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
     const res = await fetch(url,{method:'POST',headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
     if (!res.ok) throw new Error(await res.text());
     return true;
@@ -390,7 +390,7 @@ async function toggleSheetStatus(rowIdx, col, currentDone, elId) {
 async function loadSheetData() {
   try {
     const tok = await getGToken();
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:L`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:M`;
     const res = await fetch(url,{headers:{'Authorization':'Bearer '+tok}});
     const d = await res.json();
     return d.values || [];
@@ -407,11 +407,11 @@ function parseSheetRows(rows) {
 }
 
 function sheetRowToHtml(r, rowIdx) {
-  const cat = r[1]||'', title = (r[4]||r[3]||'').trim(), date = r[5]||'', blog = r[6]||'', insta = r[7]||'', yt = r[9]||'';
+  const cat = r[1]||'', title = (r[4]||r[3]||'').trim(), date = r[5]||'', blog = r[6]||'', insta = r[8]||'', yt = r[10]||'';
   const isRec = cat.includes('임신')||cat.includes('연애')||cat.includes('출산')||cat.includes('육아일');
   const bDone = blog==='작성완료';
   const iDone = insta==='작성완료';
-  const bid = `st_${rowIdx}_G`, iid = `st_${rowIdx}_H`;
+  const bid = `st_${rowIdx}_G`, iid = `st_${rowIdx}_I`;
   const did = `date_${rowIdx}`;
   return `<div class="li">
     <div class="lh">
@@ -423,7 +423,7 @@ function sheetRowToHtml(r, rowIdx) {
     <div class="lti">${title}</div>
     <div class="lch" style="flex-wrap:wrap;gap:6px;margin-top:6px;">
       <button id="${bid}" class="lch2 ${bDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'G',${bDone},'${bid}')">📝 ${bDone?'완료':'미업로드'}</button>
-      <button id="${iid}" class="lch2 ${iDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'H',${iDone},'${iid}')">📸 ${iDone?'완료':'미업로드'}</button>
+      <button id="${iid}" class="lch2 ${iDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'I',${iDone},'${iid}')">📸 ${iDone?'완료':'미업로드'}</button>
     </div>
   </div>`;
 }
@@ -504,17 +504,19 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 [살림재테크] 정보90%+경험10% | 구조: 결론→조건·자격→신청방법→경험→주의사항→총평
 === 채널별 출력 ===
 인스타 캡션 작성 원칙:
-- 감정/핵심정보 한 줄로 시작
-- "자세한 내용은 블로그에서 확인하세요 🔗" 포함
-- 해시태그는 카테고리별 최적화:
-  임신기록: #임신 #임신기록 #임신일기 #예비아빠 #태교 #임신맘 #임신N주 #만삭 #임산부 #출산준비 #말랑데이즈
-  연애회상: #연애 #커플 #연애일기 #데이트 #커플일상 #신혼 #말랑데이즈
-  육아정보: #육아 #육아정보 #신생아 #육아팁 #초보엄마 #초보아빠 #육아일기 #말랑데이즈
-  육아용품: #육아용품 #육아템 #신생아용품 #육아추천 #내돈내산 #육아필수템 #말랑데이즈
-  먹고기록하기: #맛집 #맛집추천 #제주맛집 #카페 #먹스타그램 #맛스타그램 #말랑데이즈
-  살림재테크: #재테크 #신혼재테크 #신생아특례 #청약 #살림 #절약 #말랑데이즈
-- 위치/상황에 맞는 추가 해시태그 2~3개 더 붙이기
-- 총 해시태그 13~15개`;
+- 1~2줄의 강렬한 훅으로 시작 (공감 또는 궁금증 유발)
+- 감정이 느껴지는 짧은 문장 3~5줄 (줄바꿈 자주)
+- 말랑파파 시점의 솔직한 한마디
+- 빈 줄 하나 후 "자세한 내용은 블로그에서 확인하세요 🔗 프로필 링크"
+- 빈 줄 하나 후 해시태그 (줄 나눠서)
+
+해시태그 카테고리별 최적화 (13~15개):
+- 임신기록: #임신기록 #임신일기 #예비아빠 #임신N주차 #만삭 #임산부일상 #태교 #태동 #임신맘 #출산준비중 #예비부모 #말랑데이즈 #mallangdayz + 주차별 키워드
+- 연애회상: #커플일상 #연애일기 #데이트기록 #커플스타그램 #신혼일상 #부부일상 #데이트코스 #말랑데이즈 #mallangdayz + 장소 키워드
+- 육아정보: #육아정보 #육아팁 #신생아 #초보아빠 #초보엄마 #육아일기 #신생아육아 #아기있는집 #말랑데이즈 #mallangdayz + 주제 키워드
+- 육아용품: #육아용품 #육아템추천 #신생아용품 #내돈내산 #육아필수템 #육아추천템 #아기용품 #말랑데이즈 #mallangdayz + 제품명
+- 먹고기록하기: #맛집추천 #먹스타그램 #맛스타그램 + 지역맛집 #데이트맛집 #말랑데이즈 #mallangdayz + 지역/음식종류 키워드
+- 살림재테크: #신혼재테크 #재테크 #신혼살림 #절약생활 #신생아특례대출 #말랑데이즈 #mallangdayz + 주제 키워드`;
 
 const SP_TITLE = `네이버 블로그 SEO 전문가. 카테고리와 키워드로 검색 최적화 제목 3개 추천. 조건: 실제 검색 키워드 포함, 클릭 유도, 20자 내외, 말랑데이즈 육아·임신·신혼 톤. 번호 없이 제목만 한 줄씩 3개만 출력.`;
 
@@ -671,24 +673,21 @@ async function saveLog(){
   renderLog();
   toast('저장 중...');
   const now = new Date().toLocaleDateString('ko-KR');
-  // 블로그 초안 앞 300자 + 인스타 전체를 시트에 저장
-  // 상태값은 미작성 - 실제 업로드 후 토글로 변경
-  const blogSummary = cur.blog ? cur.blog.slice(0, 300).replace(/
-/g,' ') : '';
-  const instaFull = cur.insta || '';
+  // 시트 컬럼: No | 카테고리 | EP관리명 | EP노출명 | 콘텐츠제목 | 업로드일 | 블로그상태(G) | 블로그초안(H) | 인스타상태(I) | 인스타초안(J) | 유튜브(K) | 예정일(L) | 메모(M)
   const row = [
-    '',
-    `[${cur.cat}]`,
-    '',
-    cur.title,
-    cur.title,
-    now,
-    '미작성',          // 블로그 - 실제 업로드 전까지 미작성
-    '미작성',          // 인스타 - 실제 업로드 전까지 미작성
-    instaFull.slice(0, 500),   // 인스타 요약 (해시태그 포함)
-    '',                // 유튜브(보류)
-    '',
-    blogSummary        // 메모에 블로그 초안 앞부분 저장
+    '',               // A: No
+    `[${cur.cat}]`,  // B: 카테고리
+    '',               // C: EP(관리명)
+    cur.title,        // D: EP(노출명)
+    cur.title,        // E: 콘텐츠 제목
+    now,              // F: 실제 업로드일
+    '',               // G: 블로그 상태 (빈값 - 직접 토글)
+    cur.blog||'',     // H: 블로그 초안 전체
+    '',               // I: 인스타 상태 (빈값 - 직접 토글)
+    cur.insta||'',    // J: 인스타 초안 전체 (해시태그 포함)
+    '',               // K: 유튜브(보류)
+    '',               // L: 예정일
+    ''                // M: 메모
   ];
   const ok = await appendToSheet(row);
   if(ok){ toast('저장 + 구글 시트 기록 완료 ✅'); }
@@ -701,46 +700,75 @@ function renderDrafts(){
   const dl = document.getElementById('draftList');
   document.getElementById('sDraft').textContent = drafts.length;
   if(!drafts.length){
-    dl.innerHTML='<div class="em"><div class="emi">📝</div>저장된 초안이 없어요</div>';
+    dl.innerHTML='<div class="em"><div class="emi">📝</div>저장된 초안이 없어요<br><small style="font-size:11px;margin-top:6px;display:block;">초안 생성 후 자동 저장돼요</small></div>';
     return;
   }
   dl.innerHTML = drafts.slice(0,20).map((d,i) => `
-    <div class="li">
+    <div class="li" id="draft_${i}">
       <div class="lh">
         <span class="lc ${d.type==='기록형'?'lcr':'lci'}">${d.cat}</span>
         <span class="ld2">${d.date}</span>
       </div>
       <div class="lti">${d.title}</div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
-        <button class="lch2 cn tog-btn" onclick="viewDraft(${i},'blog')" style="background:#EBF2FD;color:#1565C0;border:none;">📝 블로그 보기</button>
-        <button class="lch2 cn tog-btn" onclick="viewDraft(${i},'insta')" style="background:#F3E5F5;color:#6A1B9A;border:none;">📸 인스타 보기</button>
-        <button class="lch2 cn tog-btn" onclick="deleteDraft(${i})" style="background:#FFEBEE;color:#C62828;border:none;">🗑️ 삭제</button>
+        <button class="lch2 tog-btn" onclick="toggleDraftView(${i},'blog')" style="background:#EBF2FD;color:#1565C0;border:none;">📝 블로그</button>
+        <button class="lch2 tog-btn" onclick="toggleDraftView(${i},'insta')" style="background:#F3E5F5;color:#6A1B9A;border:none;">📸 인스타</button>
+        <button class="lch2 tog-btn" onclick="deleteDraft(${i})" style="background:#FFEBEE;color:#C62828;border:none;">🗑️</button>
+      </div>
+      <div id="draft_view_${i}" style="display:none;margin-top:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span id="draft_label_${i}" style="font-size:12px;font-weight:600;color:var(--sub);"></span>
+          <div style="display:flex;gap:6px;">
+            <button class="lch2 tog-btn" onclick="saveDraftEdit(${i})" style="background:#EDF4EE;color:#2E7D32;border:none;">💾 저장</button>
+            <button class="lch2 tog-btn" onclick="copyDraftEdit(${i})" style="background:#EBF2FD;color:#1565C0;border:none;">📋 복사</button>
+          </div>
+        </div>
+        <textarea id="draft_ta_${i}" style="width:100%;min-height:200px;font-size:13px;line-height:1.7;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:inherit;color:var(--text);background:var(--bg);resize:vertical;"></textarea>
       </div>
     </div>`).join('');
 }
 
-function viewDraft(idx, ch){
+let draftViewState = {}; // {idx: 'blog'|'insta'|null}
+
+function toggleDraftView(idx, ch){
+  const view = document.getElementById(`draft_view_${idx}`);
+  const ta = document.getElementById(`draft_ta_${idx}`);
+  const label = document.getElementById(`draft_label_${idx}`);
   const d = drafts[idx];
-  if(!d) return;
-  const txt = ch==='blog' ? d.blog : d.insta;
-  const label = ch==='blog' ? '📝 블로그' : '📸 인스타';
-  // 모달 대신 alert 대신 새 textarea 팝업
-  const w = window.open('','_blank','width=600,height=700');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${label} - ${d.title}</title>
-  <style>body{font-family:sans-serif;padding:20px;background:#FAFAF8;}
-  h3{color:#D4845A;margin-bottom:12px;}
-  textarea{width:100%;height:80%;font-size:14px;line-height:1.7;border:1px solid #ddd;border-radius:8px;padding:14px;resize:none;}
-  button{margin-top:10px;padding:10px 20px;background:#D4845A;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;}
-  </style></head><body>
-  <h3>${label} — ${d.title}</h3>
-  <textarea id="t" readonly>${(txt||'').trim()}</textarea><br>
-  <button onclick="navigator.clipboard.writeText(document.getElementById('t').value).then(()=>alert('복사됐어요!'))">복사하기</button>
-  </body></html>`);
+  if(!d||!view||!ta) return;
+  if(draftViewState[idx]===ch){
+    // 같은 탭 다시 클릭 → 닫기
+    view.style.display='none';
+    draftViewState[idx]=null;
+    return;
+  }
+  draftViewState[idx]=ch;
+  view.style.display='block';
+  ta.value=(ch==='blog'?d.blog:d.insta)||'';
+  label.textContent=ch==='blog'?'📝 블로그 초안':'📸 인스타 초안';
+  ta.setAttribute('data-ch', ch);
+}
+
+function saveDraftEdit(idx){
+  const ta = document.getElementById(`draft_ta_${idx}`);
+  const ch = ta.getAttribute('data-ch');
+  if(!ta||!ch) return;
+  drafts[idx][ch] = ta.value;
+  localStorage.setItem('ml_drafts', JSON.stringify(drafts));
+  toast('수정 내용이 저장됐어요 ✅');
+}
+
+function copyDraftEdit(idx){
+  const ta = document.getElementById(`draft_ta_${idx}`);
+  if(!ta) return;
+  navigator.clipboard.writeText(ta.value).then(()=>toast('복사됐어요 📋'));
 }
 
 function deleteDraft(idx){
+  if(!confirm('이 초안을 삭제할까요?')) return;
   drafts.splice(idx,1);
   localStorage.setItem('ml_drafts',JSON.stringify(drafts));
+  draftViewState={};
   renderDrafts();
   toast('초안이 삭제됐어요');
 }
