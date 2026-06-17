@@ -281,17 +281,16 @@ input[type="file"]{display:none;}
         <div class="sc2"><div class="sn" id="sTot">-</div><div class="sl2">전체</div></div>
         <div class="sc2"><div class="sn" id="sBl">-</div><div class="sl2">블로그 완료</div></div>
         <div class="sc2"><div class="sn" id="sIn">-</div><div class="sl2">인스타 완료</div></div>
-        <div class="sc2"><div class="sn" id="sDraft">0</div><div class="sl2">로컬 초안</div></div>
+        <div class="sc2"><div class="sn" id="sDraft">0</div><div class="sl2">저장 초안</div></div>
       </div>
-      <!-- 로컬 초안 -->
-      <div class="card">
-        <div class="ct">💾 저장된 초안</div>
+      <!-- 탭 전환 -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button class="status-tab active" id="lt-draft" onclick="swLog('draft')">💾 저장된 초안 <span id="draftCount" style="background:#FAF0EB;color:#B86A42;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
+        <button class="status-tab" id="lt-sheet" onclick="swLog('sheet')">📋 콘텐츠 기록 <span id="sheetCount" style="background:#EDF4EE;color:#3A6B3E;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
+      </div>
+      <div class="card" style="padding-top:12px;">
         <div id="draftList"><div class="em"><div class="emi">📝</div>초안 생성 시 자동 저장돼요</div></div>
-      </div>
-      <!-- 시트 기록 -->
-      <div class="card">
-        <div class="ct">📋 콘텐츠 기록 <small style="font-size:11px;font-weight:400;color:var(--hint);">(구글 시트)</small></div>
-        <div id="logList"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
+        <div id="logList" style="display:none;"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
       </div>
     </div>
 
@@ -570,18 +569,30 @@ function closeDraftEdit(rowIdx) {
 }
 
 // ===== 기록 탭 렌더 =====
+function swLog(tab) {
+  document.querySelectorAll('.status-tab[id^="lt-"]').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`lt-${tab}`).classList.add('active');
+  document.getElementById('draftList').style.display = tab==='draft' ? 'block' : 'none';
+  document.getElementById('logList').style.display = tab==='sheet' ? 'block' : 'none';
+}
+
 async function renderLog() {
   const ll = document.getElementById('logList');
+  ll.innerHTML = '<div class="em"><div class="emi">🔄</div>불러오는 중...</div>';
   const rows = await sheetRead();
   if (!rows) {
     ll.innerHTML = '<div class="em"><div class="emi">❌</div>불러오기 실패<br><small>새로고침해주세요</small></div>';
     return;
   }
   const items = parseRows(rows);
-  document.getElementById('sTot').textContent = items.length;
-  document.getElementById('sBl').textContent = items.filter(({row})=>(row[4]||'')==='작성완료').length;
-  document.getElementById('sIn').textContent = items.filter(({row})=>(row[6]||'')==='작성완료').length;
-  const recent = [...items].reverse().slice(0,30);
+  const tot = items.length;
+  const bl = items.filter(({row})=>(row[4]||'')==='작성완료').length;
+  const ins = items.filter(({row})=>(row[6]||'')==='작성완료').length;
+  document.getElementById('sTot').textContent = tot;
+  document.getElementById('sBl').textContent = bl;
+  document.getElementById('sIn').textContent = ins;
+  document.getElementById('sheetCount').textContent = tot;
+  const recent = [...items].reverse().slice(0,50);
   ll.innerHTML = recent.length
     ? recent.map(rowHtml).join('')
     : '<div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div>';
@@ -610,6 +621,7 @@ async function renderStatus() {
 let drafts = JSON.parse(localStorage.getItem('ml_drafts')||'[]');
 function renderDrafts() {
   document.getElementById('sDraft').textContent = drafts.length;
+  document.getElementById('draftCount').textContent = drafts.length;
   const dl = document.getElementById('draftList');
   if (!drafts.length) {
     dl.innerHTML = '<div class="em"><div class="emi">📝</div>초안 생성 시 자동 저장돼요</div>';
@@ -661,24 +673,48 @@ async function saveLocalDraft(i) {
   if (!ta) return;
   const ch = ta.getAttribute('data-ch');
   const value = ta.value;
-  // 로컬 저장
-  drafts[i][ch] = value;
-  localStorage.setItem('ml_drafts', JSON.stringify(drafts));
-  toast('저장 중...');
-  // 구글 시트에서 제목으로 행 찾아서 업데이트
-  const title = drafts[i]?.title || '';
-  const col = ch === 'blog' ? 'F' : 'H'; // F=블로그초안, H=인스타초안
+  const draft = drafts[i];
+  if (!draft) return;
+  const col = ch === 'blog' ? 'F' : 'H';
+  toast('시트에 저장 중...');
+  // 시트에서 제목으로 행 찾기
   const rows = await sheetRead();
   if (rows) {
-    // C열(인덱스2)에서 제목 매칭
-    const matched = rows.map((r,idx)=>({r,rowIdx:idx+1})).find(({r})=>(r[2]||'').trim()===title.trim());
+    const matched = rows.map((r,idx)=>({r,rowIdx:idx+1}))
+      .find(({r})=>(r[2]||'').trim()===(draft.title||'').trim());
     if (matched) {
       const ok = await sheetUpdate(matched.rowIdx, col, value);
-      toast(ok ? `💾 시트에도 저장됐어요 ✅` : '💾 로컬 저장됨 (시트 저장 실패)');
-      return;
+      if (ok) {
+        // 로컬도 동기화
+        drafts[i][ch] = value;
+        localStorage.setItem('ml_drafts', JSON.stringify(drafts));
+        toast('✅ 구글 시트에 저장됐어요');
+        return;
+      }
+    }
+    // 시트에 행이 없으면 새로 추가
+    const now = new Date().toLocaleDateString('ko-KR');
+    const baseRow = ['', `[${draft.cat||''}]`, draft.title||'', now, '', '', '', '', '', ''];
+    const ok2 = await sheetAppend(baseRow);
+    if (ok2) {
+      sheetCache = null; sheetCacheTime = 0;
+      const rows2 = await sheetRead();
+      if (rows2) {
+        const newIdx = rows2.length;
+        await sheetUpdate(newIdx, col, value);
+        // 반대쪽 초안도 저장
+        const otherCol = ch==='blog'?'H':'F';
+        const otherVal = ch==='blog'?(draft.insta||''):(draft.blog||'');
+        if (otherVal) await sheetUpdate(newIdx, otherCol, otherVal);
+        drafts[i][ch] = value;
+        localStorage.setItem('ml_drafts', JSON.stringify(drafts));
+        sheetCache = null; sheetCacheTime = 0;
+        toast('✅ 시트에 새로 저장됐어요');
+        return;
+      }
     }
   }
-  toast('💾 로컬 저장됐어요 (시트 행 못 찾음)');
+  toast('❌ 시트 저장 실패');
 }
 function copyLocalDraft(i) {
   const ta = document.getElementById(`ld_ta_${i}`);
@@ -1073,7 +1109,11 @@ function showPg(id){
   document.getElementById(`t-${id}`).classList.add('active');
   document.getElementById('pgBadge').textContent={write:'글 작성',log:'기록',status:'현황'}[id];
   document.querySelector('.wrap').scrollTop=0;
-  if(id==='log'){ renderDrafts(); renderLog(); }
+  if(id==='log'){
+    renderDrafts();
+    renderLog();
+    swLog('draft'); // 기록 탭 진입 시 초안 탭 먼저
+  }
   if(id==='status') renderStatus();
 }
 
