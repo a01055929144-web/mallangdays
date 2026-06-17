@@ -343,7 +343,7 @@ function setSyncBadge(state) {
 async function appendToSheet(row) {
   try {
     const tok = await getGToken();
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:M:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:J:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
     const res = await fetch(url,{method:'POST',headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
     if (!res.ok) throw new Error(await res.text());
     return true;
@@ -385,14 +385,13 @@ async function toggleSheetStatus(rowIdx, col, currentDone, elId) {
   const ok = await updateSheetCell(rowIdx, col, newVal);
   // 완료로 변경 시 업로드일(F열=6번) 도 자동 기록
   if (ok && newDone) {
-    await updateSheetCell(rowIdx, 'F', today);
-    if (sheetCache && sheetCache[rowIdx-1]) sheetCache[rowIdx-1][5] = today;
-    // 날짜 표시 업데이트
+    await updateSheetCell(rowIdx, 'D', today);
+    if (sheetCache && sheetCache[rowIdx-1]) sheetCache[rowIdx-1][3] = today;
     const dateEl = document.getElementById(`date_${rowIdx}`);
     if (dateEl) dateEl.textContent = today;
   }
   if (ok) {
-    const colMap = {G:6, H:7, J:9};
+    const colMap = {E:4, G:6, D:3};
     const cIdx = colMap[col];
     if (sheetCache && sheetCache[rowIdx-1] && cIdx !== undefined) {
       sheetCache[rowIdx-1][cIdx] = newVal;
@@ -418,7 +417,7 @@ async function toggleSheetStatus(rowIdx, col, currentDone, elId) {
 async function loadSheetData() {
   try {
     const tok = await getGToken();
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:M`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:J`;
     const res = await fetch(url,{headers:{'Authorization':'Bearer '+tok}});
     const d = await res.json();
     return d.values || [];
@@ -435,11 +434,11 @@ function parseSheetRows(rows) {
 }
 
 function sheetRowToHtml(r, rowIdx) {
-  const cat = r[1]||'', title = (r[4]||r[3]||'').trim(), date = r[5]||'', blog = r[6]||'', insta = r[8]||'', yt = r[10]||'';
+  const cat = r[1]||'', title = (r[2]||'').trim(), date = r[3]||'', blog = r[4]||'', insta = r[6]||'', yt = r[9]||'';
   const isRec = cat.includes('임신')||cat.includes('연애')||cat.includes('출산')||cat.includes('육아일');
-  const bDone = blog==='작성완료';
-  const iDone = insta==='작성완료';
-  const bid = `st_${rowIdx}_G`, iid = `st_${rowIdx}_I`;
+  const bDone = (r[4]||'')==='작성완료';
+  const iDone = (r[6]||'')==='작성완료';
+  const bid = `st_${rowIdx}_E`, iid = `st_${rowIdx}_G`;
   const did = `date_${rowIdx}`;
   return `<div class="li">
     <div class="lh">
@@ -450,8 +449,8 @@ function sheetRowToHtml(r, rowIdx) {
     </div>
     <div class="lti">${title}</div>
     <div class="lch" style="flex-wrap:wrap;gap:6px;margin-top:6px;">
-      <button id="${bid}" class="lch2 ${bDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'G',${bDone},'${bid}')">📝 ${bDone?'완료':'미업로드'}</button>
-      <button id="${iid}" class="lch2 ${iDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'I',${iDone},'${iid}')">📸 ${iDone?'완료':'미업로드'}</button>
+      <button id="${bid}" class="lch2 ${bDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'E',${bDone},'${bid}')">📝 ${bDone?'완료':'미업로드'}</button>
+      <button id="${iid}" class="lch2 ${iDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'G',${iDone},'${iid}')">📸 ${iDone?'완료':'미업로드'}</button>
     </div>
   </div>`;
 }
@@ -462,9 +461,9 @@ async function editDate(rowIdx, did) {
   const input = prompt('업로드 날짜를 입력해주세요 (예: 2026. 6. 16.)', cur || new Date().toLocaleDateString('ko-KR'));
   if (!input || input === cur) return;
   el.textContent = '저장 중...';
-  const ok = await updateSheetCell(rowIdx, 'F', input);
+  const ok = await updateSheetCell(rowIdx, 'D', input);
   if (ok) {
-    if (sheetCache && sheetCache[rowIdx-1]) sheetCache[rowIdx-1][5] = input;
+    if (sheetCache && sheetCache[rowIdx-1]) sheetCache[rowIdx-1][3] = input;
     el.textContent = input;
     toast('📅 날짜가 업데이트됐어요');
   } else {
@@ -1056,17 +1055,14 @@ async function saveLog(){
   const row = [
     '',               // A: No
     `[${cur.cat}]`,  // B: 카테고리
-    '',               // C: EP(관리명)
-    cur.title,        // D: EP(노출명)
-    cur.title,        // E: 콘텐츠 제목
-    now,              // F: 실제 업로드일
-    '',               // G: 블로그 상태 (빈값 - 직접 토글)
-    cur.blog||'',     // H: 블로그 초안 전체
-    '',               // I: 인스타 상태 (빈값 - 직접 토글)
-    cur.insta||'',    // J: 인스타 초안 전체 (해시태그 포함)
-    '',               // K: 유튜브(보류)
-    '',               // L: 예정일
-    ''                // M: 메모
+    cur.title,        // C: 콘텐츠 제목
+    now,              // D: 업로드일
+    '',               // E: 블로그 상태 (빈값 - 직접 토글)
+    cur.blog||'',     // F: 블로그 초안 전체
+    '',               // G: 인스타 상태 (빈값 - 직접 토글)
+    cur.insta||'',    // H: 인스타 초안 전체 (해시태그 포함)
+    '',               // I: 예정일
+    ''                // J: 유튜브(보류)
   ];
   const ok = await appendToSheet(row);
   if(ok){ toast('저장 + 구글 시트 기록 완료 ✅'); }
