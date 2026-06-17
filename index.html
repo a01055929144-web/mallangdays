@@ -492,17 +492,16 @@ async function editSheetDraft(rowIdx, col, key){
   area.style.display='block';
   label.textContent = col==='F'?'📝 블로그 초안':'📸 인스타 초안';
   ta.setAttribute('data-col', col);
-  ta.setAttribute('data-rowidx', rowIdx);
-  // 시트에서 현재 내용 가져오기
-  ta.value='불러오는 중...';
-  try{
-    const res=await fetch(AS_URL+'?action=read');
-    const d=await res.json();
-    if(d.ok && d.data[rowIdx-1]){
-      const colIdx = col==='F'?5:7;
-      ta.value=d.data[rowIdx-1][colIdx]||'';
-    }
-  }catch(e){ ta.value=''; }
+  ta.setAttribute('data-rowidx', String(rowIdx));
+  // 캐시에서 바로 읽기 (없으면 시트에서 로드)
+  const colIdx = col==='F'?5:7;
+  if(sheetCache && sheetCache[rowIdx-1]){
+    ta.value = sheetCache[rowIdx-1][colIdx]||'';
+  } else {
+    ta.value='불러오는 중...';
+    const rows = await loadAndCacheSheet(true);
+    ta.value = rows && rows[rowIdx-1] ? rows[rowIdx-1][colIdx]||'' : '';
+  }
   ta.focus();
   area.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -511,13 +510,17 @@ async function saveSheetDraft(rowIdx){
   const ta=document.getElementById(`sheet_ta_${rowIdx}`);
   if(!ta)return;
   const col=ta.getAttribute('data-col');
-  const ok=await updateSheetCell(rowIdx,col,ta.value);
+  const value=ta.value;
+  const ok=await updateSheetCell(rowIdx,col,value);
   if(ok){
-    // 캐시 초기화
-    sheetCache=null; sheetCacheTime=0;
+    // 캐시도 즉시 업데이트
+    const colIdx = col==='F'?5:7;
+    if(sheetCache && sheetCache[rowIdx-1]){
+      sheetCache[rowIdx-1][colIdx]=value;
+    }
     toast('💾 시트에 저장됐어요');
   } else {
-    toast('❌ 저장 실패');
+    toast('❌ 저장 실패. 다시 시도해주세요.');
   }
 }
 
@@ -570,7 +573,12 @@ async function loadAndCacheSheet(forceRefresh=false) {
 async function renderSheetData() {
   const el = document.getElementById('sheetData');
   const badge = document.getElementById('sheetSyncBadge');
-  const rows = await loadAndCacheSheet();
+  // 기록탭과 같은 캐시 사용
+  let rows = sheetCache;
+  if(!rows){
+    el.innerHTML='<div class="em"><div class="emi">🔄</div>불러오는 중...</div>';
+    rows = await loadAndCacheSheet();
+  }
   if (!rows || rows.length < 2) {
     el.innerHTML = '<div class="em"><div class="emi">📭</div>시트에 데이터가 없어요</div>';
     badge.className='sync-badge sync-err'; badge.textContent='데이터 없음';
@@ -1229,8 +1237,15 @@ function showPg(id){
   document.getElementById(`t-${id}`).classList.add('active');
   document.getElementById('topBadge').textContent={write:'글 작성',log:'기록',status:'현황'}[id];
   document.querySelector('.wrap').scrollTop=0;
-  if(id==='log'){ renderDrafts(); renderSheetLog(); }
-  if(id==='status') renderSheetData();
+  if(id==='log'){
+    renderDrafts();
+    renderSheetLog();
+  }
+  if(id==='status'){
+    // 기록탭과 같은 캐시 사용 - 데이터 일치
+    renderSheetData();
+    renderSheetLog(); // pending/done 업데이트
+  }
 }
 
 function cpTxt(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('복사됐어요 ✨'));}
