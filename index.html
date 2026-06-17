@@ -316,8 +316,11 @@ function setSyncBadge(state) {
 
 async function appendToSheet(row) {
   try {
-    const params = new URLSearchParams({action:'append', row:JSON.stringify(row)});
-    const res = await fetch(AS_URL + '?' + params);
+    const res = await fetch(AS_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({action:'append', row:JSON.stringify(row)})
+    });
     const d = await res.json();
     if (!d.ok) throw new Error(d.error||'오류');
     return true;
@@ -329,8 +332,11 @@ async function appendToSheet(row) {
 
 async function updateSheetCell(rowIdx, col, value) {
   try {
-    const params = new URLSearchParams({action:'update', rowIdx:String(rowIdx), col:col, value:String(value)});
-    const res = await fetch(AS_URL + '?' + params);
+    const res = await fetch(AS_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({action:'update', rowIdx:String(rowIdx), col:col, value:String(value)})
+    });
     const d = await res.json();
     if (!d.ok) throw new Error(d.error||'오류');
     return true;
