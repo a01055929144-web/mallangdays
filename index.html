@@ -291,46 +291,8 @@ input[type="file"]{display:none;}
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== 구글 시트 설정 =====
-const SHEET_ID = '17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE';
-const SHEET_NAME = '콘텐츠 기획표';
-const SA_EMAIL = 'mallangdays-sheets@resonant-tube-499610-a7.iam.gserviceaccount.com';
-const SA_KEY = `-----BEGIN PRIVATE KEY-----\nMIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQCcC+3WmvmH57GZ\nK6KQc7dBK+ZaMuEP6R97w0Zqzr9gA+UPu45OMFTwBHPKlfeESXgX+RSla3Tu7NHL\nvu5JolA2IS6v3nzKgcvtanoDDY3BWMTjyeJvKDoNUKOLZTN5dUEwh1qV2a0+ejxn\npmH42C7kvvIsQn1IZFHda7NB6Vibf/9KBi+tnL5KeGsyQv1cHHshAS4nLe2HKTaM\ndRAbhODHa5zd7WjBJTZCOdymB7Gmb/l5gLZ31ofMyF+f4eu2f0tNIwZM6jeJCUvF\nMeW1qhrDXA4k0QMQBMBCNkIkpMm28mlT4gHkVo5H4xIWs50tfdHtUgU5vOYD4GyP\n8baMo0MNAgMBAAECgf9mQGrY9TQNmgUGGVGs1iZ+zgVjlXNkuZ2nu42o71D32ZV/\neacGFSWTIVe+qAZI6NuI2e5tdrxo00Wl/LaoCXQGBDhThba/+81lBSBuX7NDvqdF\nnESEEhf4IZ8I+IeCTxMoeYkiKEEdb3ulb6FDLmWL/pMx7V+q0BHUxX3w8rbdLTxM\niiH6HqEXNvP0BbLdU7Ic7JS+69nMTD2IHaTFxv+piEO37YInLva7m0DwNMlL8d8e\nCr65mJlj1GaHiRLt8hFGjYUZELHidY4nQsEQKNfCuo1iBBjV61NBaiNn0MrzwnSy\nD+EX0bqAbuRiVP9VcnzjRLQI45r2Jv8AZr+KuxkCgYEAzgHD0CYaSHVU0FQhSSK2\nlsVMYN2Ow0oHyWGGcrjEAqXVhy7HJgQA1NdFNc9wRkyhmZraKS0ywJ6xLMTUhN8X\nSJdatvjIVwhQhs482Rtiy1asb1jtbskKpkdgLFJVsFm+CKfv9/ljsUJ2xn87HfYd\nqqM3fjF44uIVmMfZO9ZJ7oUCgYEAwepd8mOkooftvnlyvGiq2uly4mS0w6gcaHfW\nT7ncTgJBHhOTytFzjvJJwFTvltb5OsR1KhIJJjMor9Pmtd6gGUOGPMkhDHRHKwpQ\nX6lKH9s3uhh4ZxpQdgp+f2VDu3ulcqvrDqQQg0F02cvHRVqPWkiRbD6un8iBQjAG\njFlKPOkCgYBJATUcebRMw0/YOEhHe8bLLYZAuaOTL5QM2MPlufa0nYJLUtd+cGK/\nCr7bL/Uw5I1MOyVe/EaFHnfZTrOlls3Qitq6BvYwaaDn9QR5SAw91SxslU4nOZXN\nkXPSoSb+xP7kYGdZMIcU1WH0PDh+CK9AvnC3Bt85QDe5GfGxE+LFZQKBgQDB4Ub/\nEztHOaqtl5Xs5KV27JPt4QyO1yVYGgEPg1/OKxjaLm7FCPeGA59TilhmMxfK9yPB\n5Xh6VgonCjGQwz7FI6syWVIOtq91TAGiM4umIDMugErZowixjLp/O0smR3DbHyKM\nZ+MOqMJhBAp/wBS2CvpDBMTpgroh6AyUBK5iCQKBgFUQ+EbJuwMhop3jP6VHXQ/V\nLX/qLoOUzra6EnnjvcCLyQOlyUCfif+n/YPUwZkDPZsdzMzEBkk6SSB+jNs+GEju\nseL4Ov6/NU5kMifAiDv2c00p3UkbEzbpeY8CBRXolbez56Bmh6by4n+szwKh1LSy\ngH0EsytOkCG81xptkXW1\n-----END PRIVATE KEY-----\n`;
-
-// ===== JWT / 구글 시트 API =====
-let gToken = null, gTokenExp = 0;
-
-function b64url(str) {
-  return btoa(str).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-function b64urlBuf(buf) {
-  return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-
-async function getGToken() {
-  if (gToken && Date.now() < gTokenExp) return gToken;
-  try {
-    const now = Math.floor(Date.now()/1000);
-    const header = b64url(JSON.stringify({alg:'RS256',typ:'JWT'}));
-    const claim = b64url(JSON.stringify({iss:SA_EMAIL,scope:'https://www.googleapis.com/auth/spreadsheets',aud:'https://oauth2.googleapis.com/token',exp:now+3600,iat:now}));
-    const unsigned = header+'.'+claim;
-    const pemKey = SA_KEY.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g,'');
-    const binaryKey = Uint8Array.from(atob(pemKey),c=>c.charCodeAt(0));
-    const cryptoKey = await crypto.subtle.importKey('pkcs8',binaryKey,{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
-    const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5',cryptoKey,new TextEncoder().encode(unsigned));
-    const jwt = unsigned+'.'+b64urlBuf(sig);
-    const res = await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:`grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`});
-    const d = await res.json();
-    if (!d.access_token) throw new Error('token error');
-    gToken = d.access_token;
-    gTokenExp = Date.now() + (d.expires_in-60)*1000;
-    setSyncBadge('ok');
-    return gToken;
-  } catch(e) {
-    setSyncBadge('err');
-    throw e;
-  }
-}
+// ===== 구글 시트 설정 (Apps Script 방식) =====
+const AS_URL = 'https://script.google.com/macros/s/AKfycbz5k5csAXYrRpbbNlE6tl_il_xO0U894zSONtV4lNvH_oJbrZj1Xb9F5NiSKW_TIjyb/exec';
 
 function setSyncBadge(state) {
   const b = document.getElementById('syncBadge');
@@ -342,10 +304,10 @@ function setSyncBadge(state) {
 
 async function appendToSheet(row) {
   try {
-    const tok = await getGToken();
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:J:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
-    const res = await fetch(url,{method:'POST',headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
-    if (!res.ok) throw new Error(await res.text());
+    const params = new URLSearchParams({action:'append', row:JSON.stringify(row)});
+    const res = await fetch(AS_URL + '?' + params);
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error||'오류');
     return true;
   } catch(e) {
     console.error('Sheet append error:', e);
@@ -354,23 +316,35 @@ async function appendToSheet(row) {
 }
 
 async function updateSheetCell(rowIdx, col, value) {
-  // rowIdx: 시트에서의 실제 행 번호 (1부터, 헤더 포함)
-  // col: 컬럼 알파벳 (G=블로그, H=인스타, J=유튜브)
   try {
-    const tok = await getGToken();
-    const range = `${encodeURIComponent(SHEET_NAME)}!${col}${rowIdx}`;
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=USER_ENTERED`;
-    const res = await fetch(url, {
-      method: 'PUT',
-      headers: {'Authorization': 'Bearer '+tok, 'Content-Type': 'application/json'},
-      body: JSON.stringify({values: [[value]]})
-    });
-    if (!res.ok) throw new Error(await res.text());
+    const params = new URLSearchParams({action:'update', rowIdx:String(rowIdx), col:col, value:String(value)});
+    const res = await fetch(AS_URL + '?' + params);
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error||'오류');
     return true;
   } catch(e) {
     console.error('Sheet update error:', e);
     return false;
   }
+}
+
+async function loadSheetData() {
+  try {
+    const res = await fetch(AS_URL + '?action=read');
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error||'오류');
+    setSyncBadge('ok');
+    return d.data || [];
+  } catch(e) {
+    console.error('Sheet load error:', e);
+    setSyncBadge('err');
+    return null;
+  }
+}
+
+async function getGToken() {
+  // Apps Script 방식은 토큰 불필요
+  return true;
 }
 
 async function toggleSheetStatus(rowIdx, col, currentDone, elId) {
