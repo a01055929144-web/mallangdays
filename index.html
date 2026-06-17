@@ -316,14 +316,8 @@ function setSyncBadge(state) {
 
 async function appendToSheet(row) {
   try {
-    // URL 길이 제한 대비 - 초안 컬럼(F,H) 길이 제한
-    const safeRow = row.map((v,i) => {
-      if((i===5||i===7) && typeof v==='string' && v.length>3000){
-        return v.slice(0,3000) + '...(이하 생략)';
-      }
-      return v;
-    });
-    const url = AS_URL + '?action=append&row=' + encodeURIComponent(JSON.stringify(safeRow));
+    // 기본 정보만 append (초안은 update로 별도 저장)
+    const url = AS_URL + '?action=append&row=' + encodeURIComponent(JSON.stringify(row));
     const res = await fetch(url);
     const text = await res.text();
     const d = JSON.parse(text);
@@ -337,9 +331,25 @@ async function appendToSheet(row) {
 
 async function updateSheetCell(rowIdx, col, value) {
   try {
-    const url = AS_URL + '?action=update&rowIdx=' + rowIdx + '&col=' + encodeURIComponent(col) + '&value=' + encodeURIComponent(String(value));
+    const strVal = String(value||'');
+    // 긴 텍스트는 청크로 나눠서 저장 (URL 길이 제한 대비)
+    const CHUNK = 1500;
+    if(strVal.length > CHUNK){
+      // 청크 분할 전송
+      let full = '';
+      for(let i=0;i<strVal.length;i+=CHUNK){
+        const chunk = strVal.slice(i,i+CHUNK);
+        const url = AS_URL + '?action=update&rowIdx=' + rowIdx + '&col=' + encodeURIComponent(col) + '&value=' + encodeURIComponent(chunk) + '&append=' + (i>0?'1':'0');
+        const res = await fetch(url);
+        const d = await res.json();
+        if(!d.ok) throw new Error(d.error||'청크 저장 오류');
+      }
+      return true;
+    }
+    const url = AS_URL + '?action=update&rowIdx=' + rowIdx + '&col=' + encodeURIComponent(col) + '&value=' + encodeURIComponent(strVal);
     const res = await fetch(url);
-    const d = await res.json();
+    const text = await res.text();
+    const d = JSON.parse(text);
     if (!d.ok) throw new Error(d.error||'오류');
     return true;
   } catch(e) {
@@ -991,29 +1001,28 @@ async function parseOut(txt){
 
 async function autoSaveToSheet(catName, title, blog, insta, date){
   try{
-    const row = [
-      '',
-      `[${catName}]`,
-      title,
-      date,
-      '',
-      blog,
-      '',
-      insta,
-      '',
-      ''
-    ];
-    const ok = await appendToSheet(row);
-    if(ok){
-      toast('✅ 시트에 자동 저장됐어요');
-      sheetCache = null;
-      sheetCacheTime = 0;
-    } else {
-      toast('⚠️ 시트 저장 실패 - 다시 시도해주세요');
-    }
+    // 1단계: 기본 정보 append (URL 짧게 유지)
+    const baseRow = ['', `[${catName}]`, title, date, '', '', '', '', '', ''];
+    const ok = await appendToSheet(baseRow);
+    if(!ok){ toast('⚠️ 시트 저장 실패'); return; }
+
+    // 방금 추가된 행 번호 찾기 (마지막 행)
+    const readRes = await fetch(AS_URL + '?action=read');
+    const readD = await readRes.json();
+    if(!readD.ok) throw new Error('읽기 실패');
+    const lastRowIdx = readD.data.length; // 헤더 포함 전체 행 수
+
+    // 2단계: 블로그 초안, 인스타 초안 각각 update (긴 텍스트 별도 저장)
+    if(blog) await updateSheetCell(lastRowIdx, 'F', blog);
+    if(insta) await updateSheetCell(lastRowIdx, 'H', insta);
+
+    // 캐시 초기화
+    sheetCache = null;
+    sheetCacheTime = 0;
+    toast('✅ 시트에 자동 저장됐어요');
   }catch(e){
     console.error('autoSave error:', e);
-    toast('⚠️ 시트 저장 오류: ' + e.message);
+    toast('⚠️ 저장 오류: ' + e.message);
   }
 }
 
