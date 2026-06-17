@@ -929,10 +929,10 @@ async function generate(){
   finally{clearInterval(iv);document.getElementById('ldEl').classList.remove('show');}
 }
 
-function parseOut(txt){
+async function parseOut(txt){
   // 살림재테크 시리즈 감지
   if(txt.includes('[BLOG_1]')){
-    parseSeriesOut(txt);
+    await parseSeriesOut(txt);
     return;
   }
   const blog=sec(txt,'BLOG','INSTA')||txt;
@@ -1076,7 +1076,7 @@ async function saveSeriesLog(num){
   toast(ok?`${num}편 저장 + 시트 기록 완료 ✅`:`앱에 저장됐어요 (시트 기록 실패)`);
 }
 
-function parseSeriesOut(txt){
+async function parseSeriesOut(txt){
   const has3=txt.includes('[BLOG_3]'), has2=txt.includes('[BLOG_2]');
   const count=has3?3:has2?2:1;
   const blogs=[], instas=[];
