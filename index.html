@@ -7,8 +7,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1781734278">
-<title>말랑데이즈 v1781734278</title>
+<meta name="version" content="1781734363">
+<title>말랑데이즈</title>
 <style>
 :root{
   --bg:#FAFAF8;--surface:#FFF;--border:#E8E6E0;--text:#1A1916;--sub:#6B6860;--hint:#A8A49E;
@@ -319,6 +319,19 @@ input[type="file"]{display:none;}
 <div class="toast" id="toast"></div>
 
 <script>
+// ===== 캐시 버스팅 =====
+(function() {
+  const CURRENT_VERSION = '1781734363';
+  const stored = localStorage.getItem('app_version');
+  if (stored !== CURRENT_VERSION) {
+    localStorage.setItem('app_version', CURRENT_VERSION);
+    // 캐시 삭제 후 강제 새로고침 (최초 1회)
+    if (stored !== null && 'caches' in window) {
+      caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+    }
+  }
+})();
+
 // ===== 설정 =====
 const AS_URL = 'https://script.google.com/macros/s/AKfycbwfYmCKWm6LBfmFm68xi5flkXJYXrtzZItoKlOvHFT-7NJyQsVzHF3SufoLMME_7Ip6/exec';
 const API_KEY = ['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
