@@ -279,16 +279,12 @@ input[type="file"]{display:none;}
 
     <!-- 현황 (구글 시트 연동) -->
     <div class="pg" id="pg-status">
-      <div class="card" id="sheetStatusCard">
-        <div class="ct">📊 구글 시트 현황 <span class="sync-badge sync-ing" id="sheetSyncBadge">불러오는 중...</span></div>
-        <div id="sheetData"><div class="em"><div class="emi">🔄</div>구글 시트에서<br>데이터를 불러오는 중이에요</div></div>
+      <div class="card">
+        <div class="ct">⏳ 업로드 대기 <span class="sync-badge sync-ok" id="sheetSyncBadge" onclick="forceRefreshSheet()" style="cursor:pointer;">새로고침</span></div>
+        <div id="pendList"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
       </div>
       <div class="card">
-        <div class="ct">⏳ 앱 내 업로드 대기</div>
-        <div id="pendList"><div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div></div>
-      </div>
-      <div class="card">
-        <div class="ct">✅ 앱 내 완료</div>
+        <div class="ct">✅ 업로드 완료</div>
         <div id="doneList"><div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div></div>
       </div>
     </div>
@@ -441,9 +437,10 @@ async function loadSheetData() {
 }
 
 function parseSheetRows(rows) {
-  // 헤더 제외, 제목이 있는 행만 필터링. rowIdx = 실제 시트 행 번호(1=헤더)
+  // 헤더 제외, 제목(C열=인덱스2)이 있는 행만 필터링
+  // 컬럼: A=0(No) B=1(카테고리) C=2(제목) D=3(업로드일) E=4(블로그상태) F=5(블로그초안) G=6(인스타상태) H=7(인스타초안) I=8(예정일) J=9(유튜브)
   return rows.slice(1).map((r, i) => ({row: r, rowIdx: i+2}))
-    .filter(({row}) => (row[4]||row[3]||'').trim().length > 0);
+    .filter(({row}) => (row[2]||'').trim().length > 0);
 }
 
 function sheetRowToHtml(r, rowIdx) {
@@ -597,22 +594,25 @@ async function loadAndCacheSheet(forceRefresh=false) {
 }
 
 async function renderSheetData() {
-  const el = document.getElementById('sheetData');
   const badge = document.getElementById('sheetSyncBadge');
-  // 기록탭과 같은 캐시 사용
+  if(badge){ badge.className='sync-badge sync-ing'; badge.textContent='불러오는 중...'; }
   let rows = sheetCache;
-  if(!rows){
-    el.innerHTML='<div class="em"><div class="emi">🔄</div>불러오는 중...</div>';
-    rows = await loadAndCacheSheet();
-  }
-  if (!rows || rows.length < 2) {
-    el.innerHTML = '<div class="em"><div class="emi">📭</div>시트에 데이터가 없어요</div>';
-    badge.className='sync-badge sync-err'; badge.textContent='데이터 없음';
+  if(!rows) rows = await loadAndCacheSheet();
+  if(!rows || rows.length < 2){
+    if(badge){ badge.className='sync-badge sync-err'; badge.textContent='오류'; }
     return;
   }
-  const items = parseSheetRows(rows).reverse().slice(0,30);
-  badge.className='sync-badge sync-ok'; badge.textContent=`${items.length}개 콘텐츠`;
-  el.innerHTML = items.length ? items.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('') : '<div class="em"><div class="emi">📭</div>데이터가 없어요</div>';
+  const items = parseSheetRows(rows);
+  // E열(4)=블로그상태, G열(6)=인스타상태 기준으로 분류
+  const pend = items.filter(({row})=>!((row[4]||'')==='작성완료')||!((row[6]||'')==='작성완료'));
+  const done = items.filter(({row})=>((row[4]||'')==='작성완료')&&((row[6]||'')==='작성완료'));
+  document.getElementById('pendList').innerHTML = pend.length
+    ? pend.reverse().slice(0,30).map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('')
+    : '<div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div>';
+  document.getElementById('doneList').innerHTML = done.length
+    ? done.reverse().slice(0,30).map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('')
+    : '<div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div>';
+  if(badge){ badge.className='sync-badge sync-ok'; badge.textContent=`전체 ${items.length}개`; }
 }
 
 async function renderSheetLog() {
@@ -636,10 +636,10 @@ async function renderSheetLog() {
   const recent = [...items].reverse().slice(0,30);
   ll.innerHTML = recent.length ? recent.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('') : '<div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div>';
   // 현황 탭 pending/done
-  const pend = items.filter(({row})=>!((row[6]||'').includes('완료')||(row[6]||'').includes('작성'))||!((row[7]||'').includes('완료')||(row[7]||'').includes('작성'))||!((row[9]||'').includes('완료')||(row[9]||'').includes('작성')));
-  const done = items.filter(({row})=>((row[6]||'').includes('완료')||(row[6]||'').includes('작성'))&&((row[7]||'').includes('완료')||(row[7]||'').includes('작성'))&&((row[9]||'').includes('완료')||(row[9]||'').includes('작성')));
-  document.getElementById('pendList').innerHTML=pend.length?pend.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join(''):'<div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div>';
-  document.getElementById('doneList').innerHTML=done.length?done.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join(''):'<div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div>';
+  // E열(4)=블로그상태, G열(6)=인스타상태
+  const pend = items.filter(({row})=>!((row[4]||'')==='작성완료')||!((row[6]||'')==='작성완료'));
+  const done = items.filter(({row})=>((row[4]||'')==='작성완료')&&((row[6]||'')==='작성완료'));
+  // pending/done은 renderSheetData에서 처리
 }
 
 // ===== Claude API =====
@@ -665,9 +665,9 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 구조: 훅(내 상황 공유) → 제도 핵심 요약(결론 먼저) → 상세 조건·금액 → 신청 방법 → 말랑파파 적용 계획/후기 → 주의사항 → 총평+다음편예고(시리즈일 때)
 === 채널별 출력 ===
 블로그 초안 마지막에 반드시 아래 형식으로 태그 추가 (네이버 블로그 태그용):
-[태그]
-태그1 태그2 태그3 태그4 태그5 태그6 태그7 태그8
-(카테고리 관련 핵심 검색 키워드 6~8개, 띄어쓰기로 구분)
+[네이버태그]
+#태그1 #태그2 #태그3 #태그4 #태그5 #태그6 #태그7 #태그8
+(카테고리 관련 핵심 검색 키워드 6~8개, # 붙여서 작성)
 
 인스타 캡션 작성 원칙:
 - 1~2줄의 강렬한 훅으로 시작 (공감 또는 궁금증 유발)
@@ -961,16 +961,16 @@ async function parseOut(txt){
     await parseSeriesOut(txt);
     return;
   }
-  // 블로그: [BLOG] ~ [INSTA] 사이만
-  let blog=sec(txt,'BLOG','INSTA')||'';
-  if(!blog) blog=txt.includes('[BLOG]')?txt.split('[BLOG]')[1]?.split('[INSTA]')[0]||'':txt;
-  // 인스타: [INSTA] ~ [PHOTO] 사이만
-  let insta=sec(txt,'INSTA','PHOTO')||'';
-  if(!insta && txt.includes('[INSTA]')) insta=txt.split('[INSTA]')[1]?.split('[PHOTO]')[0]||'';
-  const photo=sec(txt,'PHOTO',null)||'';
-  // 혹시 블로그에 [INSTA] 이후 내용 포함시 제거
-  const iIdx=blog.indexOf('[INSTA]');
-  if(iIdx>-1) blog=blog.slice(0,iIdx);
+  // 블로그: [BLOG] ~ [INSTA] 사이 (단, [네이버태그] 섹션 포함)
+  let blog='', insta='', photo='';
+  if(txt.includes('[BLOG]') && txt.includes('[INSTA]')){
+    blog = txt.split('[BLOG]')[1].split('[INSTA]')[0]||'';
+    const afterInsta = txt.split('[INSTA]')[1]||'';
+    insta = afterInsta.split('[PHOTO]')[0].split('[네이버태그]')[0]||'';
+    photo = txt.includes('[PHOTO]') ? txt.split('[PHOTO]')[1]||'' : '';
+  } else {
+    blog = txt; insta=''; photo='';
+  }
   document.getElementById('blogTxt').textContent=blog.trim();
   document.getElementById('instaTxt').textContent=insta.trim();
   // 일반 탭 표시
