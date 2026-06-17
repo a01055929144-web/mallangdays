@@ -28,6 +28,11 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;b
 .cg{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .cb{padding:13px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--sub);text-align:left;transition:all .15s;}
 .cb:active{transform:scale(.97);}
+.cb{touch-action:manipulation;}
+.ti{touch-action:manipulation;}
+.oab{touch-action:manipulation;}
+.out-btn{touch-action:manipulation;}
+.gb{touch-action:manipulation;}
 .cb.sel{border-color:var(--ac);background:var(--acl);color:var(--acd);}
 .cbt{display:block;font-size:10px;font-weight:400;margin-top:3px;color:var(--hint);}
 .cb.sel .cbt{color:var(--ac);}
@@ -653,6 +658,7 @@ function selectPlace(){
 }
 
 function selCat(btn){
+  if(typeof btn === 'string') btn = document.querySelector(`.cb[data-cat="${btn}"]`);
   document.querySelectorAll('.cb').forEach(b=>b.classList.remove('sel'));
   btn.classList.add('sel');
   cat=btn.dataset.cat; type=btn.dataset.type; selTitle='';
@@ -1165,8 +1171,23 @@ async function fetchCredit(){
 }
 
 // 앱 시작 - 시트 연결은 탭 클릭 시 호출
-setSyncBadge('ok'); // 일단 연결됨으로 표시, 실제 오류 시 변경
+setSyncBadge('ok');
 fetchCredit();
+
+// 모바일 터치 이벤트 직접 등록
+document.querySelectorAll('.cb').forEach(btn => {
+  btn.addEventListener('touchend', function(e){
+    e.preventDefault();
+    selCat(this);
+  }, {passive:false});
+});
+document.querySelectorAll('.ti').forEach(btn => {
+  btn.addEventListener('touchend', function(e){
+    e.preventDefault();
+    const id = this.id.replace('t-','');
+    showPg(id);
+  }, {passive:false});
+});
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded', renderDrafts);
 } else {
