@@ -318,10 +318,11 @@ async function appendToSheet(row) {
   try {
     const res = await fetch(AS_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: new URLSearchParams({action:'append', row:JSON.stringify(row)})
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action:'append', row:row})
     });
-    const d = await res.json();
+    const text = await res.text();
+    const d = JSON.parse(text);
     if (!d.ok) throw new Error(d.error||'오류');
     return true;
   } catch(e) {
@@ -334,10 +335,11 @@ async function updateSheetCell(rowIdx, col, value) {
   try {
     const res = await fetch(AS_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: new URLSearchParams({action:'update', rowIdx:String(rowIdx), col:col, value:String(value)})
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action:'update', rowIdx:rowIdx, col:col, value:value})
     });
-    const d = await res.json();
+    const text = await res.text();
+    const d = JSON.parse(text);
     if (!d.ok) throw new Error(d.error||'오류');
     return true;
   } catch(e) {
