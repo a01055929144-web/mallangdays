@@ -444,32 +444,40 @@ function parseSheetRows(rows) {
 }
 
 function sheetRowToHtml(r, rowIdx) {
-  const cat = r[1]||'', title = (r[2]||'').trim(), date = r[3]||'', blog = r[4]||'', insta = r[6]||'', yt = r[9]||'';
-  const isRec = cat.includes('임신')||cat.includes('연애')||cat.includes('출산')||cat.includes('육아일');
-  const bDone = (r[4]||'')==='작성완료';
-  const iDone = (r[6]||'')==='작성완료';
-  const bid = `st_${rowIdx}_E`, iid = `st_${rowIdx}_G`;
-  const did = `date_${rowIdx}`;
-  const blogDraft = (r[5]||'').slice(0,50);
-  const instaDraft = (r[7]||'').slice(0,50);
+  // 컬럼: A=0 B=1(카테고리) C=2(제목) D=3(날짜) E=4(블로그상태) F=5(블로그초안) G=6(인스타상태) H=7(인스타초안)
+  const cat = (r[1]||'').replace(/[\[\]]/g,'');
+  const title = (r[2]||'').trim();
+  const date = r[3]||'';
+  const blogSt = r[4]||'';
+  const instaSt = r[6]||'';
   const hasBlog = !!(r[5]||'').trim();
   const hasInsta = !!(r[7]||'').trim();
+  const isRec = cat.includes('임신')||cat.includes('연애')||cat.includes('출산')||cat.includes('육아일');
+  const bDone = blogSt==='작성완료';
+  const iDone = instaSt==='작성완료';
+  const bid = `st_${rowIdx}_E`;
+  const iid = `st_${rowIdx}_G`;
+  const did = `date_${rowIdx}`;
   return `<div class="li">
     <div class="lh">
-      <span class="lc ${isRec?'lcr':'lci'}">${cat.replace(/[\[\]]/g,'')}</span>
-      <span style="display:flex;align-items:center;gap:4px;">
-        <input type="date" id="${did}"
-          value="${dateToInput(date)}"
-          style="font-size:11px;color:var(--sub);border:none;background:transparent;outline:none;cursor:pointer;max-width:110px;"
-          onchange="saveDate(${rowIdx},this.value,'${did}')">
-      </span>
+      <span class="lc ${isRec?'lcr':'lci'}">${cat||'기타'}</span>
+      <input type="date" id="${did}"
+        value="${dateToInput(date)}"
+        style="font-size:11px;color:var(--sub);border:none;background:transparent;outline:none;cursor:pointer;max-width:110px;"
+        onchange="saveDate(${rowIdx},this.value,'${did}')">
     </div>
-    <div class="lti">${title}</div>
-    <div class="lch" style="flex-wrap:wrap;gap:6px;margin-top:6px;">
-      <button id="${bid}" class="lch2 ${bDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'E',${bDone},'${bid}')">📝 ${bDone?'완료':'미업로드'}</button>
-      <button id="${iid}" class="lch2 ${iDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'G',${iDone},'${iid}')">📸 ${iDone?'완료':'미업로드'}</button>
-      ${hasBlog?`<button class="lch2 tog-btn" style="background:#EBF2FD;color:#1565C0;border:none;" onclick="editSheetDraft(${rowIdx},'F','blog_${rowIdx}')">📝 초안 보기</button>`:''}
-      ${hasInsta?`<button class="lch2 tog-btn" style="background:#F3E5F5;color:#6A1B9A;border:none;" onclick="editSheetDraft(${rowIdx},'H','insta_${rowIdx}')">📸 초안 보기</button>`:''}
+    <div class="lti">${title||'제목 없음'}</div>
+    <div class="lch" style="flex-wrap:wrap;gap:6px;margin-top:8px;">
+      <button id="${bid}" class="lch2 ${bDone?'cd':'cn'} tog-btn"
+        onclick="toggleSheetStatus(${rowIdx},'E',${bDone},'${bid}')">
+        📝 ${bDone?'블로그완료':'블로그 미업로드'}
+      </button>
+      <button id="${iid}" class="lch2 ${iDone?'cd':'cn'} tog-btn"
+        onclick="toggleSheetStatus(${rowIdx},'G',${iDone},'${iid}')">
+        📸 ${iDone?'인스타완료':'인스타 미업로드'}
+      </button>
+      ${hasBlog?`<button class="lch2 tog-btn" style="background:#EBF2FD;color:#1565C0;border:none;" onclick="editSheetDraft(${rowIdx},'F','blog_${rowIdx}')">📝 초안</button>`:''}
+      ${hasInsta?`<button class="lch2 tog-btn" style="background:#F3E5F5;color:#6A1B9A;border:none;" onclick="editSheetDraft(${rowIdx},'H','insta_${rowIdx}')">📸 초안</button>`:''}
     </div>
     <div id="sheet_edit_${rowIdx}" style="display:none;margin-top:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -477,7 +485,7 @@ function sheetRowToHtml(r, rowIdx) {
         <div style="display:flex;gap:6px;">
           <button class="lch2 tog-btn" onclick="saveSheetDraft(${rowIdx})" style="background:#EDF4EE;color:#2E7D32;border:none;">💾 저장</button>
           <button class="lch2 tog-btn" onclick="copySheetDraft(${rowIdx})" style="background:#EBF2FD;color:#1565C0;border:none;">📋 복사</button>
-          <button class="lch2 tog-btn" onclick="closeSheetEdit(${rowIdx})" style="background:#F5F5F5;color:#666;border:none;">✕ 닫기</button>
+          <button class="lch2 tog-btn" onclick="closeSheetEdit(${rowIdx})" style="background:#F5F5F5;color:#666;border:none;">✕</button>
         </div>
       </div>
       <textarea id="sheet_ta_${rowIdx}" style="width:100%;min-height:180px;font-size:13px;line-height:1.7;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:inherit;color:var(--text);background:var(--bg);resize:vertical;"></textarea>
@@ -485,7 +493,6 @@ function sheetRowToHtml(r, rowIdx) {
   </div>`;
 }
 
-let sheetEditState = {}; // {rowIdx: col}
 
 async function editSheetDraft(rowIdx, col, key){
   const area = document.getElementById(`sheet_edit_${rowIdx}`);
@@ -617,29 +624,25 @@ async function renderSheetData() {
 
 async function renderSheetLog() {
   const ll = document.getElementById('logList');
-  // 캐시 있으면 즉시 렌더링
+  ll.innerHTML = '<div class="em"><div class="emi">🔄</div>불러오는 중...</div>';
   let rows = sheetCache;
+  if (!rows) rows = await loadAndCacheSheet();
   if (!rows) {
-    ll.innerHTML = '<div class="em"><div class="emi">🔄</div>불러오는 중...</div>';
-    rows = await loadAndCacheSheet();
+    ll.innerHTML = '<div class="em"><div class="emi">❌</div>데이터 불러오기 실패<br><small>새로고침 후 다시 시도해주세요</small></div>';
+    return;
   }
-  const items = rows ? parseSheetRows(rows) : [];
-  const total = items.length;
-  const blDone = items.filter(({row})=>(row[6]||'').includes('완료')||(row[6]||'').includes('작성')).length;
-  const inDone = items.filter(({row})=>(row[7]||'').includes('완료')||(row[7]||'').includes('작성')).length;
-  const ytDone = items.filter(({row})=>(row[9]||'').includes('완료')||(row[9]||'').includes('작성')).length;
-  document.getElementById('sTot').textContent = total;
+  const items = parseSheetRows(rows);
+  // 컬럼: C=2(제목) D=3(날짜) E=4(블로그상태) F=5(블로그초안) G=6(인스타상태) H=7(인스타초안)
+  const blDone = items.filter(({row})=>(row[4]||'')==='작성완료').length;
+  const inDone = items.filter(({row})=>(row[6]||'')==='작성완료').length;
+  document.getElementById('sTot').textContent = items.length;
   document.getElementById('sBl').textContent = blDone;
   document.getElementById('sIn').textContent = inDone;
-  document.getElementById('sSh').textContent = ytDone;
-  // 기록 탭: 최근 30개
+  document.getElementById('sSh').textContent = 0;
   const recent = [...items].reverse().slice(0,30);
-  ll.innerHTML = recent.length ? recent.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('') : '<div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div>';
-  // 현황 탭 pending/done
-  // E열(4)=블로그상태, G열(6)=인스타상태
-  const pend = items.filter(({row})=>!((row[4]||'')==='작성완료')||!((row[6]||'')==='작성완료'));
-  const done = items.filter(({row})=>((row[4]||'')==='작성완료')&&((row[6]||'')==='작성완료'));
-  // pending/done은 renderSheetData에서 처리
+  ll.innerHTML = recent.length
+    ? recent.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('')
+    : '<div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div>';
 }
 
 // ===== Claude API =====
