@@ -4,75 +4,88 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<meta name="version" content="1781685160">
 <title>말랑데이즈</title>
 <style>
-:root{--bg:#FAFAF8;--surface:#FFF;--border:#E8E6E0;--border-s:#C8C4BC;--text:#1A1916;--sub:#6B6860;--hint:#A8A49E;--ac:#D4845A;--acl:#FAF0EB;--acd:#B86A42;--gr:#5A8A5E;--grl:#EDF4EE;--pu:#7A6DB0;--pul:#F2F0FA;--bl:#3B7DD8;--bll:#EBF2FD;--r:14px;--rs:8px;--th:60px;--sb:env(safe-area-inset-bottom,0px);}
+:root{
+  --bg:#FAFAF8;--surface:#FFF;--border:#E8E6E0;--text:#1A1916;--sub:#6B6860;--hint:#A8A49E;
+  --ac:#D4845A;--acl:#FAF0EB;--acd:#B86A42;
+  --gr:#5A8A5E;--grl:#EDF4EE;--pu:#7A6DB0;--pul:#F2F0FA;
+  --bl:#3B7DD8;--bll:#EBF2FD;
+  --r:14px;--rs:8px;--th:60px;--sb:env(safe-area-inset-bottom,0px);
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
-body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%;}
-*{-webkit-tap-highlight-color:rgba(0,0,0,0.1);}
-button,a{cursor:pointer;-webkit-tap-highlight-color:rgba(212,132,90,0.2);}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
+/* 상단 */
 .top{background:var(--surface);border-bottom:.5px solid var(--border);padding:14px 18px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding-top:calc(14px + env(safe-area-inset-top,0px));}
 .tl{font-size:17px;font-weight:600;}.ts{font-size:11px;color:var(--hint);margin-top:1px;}
-.tb{background:var(--acl);color:var(--ac);font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
+.top-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;cursor:pointer;}
+.badge-sheet{background:#E8F5E9;color:#2E7D32;}
+.badge-api{background:var(--bll);color:var(--bl);}
+.badge-pg{background:var(--acl);color:var(--ac);}
+/* 스크롤 영역 */
 .wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
 .pg{display:none;padding:16px;padding-bottom:calc(var(--th) + var(--sb) + 20px);}
 .pg.active{display:block;}
+/* 하단 탭 */
 .tabs{background:var(--surface);border-top:.5px solid var(--border);display:flex;height:calc(var(--th) + var(--sb));padding-bottom:var(--sb);flex-shrink:0;}
-.ti{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;font-family:inherit;cursor:pointer;color:var(--hint);padding:8px 0;}
+.ti{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;font-family:inherit;cursor:pointer;color:var(--hint);padding:8px 0;touch-action:manipulation;}
 .ti.active{color:var(--ac);}
 .tic{font-size:22px;line-height:1;}.til{font-size:10px;font-weight:500;}
 .tid{width:5px;height:5px;border-radius:50%;background:var(--ac);margin-top:-2px;opacity:0;}
 .ti.active .tid{opacity:1;}
+/* 카드 */
 .card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;}
 .ct{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
-.cg{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.cb{padding:13px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--sub);text-align:left;transition:all .15s;}
+/* 카테고리 */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cb{padding:13px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--sub);text-align:left;transition:all .15s;touch-action:manipulation;}
 .cb:active{transform:scale(.97);}
-.cb{touch-action:manipulation;}
-.ti{touch-action:manipulation;}
-.oab{touch-action:manipulation;}
-.out-btn{touch-action:manipulation;}
-.gb{touch-action:manipulation;}
 .cb.sel{border-color:var(--ac);background:var(--acl);color:var(--acd);}
 .cbt{display:block;font-size:10px;font-weight:400;margin-top:3px;color:var(--hint);}
 .cb.sel .cbt{color:var(--ac);}
+/* SEO */
+.seo-box{background:var(--bll);border:.5px solid #B8D0F5;border-radius:var(--rs);padding:14px;margin-bottom:14px;}
+.seo-title{font-size:12px;font-weight:600;color:var(--bl);margin-bottom:10px;}
+.seo-row{display:flex;gap:8px;margin-bottom:6px;}
+.seo-row input{flex:1;font-size:14px;padding:10px 12px;}
+.seo-btn{flex-shrink:0;padding:10px 14px;background:var(--bl);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation;}
+.seo-hint{font-size:11px;color:#5A8AD4;}
+.seo-opts{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.seo-opt{padding:10px 13px;border:1.5px solid #B8D0F5;border-radius:var(--rs);background:var(--surface);font-size:13px;color:var(--text);cursor:pointer;text-align:left;font-family:inherit;line-height:1.4;touch-action:manipulation;}
+.seo-opt.sel{border-color:var(--bl);background:var(--bll);color:var(--bl);font-weight:500;}
+.sel-title{background:var(--surface);border:1.5px solid var(--bl);border-radius:var(--rs);padding:9px 12px;font-size:12px;color:var(--bl);font-weight:500;margin-top:6px;display:none;}
+.sel-title.show{display:block;}
+/* 폼 */
 .fr{margin-bottom:14px;}
 .fl{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:6px;display:block;}
-.fh{font-size:11px;color:var(--hint);margin-top:4px;line-height:1.4;}
+.fh{font-size:11px;color:var(--hint);margin-top:4px;}
 .fi,.fta,.fsel{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:15px;color:var(--text);background:var(--surface);outline:none;-webkit-appearance:none;transition:border-color .15s;}
 .fi:focus,.fta:focus,.fsel:focus{border-color:var(--ac);}
 .fta{resize:none;min-height:90px;}
-/* SEO 섹션 */
-.seo{background:var(--bll);border:.5px solid #B8D0F5;border-radius:var(--rs);padding:14px;margin-bottom:14px;}
-.seot{font-size:12px;font-weight:600;color:var(--bl);margin-bottom:10px;}
-.seor{display:flex;gap:8px;margin-bottom:6px;}
-.seor .fi{flex:1;font-size:14px;padding:10px 12px;}
-.seob{flex-shrink:0;padding:10px 14px;background:var(--bl);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
-.seob:active{opacity:.8;}
-.seob:disabled{background:var(--border-s);cursor:not-allowed;}
-.seoh{font-size:11px;color:#5A8AD4;margin-top:2px;}
-.seotitles{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
-.seoto{padding:11px 13px;border:1.5px solid #B8D0F5;border-radius:var(--rs);background:var(--surface);font-size:13px;color:var(--text);cursor:pointer;text-align:left;font-family:inherit;line-height:1.4;transition:all .15s;}
-.seoto.sel{border-color:var(--bl);background:var(--bll);color:var(--bl);font-weight:500;}
-.seold{text-align:center;padding:12px;font-size:12px;color:var(--hint);}
-.stbox{background:var(--surface);border:1.5px solid var(--bl);border-radius:var(--rs);padding:10px 13px;font-size:13px;color:var(--bl);font-weight:500;margin-top:8px;display:none;}
-.stbox.show{display:block;}
+/* 매장검색 */
+.place-box{background:#FFF8F0;border:.5px solid #F0C9A0;border-radius:var(--rs);padding:14px;margin-bottom:14px;}
+.place-title{font-size:12px;font-weight:600;color:#B86A42;margin-bottom:10px;}
+.place-row{display:flex;gap:8px;margin-bottom:6px;}
+.place-row input{flex:1;}
+.place-btn{flex-shrink:0;padding:10px 14px;background:var(--ac);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation;}
+.place-card{padding:10px 12px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface);margin-top:8px;cursor:pointer;touch-action:manipulation;}
+.place-card.sel{border-color:var(--ac);background:var(--acl);}
+.place-name{font-size:13px;font-weight:600;margin-bottom:3px;}
+.place-info{font-size:11px;color:var(--sub);}
+.place-ok{background:#EDF4EE;border:.5px solid #A8D4AC;border-radius:var(--rs);padding:10px 12px;margin-top:8px;font-size:13px;color:#2D5E32;display:none;}
+.place-ok.show{display:block;}
 /* 사진 */
-.pz{border:1.5px dashed var(--border-s);border-radius:var(--rs);padding:18px;text-align:center;cursor:pointer;}
-.pz:active{background:var(--acl);border-color:var(--ac);}
+.pz{border:1.5px dashed var(--border);border-radius:var(--rs);padding:16px;text-align:center;cursor:pointer;touch-action:manipulation;}
 .pzi{font-size:28px;margin-bottom:6px;}.pzt{font-size:13px;color:var(--sub);}.pzh{font-size:11px;color:var(--hint);margin-top:3px;}
 .pcs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
 .pc{display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--bg);border:.5px solid var(--border);border-radius:20px;font-size:12px;color:var(--sub);}
-.pr{color:var(--hint);font-size:16px;padding:0 2px;}
-.gb{width:100%;padding:16px;background:var(--ac);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;margin-top:4px;transition:all .15s;}
-.gb:active{background:var(--acd);transform:scale(.98);}
+/* 생성 버튼 */
+.gen-btn{width:100%;padding:16px;background:var(--ac);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;margin-top:4px;touch-action:manipulation;}
+.gen-btn:active{background:var(--acd);}
 /* 로딩 */
 .ld{display:none;text-align:center;padding:48px 20px;}
 .ld.show{display:block;}
@@ -83,62 +96,53 @@ button,a{cursor:pointer;-webkit-tap-highlight-color:rgba(212,132,90,0.2);}
 .oa{display:none;}.oa.show{display:block;}
 .ots{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:12px;scrollbar-width:none;}
 .ots::-webkit-scrollbar{display:none;}
-.ot{flex-shrink:0;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--sub);white-space:nowrap;}
+.ot{flex-shrink:0;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--sub);white-space:nowrap;touch-action:manipulation;}
 .ot.active{background:var(--text);color:#fff;border-color:var(--text);}
 .oc{display:none;}.oc.active{display:block;}
 .ob{background:var(--bg);border:.5px solid var(--border);border-radius:var(--rs);padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;color:var(--text);max-height:320px;overflow-y:auto;}
 .oas{display:flex;gap:8px;margin-top:10px;}
-.oab{flex:1;padding:12px;border-radius:var(--rs);border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--sub);}
+.oab{flex:1;padding:12px;border-radius:var(--rs);border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--sub);text-align:center;text-decoration:none;touch-action:manipulation;}
 .oab.p{background:var(--text);color:#fff;border-color:var(--text);}
-.oab:active{opacity:.8;transform:scale(.98);}
-/* 사진배치 */
-.pg2{background:var(--pul);border:.5px solid #C4BEE0;border-radius:var(--rs);padding:14px;}
-.pg2t{font-size:12px;font-weight:600;color:var(--pu);margin-bottom:10px;}
-.pg2i{display:flex;gap:10px;padding:8px 0;border-bottom:.5px solid #D8D4EE;}
-.pg2i:last-child{border-bottom:none;}
-.pn{width:24px;height:24px;border-radius:50%;background:var(--pu);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.pd{font-size:12px;color:var(--sub);line-height:1.5;}
-.pp{font-size:11px;color:var(--pu);font-weight:600;margin-bottom:2px;}
-/* 상태 */
+/* 업로드 체크 */
 .sl{display:flex;flex-direction:column;}
 .si{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:.5px solid var(--border);}
 .si:last-child{border-bottom:none;}
 .sc{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;}
-.sic{font-size:20px;}
-.sb2{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
+.sb2{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;touch-action:manipulation;}
 .bn{background:var(--bg);color:var(--hint);border:1px solid var(--border);}
 .bd{background:var(--grl);color:var(--gr);}
-.sd{font-size:11px;color:var(--hint);margin-top:2px;}
 /* 통계 */
-.sr{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
 .sc2{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rs);padding:14px;}
 .sn{font-size:26px;font-weight:700;color:var(--text);}.sl2{font-size:11px;color:var(--hint);margin-top:2px;}
-/* 로그 */
+/* 로그 아이템 */
 .li{padding:14px 0;border-bottom:.5px solid var(--border);}
 .li:last-child{border-bottom:none;}
 .lh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
 .lc{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;}
 .lcr{background:#FEF3EC;color:#B86A42;}.lci{background:#EDF4EE;color:#3A6B3E;}
-.ld2{font-size:11px;color:var(--hint);}
 .lti{font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px;}
-.lch{display:flex;gap:6px;}
-.lch2{font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px;}
-.cd{background:var(--grl);color:var(--gr);}.cn{background:var(--bg);color:var(--hint);border:.5px solid var(--border);}
-.tog-btn{cursor:pointer;border:none;font-family:inherit;transition:all .15s;active:opacity:.7;}
-.tog-btn:active{transform:scale(.95);}
-.tog-btn:disabled{opacity:.5;cursor:not-allowed;}
-.date-edit{cursor:pointer;display:flex;align-items:center;gap:3px;font-size:11px;color:var(--hint);}
-.date-edit:active{opacity:.7;}
-/* 현황 */
-.pi{padding:14px 0;border-bottom:.5px solid var(--border);}
-.pi:last-child{border-bottom:none;}
-.pit{font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;}
-.pic{display:flex;gap:6px;flex-wrap:wrap;}
-/* 시트 동기화 상태 */
-.sync-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
-.sync-ok{background:#EDF4EE;color:#3A6B3E;}
-.sync-err{background:#FEECEC;color:#B42B2B;}
-.sync-ing{background:#FFF8E6;color:#8A7020;}
+/* 토글/버튼 */
+.ch-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.ch-btn{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit;touch-action:manipulation;}
+.ch-done{background:var(--grl);color:var(--gr);}
+.ch-none{background:var(--bg);color:var(--hint);border:.5px solid var(--border);}
+.draft-btn{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit;touch-action:manipulation;}
+.draft-blog{background:var(--bll);color:#1565C0;}
+.draft-insta{background:var(--pul);color:#6A1B9A;}
+/* 초안 편집 */
+.draft-edit{display:none;margin-top:10px;}
+.draft-edit.show{display:block;}
+.draft-edit-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.draft-edit-label{font-size:12px;font-weight:600;color:var(--sub);}
+.draft-edit-acts{display:flex;gap:6px;}
+.de-btn{padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit;touch-action:manipulation;}
+.de-save{background:#EDF4EE;color:#2E7D32;}
+.de-copy{background:var(--bll);color:#1565C0;}
+.de-close{background:#F5F5F5;color:#666;}
+.draft-ta{width:100%;min-height:180px;font-size:13px;line-height:1.7;border:1px solid var(--border);border-radius:var(--rs);padding:12px;font-family:inherit;color:var(--text);background:var(--bg);resize:vertical;}
+/* 날짜 */
+.date-inp{font-size:11px;color:var(--hint);border:none;background:transparent;outline:none;cursor:pointer;max-width:115px;}
 /* 빈 상태 */
 .em{text-align:center;padding:40px 20px;color:var(--hint);font-size:14px;}
 .emi{font-size:36px;margin-bottom:10px;}
@@ -147,23 +151,18 @@ button,a{cursor:pointer;-webkit-tap-highlight-color:rgba(212,132,90,0.2);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 input[type="file"]{display:none;}
 .dv{border:none;border-top:.5px solid var(--border);margin:14px 0;}
-.place-card{padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);margin-bottom:6px;cursor:pointer;transition:all .15s;}
-.place-card:active{background:var(--acl);border-color:var(--ac);}
-.place-card.selected{border-color:var(--ac);background:var(--acl);}
-.place-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
-.place-addr{font-size:11px;color:var(--sub);}
-.place-loading{text-align:center;padding:16px;font-size:12px;color:var(--hint);}
 </style>
 </head>
 <body>
 <div class="app">
+  <!-- 상단 -->
   <div class="top">
     <div><div class="tl">🌸 말랑데이즈</div><div class="ts">콘텐츠 스튜디오</div></div>
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
-      <a href="https://docs.google.com/spreadsheets/d/17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE/edit" target="_blank" class="sync-badge" style="background:#E8F5E9;color:#2E7D32;text-decoration:none;">📊 시트</a>
-      <div class="sync-badge sync-ok" id="syncBadge" onclick="forceRefreshSheet()" style="cursor:pointer;" title="탭해서 새로고침">✅ 시트 연결됨</div>
-      <div class="sync-badge" id="creditBadge" style="background:#FFF8E1;color:#F57F17;">💳 확인 중</div>
-      <div class="tb" id="topBadge">글 작성</div>
+    <div class="top-right">
+      <a href="https://docs.google.com/spreadsheets/d/17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE/edit" target="_blank" class="badge badge-sheet">📊 시트</a>
+      <div class="badge badge-sheet" id="syncBadge">✅ 연결됨</div>
+      <div class="badge badge-api" id="apiBadge">💳 확인 중</div>
+      <div class="badge badge-pg" id="pgBadge">글 작성</div>
     </div>
   </div>
 
@@ -172,7 +171,7 @@ input[type="file"]{display:none;}
     <div class="pg active" id="pg-write">
       <div class="card">
         <div class="ct">📂 카테고리 선택</div>
-        <div class="cg">
+        <div class="cat-grid">
           <button class="cb" data-cat="임신기록" data-type="기록형" onclick="selCat(this)">임신기록<span class="cbt">기록형 · 감정 80%</span></button>
           <button class="cb" data-cat="연애회상" data-type="기록형" onclick="selCat(this)">연애회상<span class="cbt">기록형 · 감정 70%</span></button>
           <button class="cb" data-cat="육아정보" data-type="정보형" onclick="selCat(this)">육아정보<span class="cbt">정보형 · 정보 85%</span></button>
@@ -182,81 +181,90 @@ input[type="file"]{display:none;}
         </div>
       </div>
 
-      <div class="card" id="fc" style="display:none;">
-        <div class="ct">✏️ <span id="ftitle">내용 입력</span></div>
-
-        <!-- 매장 검색 (먹고기록만 표시) -->
-        <div id="placeSearchArea" style="display:none;margin-bottom:14px;">
-          <div style="background:#FFF8F0;border:.5px solid #F0C9A0;border-radius:10px;padding:14px;">
-            <div style="font-size:12px;font-weight:600;color:#B86A42;margin-bottom:10px;">🔍 매장 검색</div>
-            <div style="display:flex;gap:8px;margin-bottom:8px;">
-              <input class="fi" id="placeSearchInput" placeholder="매장명 입력 (예: 제주 성심조림)" style="flex:1;font-size:14px;padding:10px 12px;">
-              <button onclick="searchPlace()" style="flex-shrink:0;padding:10px 14px;background:#D4845A;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;">검색</button>
-            </div>
-            <div style="font-size:11px;color:#C4956A;">매장명으로 검색하면 주소·영업시간·주차 정보를 자동으로 가져와요</div>
-            <div id="placeResults" style="margin-top:10px;"></div>
-            <div id="placeSelected" style="display:none;background:#EDF4EE;border:.5px solid #A8D4AC;border-radius:8px;padding:10px 12px;margin-top:8px;font-size:13px;color:#2D5E32;line-height:1.6;"></div>
+      <div class="card" id="formCard" style="display:none;">
+        <div class="ct">✏️ <span id="formTitle">내용 입력</span></div>
+        <!-- SEO 제목 추천 -->
+        <div class="seo-box">
+          <div class="seo-title">🔍 SEO 제목 추천</div>
+          <div class="seo-row">
+            <input class="fi" id="seoKw" placeholder="핵심 키워드 입력 (예: 임신 34주 증상)">
+            <button class="seo-btn" onclick="genTitles()">제목 추천</button>
           </div>
+          <div class="seo-hint">키워드 입력 후 탭하면 제목 3개를 추천해드려요</div>
+          <div class="seo-opts" id="seoOpts" style="display:none;"></div>
+          <div class="sel-title" id="selTitleBox">선택된 제목: <span id="selTitleTxt"></span></div>
         </div>
-
-        <div class="seo">
-          <div class="seot">🔍 SEO 제목 추천</div>
-          <div class="seor">
-            <input class="fi" id="skw" placeholder="핵심 키워드 입력 (예: 임신 34주 증상)">
-            <button class="seob" id="seoBtn" onclick="genTitles()">제목 추천</button>
+        <!-- 매장검색 (먹고기록만) -->
+        <div class="place-box" id="placeBox" style="display:none;">
+          <div class="place-title">🔍 매장 검색</div>
+          <div class="place-row">
+            <input class="fi" id="placeKw" placeholder="매장명 입력 (예: 제주 성심조림)">
+            <button class="place-btn" onclick="searchPlace()">검색</button>
           </div>
-          <div class="seoh">키워드 입력 후 탭하면 제목 3개를 추천해드려요</div>
-          <div id="staArea"></div>
-          <div class="stbox" id="stbox">선택된 제목: <span id="sttext"></span></div>
+          <div class="fh">검색하면 주소·영업시간·주차 정보를 자동으로 가져와요</div>
+          <div id="placeResult"></div>
+          <div class="place-ok" id="placeOk"></div>
         </div>
+        <!-- 동적 폼 -->
         <div id="dynForm"></div>
         <div class="dv"></div>
+        <!-- 사진 -->
         <div class="fr">
           <label class="fl">📷 사진 / 영상</label>
-          <div class="pz" onclick="document.getElementById('fi').click()">
+          <div class="pz" onclick="document.getElementById('fileIn').click()">
             <div class="pzi">📁</div>
             <div class="pzt">탭해서 사진·영상 추가</div>
-            <div class="pzh">Claude가 글 속 사진 위치까지 알려드려요</div>
+            <div class="pzh">Claude가 사진 배치 위치까지 알려드려요</div>
           </div>
-          <input type="file" id="fi" multiple accept="image/*,video/*" onchange="addFiles(this)">
+          <input type="file" id="fileIn" multiple accept="image/*,video/*" onchange="addFiles(this)">
           <div class="pcs" id="pcs"></div>
         </div>
-        <button class="gb" onclick="generate()">✨ 초안 생성하기</button>
+        <button class="gen-btn" onclick="generate()">✨ 초안 생성하기</button>
       </div>
 
+      <!-- 로딩 -->
       <div class="ld" id="ldEl">
         <div class="sp"></div>
         <div class="ldt">초안 작성 중...</div>
         <div class="lds" id="ldStep">카테고리 분석 중</div>
       </div>
 
+      <!-- 결과 -->
       <div class="oa" id="oaEl">
         <div class="card">
           <div class="ct">📝 생성된 초안</div>
-          <div class="ots" id="outTabBar">
-            <button class="ot active" id="tab-blog" onclick="swOut('blog',this)">📝 블로그</button>
-            <button class="ot" id="tab-insta" onclick="swOut('insta',this)">📸 인스타</button>
-            <button class="ot" id="tab-s1" onclick="swOut('s1',this)" style="display:none;">📝 1편</button>
-            <button class="ot" id="tab-s2" onclick="swOut('s2',this)" style="display:none;">📝 2편</button>
-            <button class="ot" id="tab-s3" onclick="swOut('s3',this)" style="display:none;">📝 3편</button>
-            <button class="ot" id="tab-sinsta" onclick="swOut('sinsta',this)" style="display:none;">📸 인스타(시리즈)</button>
-            <button class="ot" id="tab-photo" onclick="swOut('photo',this)">📷 사진배치</button>
+          <div class="ots">
+            <button class="ot active" onclick="swOut('blog',this)">📝 블로그</button>
+            <button class="ot" onclick="swOut('insta',this)">📸 인스타</button>
+            <button class="ot" onclick="swOut('photo',this)">📷 사진배치</button>
           </div>
-          <div class="oc active" id="o-blog"><div class="ob" id="blogTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('blogTxt')">복사</button><a href="https://docs.google.com/spreadsheets/d/17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE/edit" target="_blank" class="oab" style="text-decoration:none;text-align:center;">📊 시트에서 보기</a></div></div>
-          <div class="oc" id="o-insta"><div class="ob" id="instaTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('instaTxt')">복사</button></div></div>
-          <div class="oc" id="o-s1"><div class="ob" id="s1Txt"></div><div class="oas"><button class="oab p" onclick="cpTxt('s1Txt')">복사</button><button class="oab" onclick="saveSeriesLog(1)">저장</button></div></div>
-          <div class="oc" id="o-s2"><div class="ob" id="s2Txt"></div><div class="oas"><button class="oab p" onclick="cpTxt('s2Txt')">복사</button><button class="oab" onclick="saveSeriesLog(2)">저장</button></div></div>
-          <div class="oc" id="o-s3"><div class="ob" id="s3Txt"></div><div class="oas"><button class="oab p" onclick="cpTxt('s3Txt')">복사</button><button class="oab" onclick="saveSeriesLog(3)">저장</button></div></div>
-          <div class="oc" id="o-sinsta"><div class="ob" id="sinstaTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('sinstaTxt')">복사</button></div></div>
-          
-          <div class="oc" id="o-photo"><div id="pgEl"><div class="em"><div class="emi">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div></div></div>
+          <div class="oc active" id="o-blog">
+            <div class="ob" id="blogTxt"></div>
+            <div class="oas">
+              <button class="oab p" onclick="cpEl('blogTxt')">복사</button>
+              <a href="https://docs.google.com/spreadsheets/d/17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE/edit" target="_blank" class="oab">📊 시트 보기</a>
+            </div>
+          </div>
+          <div class="oc" id="o-insta">
+            <div class="ob" id="instaTxt"></div>
+            <div class="oas"><button class="oab p" onclick="cpEl('instaTxt')">복사</button></div>
+          </div>
+          <div class="oc" id="o-photo">
+            <div id="photoGuide"><div class="em"><div class="emi">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div></div>
+          </div>
         </div>
+        <!-- 업로드 상태 -->
         <div class="card">
           <div class="ct">📤 업로드 체크</div>
           <div class="sl">
-            <div class="si"><div class="sc"><span class="sic">📝</span><div><div>네이버 블로그</div><div class="sd" id="bld">-</div></div></div><button class="sb2 bn" id="blB" onclick="togSt('blog')">미업로드</button></div>
-            <div class="si"><div class="sc"><span class="sic">📸</span><div><div>인스타그램</div><div class="sd" id="ind">-</div></div></div><button class="sb2 bn" id="inB" onclick="togSt('insta')">미업로드</button></div>
-
+            <div class="si">
+              <div class="sc"><span>📝</span><div><div>네이버 블로그</div><div id="blogDate" style="font-size:11px;color:var(--hint);">-</div></div></div>
+              <button class="sb2 bn" id="blogSt" onclick="togWriteSt('blog')">미업로드</button>
+            </div>
+            <div class="si">
+              <div class="sc"><span>📸</span><div><div>인스타그램</div><div id="instaDate" style="font-size:11px;color:var(--hint);">-</div></div></div>
+              <button class="sb2 bn" id="instaSt" onclick="togWriteSt('insta')">미업로드</button>
+            </div>
           </div>
         </div>
       </div>
@@ -264,23 +272,28 @@ input[type="file"]{display:none;}
 
     <!-- 기록 -->
     <div class="pg" id="pg-log">
-      <div class="sr">
-        <div class="sc2"><div class="sn" id="sTot">0</div><div class="sl2">전체</div></div>
-        <div class="sc2"><div class="sn" id="sBl">0</div><div class="sl2">블로그 완료</div></div>
-        <div class="sc2"><div class="sn" id="sIn">0</div><div class="sl2">인스타 완료</div></div>
-        <div class="sc2"><div class="sn" id="sDraft">0</div><div class="sl2">저장된 초안</div></div>
+      <div class="stats">
+        <div class="sc2"><div class="sn" id="sTot">-</div><div class="sl2">전체</div></div>
+        <div class="sc2"><div class="sn" id="sBl">-</div><div class="sl2">블로그 완료</div></div>
+        <div class="sc2"><div class="sn" id="sIn">-</div><div class="sl2">인스타 완료</div></div>
+        <div class="sc2"><div class="sn" id="sDraft">0</div><div class="sl2">로컬 초안</div></div>
       </div>
+      <!-- 로컬 초안 -->
       <div class="card">
         <div class="ct">💾 저장된 초안</div>
-        <div id="draftList"><div class="em"><div class="emi">📝</div>저장된 초안이 없어요</div></div>
+        <div id="draftList"><div class="em"><div class="emi">📝</div>초안 생성 시 자동 저장돼요</div></div>
       </div>
-      <div class="card"><div class="ct">📋 콘텐츠 목록 (구글 시트)</div><div id="logList"><div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div></div></div>
+      <!-- 시트 기록 -->
+      <div class="card">
+        <div class="ct">📋 콘텐츠 기록 <small style="font-size:11px;font-weight:400;color:var(--hint);">(구글 시트)</small></div>
+        <div id="logList"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
+      </div>
     </div>
 
-    <!-- 현황 (구글 시트 연동) -->
+    <!-- 현황 -->
     <div class="pg" id="pg-status">
       <div class="card">
-        <div class="ct">⏳ 업로드 대기 <span class="sync-badge sync-ok" id="sheetSyncBadge" onclick="forceRefreshSheet()" style="cursor:pointer;">새로고침</span></div>
+        <div class="ct">⏳ 업로드 대기 <button class="badge badge-sheet" onclick="refreshSheet()" style="cursor:pointer;border:none;">🔄 새로고침</button></div>
         <div id="pendList"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
       </div>
       <div class="card">
@@ -299,1053 +312,733 @@ input[type="file"]{display:none;}
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== 구글 시트 설정 (Apps Script 방식) =====
+// ===== 설정 =====
 const AS_URL = 'https://script.google.com/macros/s/AKfycbwfYmCKWm6LBfmFm68xi5flkXJYXrtzZItoKlOvHFT-7NJyQsVzHF3SufoLMME_7Ip6/exec';
+const API_KEY = ['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
+const SHEET_ID = '17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE';
 
-function setSyncBadge(state) {
-  const b = document.getElementById('syncBadge');
-  if (!b) return;
-  if (state==='ok') { b.className='sync-badge sync-ok'; b.textContent='✅ 시트 연결됨'; }
-  else if (state==='err') { b.className='sync-badge sync-err'; b.textContent='❌ 연결 오류'; }
-  else { b.className='sync-badge sync-ing'; b.textContent='⏳ 연결 중'; }
-}
+// 시트 컬럼 (0-indexed)
+// A=0(No) B=1(카테고리) C=2(제목) D=3(업로드일) E=4(블로그상태) F=5(블로그초안) G=6(인스타상태) H=7(인스타초안) I=8(예정일) J=9(유튜브)
 
-async function appendToSheet(row) {
+// ===== 구글 시트 API =====
+let sheetCache = null, sheetCacheTime = 0;
+const CACHE_TTL = 3 * 60 * 1000;
+
+async function sheetRead() {
+  const now = Date.now();
+  if (sheetCache && now - sheetCacheTime < CACHE_TTL) return sheetCache;
   try {
-    // 기본 정보만 append (초안은 update로 별도 저장)
-    const url = AS_URL + '?action=append&row=' + encodeURIComponent(JSON.stringify(row));
-    const res = await fetch(url);
-    const text = await res.text();
-    const d = JSON.parse(text);
-    if (!d.ok) throw new Error(d.error||'오류');
-    return true;
+    const res = await fetch(AS_URL + '?action=read');
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error);
+    sheetCache = d.data;
+    sheetCacheTime = Date.now();
+    return sheetCache;
   } catch(e) {
-    console.error('Sheet append error:', e);
-    return false;
+    console.error('sheetRead error:', e);
+    return null;
   }
 }
 
-async function updateSheetCell(rowIdx, col, value) {
+async function sheetAppend(row) {
   try {
-    const strVal = String(value||'');
-    // 긴 텍스트는 청크로 나눠서 저장 (URL 길이 제한 대비)
+    const res = await fetch(AS_URL + '?action=append&row=' + encodeURIComponent(JSON.stringify(row)));
+    const d = await res.json();
+    return d.ok;
+  } catch(e) { return false; }
+}
+
+async function sheetUpdate(rowIdx, col, value) {
+  try {
+    // 긴 텍스트 청크 분할
     const CHUNK = 1500;
-    if(strVal.length > CHUNK){
-      // 청크 분할 전송
-      let full = '';
-      for(let i=0;i<strVal.length;i+=CHUNK){
-        const chunk = strVal.slice(i,i+CHUNK);
-        const url = AS_URL + '?action=update&rowIdx=' + rowIdx + '&col=' + encodeURIComponent(col) + '&value=' + encodeURIComponent(chunk) + '&append=' + (i>0?'1':'0');
+    const str = String(value || '');
+    if (str.length > CHUNK) {
+      for (let i = 0; i < str.length; i += CHUNK) {
+        const chunk = str.slice(i, i + CHUNK);
+        const isAppend = i > 0 ? '1' : '0';
+        const url = `${AS_URL}?action=update&rowIdx=${rowIdx}&col=${encodeURIComponent(col)}&value=${encodeURIComponent(chunk)}&append=${isAppend}`;
         const res = await fetch(url);
         const d = await res.json();
-        if(!d.ok) throw new Error(d.error||'청크 저장 오류');
+        if (!d.ok) throw new Error(d.error);
       }
-      return true;
-    }
-    const url = AS_URL + '?action=update&rowIdx=' + rowIdx + '&col=' + encodeURIComponent(col) + '&value=' + encodeURIComponent(strVal);
-    const res = await fetch(url);
-    const text = await res.text();
-    const d = JSON.parse(text);
-    if (!d.ok) throw new Error(d.error||'오류');
-    return true;
-  } catch(e) {
-    console.error('Sheet update error:', e);
-    return false;
-  }
-}
-
-async function loadSheetData() {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
-    const res = await fetch(AS_URL + '?action=read', {signal: controller.signal});
-    clearTimeout(timer);
-    const d = await res.json();
-    if (!d.ok) throw new Error(d.error||'오류');
-    setSyncBadge('ok');
-    return d.data || [];
-  } catch(e) {
-    if (e.name === 'AbortError') {
-      console.error('Sheet load timeout');
-      setSyncBadge('err');
-      toast('시트 연결 시간 초과. 다시 시도해주세요.');
     } else {
-      console.error('Sheet load error:', e);
-      setSyncBadge('err');
+      const url = `${AS_URL}?action=update&rowIdx=${rowIdx}&col=${encodeURIComponent(col)}&value=${encodeURIComponent(str)}`;
+      const res = await fetch(url);
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
     }
-    return null;
-  }
-}
-
-async function getGToken() {
-  // Apps Script 방식은 토큰 불필요
-  return true;
-}
-
-async function toggleSheetStatus(rowIdx, col, currentDone, elId) {
-  const newDone = !currentDone;
-  const newVal = newDone ? '작성완료' : '미작성';
-  const today = new Date().toLocaleDateString('ko-KR');
-  const el = document.getElementById(elId);
-  const icon = col==='G'?'📝':col==='H'?'📸':'🎬';
-  const label = col==='G'?'블로그':col==='H'?'인스타':'쇼츠';
-  if (el) { el.textContent = '⏳'; el.className = 'lch2 cn'; el.disabled = true; }
-  // 상태값 업데이트
-  const ok = await updateSheetCell(rowIdx, col, newVal);
-  // 완료로 변경 시 업로드일(F열=6번) 도 자동 기록
-  if (ok && newDone) {
-    await updateSheetCell(rowIdx, 'D', today);
-    if (sheetCache && sheetCache[rowIdx-1]) sheetCache[rowIdx-1][3] = today;
-    const dateEl = document.getElementById(`date_${rowIdx}`);
-    if (dateEl) dateEl.textContent = today;
-  }
-  if (ok) {
-    const colMap = {E:4, G:6, D:3};
-    const cIdx = colMap[col];
-    if (sheetCache && sheetCache[rowIdx-1] && cIdx !== undefined) {
-      sheetCache[rowIdx-1][cIdx] = newVal;
+    // 캐시 업데이트
+    if (sheetCache && sheetCache[rowIdx-1]) {
+      const colIdx = col.charCodeAt(0) - 65;
+      sheetCache[rowIdx-1][colIdx] = str;
     }
-    if (el) {
-      el.className = `lch2 ${newDone?'cd':'cn'}`;
-      el.textContent = `${icon} ${newDone?'완료':'미업로드'}`;
-      el.disabled = false;
-      el.onclick = () => toggleSheetStatus(rowIdx, col, newDone, elId);
-    }
-    toast(newDone ? `✅ ${label} 업로드 완료!` : `↩️ ${label} 미업로드로 변경됐어요`);
-  } else {
-    toast('❌ 변경 실패. 다시 시도해주세요.');
-    if (el) {
-      el.className = `lch2 ${currentDone?'cd':'cn'}`;
-      el.textContent = `${icon} ${currentDone?'완료':'미업로드'}`;
-      el.disabled = false;
-      el.onclick = () => toggleSheetStatus(rowIdx, col, currentDone, elId);
-    }
-  }
+    return true;
+  } catch(e) { console.error('sheetUpdate error:', e); return false; }
 }
 
-async function loadSheetData() {
-  try {
-    const tok = await getGToken();
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A:J`;
-    const res = await fetch(url,{headers:{'Authorization':'Bearer '+tok}});
-    const d = await res.json();
-    return d.values || [];
-  } catch(e) {
-    console.error('Sheet load error:', e);
-    return null;
-  }
+async function refreshSheet() {
+  sheetCache = null; sheetCacheTime = 0;
+  toast('🔄 새로고침 중...');
+  const activePg = document.querySelector('.pg.active')?.id;
+  if (activePg === 'pg-log') await renderLog();
+  if (activePg === 'pg-status') await renderStatus();
 }
 
-function parseSheetRows(rows) {
-  // 헤더 제외, 제목(C열=인덱스2)이 있는 행만 필터링
-  // 컬럼: A=0(No) B=1(카테고리) C=2(제목) D=3(업로드일) E=4(블로그상태) F=5(블로그초안) G=6(인스타상태) H=7(인스타초안) I=8(예정일) J=9(유튜브)
-  return rows.slice(1).map((r, i) => ({row: r, rowIdx: i+2}))
-    .filter(({row}) => (row[2]||'').trim().length > 0);
+// ===== 시트 행 파싱 =====
+function parseRows(rows) {
+  if (!rows || rows.length < 2) return [];
+  return rows.slice(1)
+    .map((row, i) => ({ row, rowIdx: i + 2 }))
+    .filter(({ row }) => (row[2] || '').trim().length > 0); // C열(제목)이 있는 행만
 }
 
-function sheetRowToHtml(r, rowIdx) {
-  // 컬럼: A=0 B=1(카테고리) C=2(제목) D=3(날짜) E=4(블로그상태) F=5(블로그초안) G=6(인스타상태) H=7(인스타초안)
-  const cat = (r[1]||'').replace(/[\[\]]/g,'');
-  const title = (r[2]||'').trim();
-  const date = r[3]||'';
-  const blogSt = r[4]||'';
-  const instaSt = r[6]||'';
-  const hasBlog = !!(r[5]||'').trim();
-  const hasInsta = !!(r[7]||'').trim();
-  const isRec = cat.includes('임신')||cat.includes('연애')||cat.includes('출산')||cat.includes('육아일');
-  const bDone = blogSt==='작성완료';
-  const iDone = instaSt==='작성완료';
-  const bid = `st_${rowIdx}_E`;
-  const iid = `st_${rowIdx}_G`;
-  const did = `date_${rowIdx}`;
-  return `<div class="li">
-    <div class="lh">
-      <span class="lc ${isRec?'lcr':'lci'}">${cat||'기타'}</span>
-      <input type="date" id="${did}"
-        value="${dateToInput(date)}"
-        style="font-size:11px;color:var(--sub);border:none;background:transparent;outline:none;cursor:pointer;max-width:110px;"
-        onchange="saveDate(${rowIdx},this.value,'${did}')">
-    </div>
-    <div class="lti">${title||'제목 없음'}</div>
-    <div class="lch" style="flex-wrap:wrap;gap:6px;margin-top:8px;">
-      <button id="${bid}" class="lch2 ${bDone?'cd':'cn'} tog-btn"
-        onclick="toggleSheetStatus(${rowIdx},'E',${bDone},'${bid}')">
-        📝 ${bDone?'블로그완료':'블로그 미업로드'}
-      </button>
-      <button id="${iid}" class="lch2 ${iDone?'cd':'cn'} tog-btn"
-        onclick="toggleSheetStatus(${rowIdx},'G',${iDone},'${iid}')">
-        📸 ${iDone?'인스타완료':'인스타 미업로드'}
-      </button>
-      ${hasBlog?`<button class="lch2 tog-btn" style="background:#EBF2FD;color:#1565C0;border:none;" onclick="editSheetDraft(${rowIdx},'F','blog_${rowIdx}')">📝 초안</button>`:''}
-      ${hasInsta?`<button class="lch2 tog-btn" style="background:#F3E5F5;color:#6A1B9A;border:none;" onclick="editSheetDraft(${rowIdx},'H','insta_${rowIdx}')">📸 초안</button>`:''}
-    </div>
-    <div id="sheet_edit_${rowIdx}" style="display:none;margin-top:10px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span id="sheet_edit_label_${rowIdx}" style="font-size:12px;font-weight:600;color:var(--sub);"></span>
-        <div style="display:flex;gap:6px;">
-          <button class="lch2 tog-btn" onclick="saveSheetDraft(${rowIdx})" style="background:#EDF4EE;color:#2E7D32;border:none;">💾 저장</button>
-          <button class="lch2 tog-btn" onclick="copySheetDraft(${rowIdx})" style="background:#EBF2FD;color:#1565C0;border:none;">📋 복사</button>
-          <button class="lch2 tog-btn" onclick="closeSheetEdit(${rowIdx})" style="background:#F5F5F5;color:#666;border:none;">✕</button>
-        </div>
-      </div>
-      <textarea id="sheet_ta_${rowIdx}" style="width:100%;min-height:180px;font-size:13px;line-height:1.7;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:inherit;color:var(--text);background:var(--bg);resize:vertical;"></textarea>
-    </div>
-  </div>`;
-}
-
-
-async function editSheetDraft(rowIdx, col, key){
-  const area = document.getElementById(`sheet_edit_${rowIdx}`);
-  const ta = document.getElementById(`sheet_ta_${rowIdx}`);
-  const label = document.getElementById(`sheet_edit_label_${rowIdx}`);
-  if(!area||!ta) return;
-  // 같은 거 다시 누르면 닫기
-  if(sheetEditState[rowIdx]===col){
-    area.style.display='none';
-    sheetEditState[rowIdx]=null;
-    return;
-  }
-  sheetEditState[rowIdx]=col;
-  area.style.display='block';
-  label.textContent = col==='F'?'📝 블로그 초안':'📸 인스타 초안';
-  ta.setAttribute('data-col', col);
-  ta.setAttribute('data-rowidx', String(rowIdx));
-  // 캐시에서 바로 읽기 (없으면 시트에서 로드)
-  const colIdx = col==='F'?5:7;
-  if(sheetCache && sheetCache[rowIdx-1]){
-    ta.value = sheetCache[rowIdx-1][colIdx]||'';
-  } else {
-    ta.value='불러오는 중...';
-    const rows = await loadAndCacheSheet(true);
-    ta.value = rows && rows[rowIdx-1] ? rows[rowIdx-1][colIdx]||'' : '';
-  }
-  ta.focus();
-  area.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
-async function saveSheetDraft(rowIdx){
-  const ta=document.getElementById(`sheet_ta_${rowIdx}`);
-  if(!ta)return;
-  const col=ta.getAttribute('data-col');
-  const ridx=parseInt(ta.getAttribute('data-rowidx')||rowIdx);
-  const value=ta.value;
-  toast('저장 중...');
-  const ok=await updateSheetCell(ridx,col,value);
-  if(ok){
-    // 캐시 즉시 업데이트 (F=인덱스5, H=인덱스7)
-    const colIdx = col==='F'?5:col==='H'?7:col.charCodeAt(0)-65;
-    if(sheetCache && sheetCache[ridx-1]){
-      sheetCache[ridx-1][colIdx]=value;
-    }
-    toast('💾 시트에 저장됐어요 ✅');
-  } else {
-    toast('❌ 저장 실패. 다시 시도해주세요.');
-  }
-}
-
-function copySheetDraft(rowIdx){
-  const ta=document.getElementById(`sheet_ta_${rowIdx}`);
-  if(!ta)return;
-  navigator.clipboard.writeText(ta.value).then(()=>toast('📋 복사됐어요'));
-}
-
-function closeSheetEdit(rowIdx){
-  const area=document.getElementById(`sheet_edit_${rowIdx}`);
-  if(area) area.style.display='none';
-  sheetEditState[rowIdx]=null;
-}
-
-function dateToInput(dateStr){
-  if(!dateStr) return '';
-  // '2026. 6. 17.' → '2026-06-17'
-  const m = String(dateStr).match(/(\d{4})[.\-\s]+(\d{1,2})[.\-\s]+(\d{1,2})/);
-  if(m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
-  // ISO 날짜 처리
-  if(dateStr.includes('T')) return dateStr.slice(0,10);
+// ===== 날짜 유틸 =====
+function toDateInput(str) {
+  if (!str) return '';
+  const m = String(str).match(/(\d{4})[.\-\s]+(\d{1,2})[.\-\s]+(\d{1,2})/);
+  if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  if (String(str).includes('T')) return String(str).slice(0,10);
   return '';
 }
-
-function inputToKo(val){
-  // '2026-06-17' → '2026. 6. 17.'
-  if(!val) return '';
+function toKoDate(val) {
+  if (!val) return '';
   const [y,m,d] = val.split('-');
   return `${y}. ${parseInt(m)}. ${parseInt(d)}.`;
 }
 
-async function saveDate(rowIdx, val, did){
-  const koDate = inputToKo(val);
-  const ok = await updateSheetCell(rowIdx, 'D', koDate);
-  if(ok){
-    if(sheetCache && sheetCache[rowIdx-1]) sheetCache[rowIdx-1][3] = koDate;
-    toast('📅 날짜 업데이트됐어요');
+// ===== 로그 아이템 HTML =====
+function rowHtml({ row, rowIdx }) {
+  const cat = (row[1]||'').replace(/[\[\]]/g,'');
+  const title = (row[2]||'제목 없음').trim();
+  const date = row[3]||'';
+  const bSt = row[4]||'';   // E: 블로그 상태
+  const iSt = row[6]||'';   // G: 인스타 상태
+  const hasBlog = !!(row[5]||'').trim();   // F: 블로그 초안
+  const hasInsta = !!(row[7]||'').trim();  // H: 인스타 초안
+  const isRec = cat.includes('임신')||cat.includes('연애')||cat.includes('출산');
+  const bDone = bSt === '작성완료';
+  const iDone = iSt === '작성완료';
+  return `<div class="li">
+    <div class="lh">
+      <span class="lc ${isRec?'lcr':'lci'}">${cat||'기타'}</span>
+      <input type="date" class="date-inp" value="${toDateInput(date)}"
+        onchange="onDateChange(${rowIdx},this.value)" title="날짜 수정">
+    </div>
+    <div class="lti">${title}</div>
+    <div class="ch-btns">
+      <button class="ch-btn ${bDone?'ch-done':'ch-none'}"
+        onclick="togStatus(${rowIdx},'E',${bDone},this)">
+        📝 ${bDone?'블로그 완료':'블로그 미업로드'}
+      </button>
+      <button class="ch-btn ${iDone?'ch-done':'ch-none'}"
+        onclick="togStatus(${rowIdx},'G',${iDone},this)">
+        📸 ${iDone?'인스타 완료':'인스타 미업로드'}
+      </button>
+      ${hasBlog?`<button class="draft-btn draft-blog" onclick="togDraftEdit(${rowIdx},'F')">📝 블로그 초안</button>`:''}
+      ${hasInsta?`<button class="draft-btn draft-insta" onclick="togDraftEdit(${rowIdx},'H')">📸 인스타 초안</button>`:''}
+    </div>
+    <div class="draft-edit" id="de_${rowIdx}">
+      <div class="draft-edit-hd">
+        <span class="draft-edit-label" id="de_label_${rowIdx}"></span>
+        <div class="draft-edit-acts">
+          <button class="de-btn de-save" onclick="saveDraftEdit(${rowIdx})">💾 저장</button>
+          <button class="de-btn de-copy" onclick="copyDraftEdit(${rowIdx})">📋 복사</button>
+          <button class="de-btn de-close" onclick="closeDraftEdit(${rowIdx})">✕</button>
+        </div>
+      </div>
+      <textarea class="draft-ta" id="de_ta_${rowIdx}"></textarea>
+    </div>
+  </div>`;
+}
+
+// ===== 상태 토글 =====
+let toggling = {};
+async function togStatus(rowIdx, col, isDone, btn) {
+  if (toggling[rowIdx+col]) return;
+  toggling[rowIdx+col] = true;
+  const newDone = !isDone;
+  const newVal = newDone ? '작성완료' : '';
+  const today = new Date().toLocaleDateString('ko-KR');
+  btn.disabled = true; btn.textContent = '⏳';
+  const ok = await sheetUpdate(rowIdx, col, newVal);
+  if (ok) {
+    btn.className = `ch-btn ${newDone?'ch-done':'ch-none'}`;
+    btn.textContent = col==='E'
+      ? `📝 ${newDone?'블로그 완료':'블로그 미업로드'}`
+      : `📸 ${newDone?'인스타 완료':'인스타 미업로드'}`;
+    btn.onclick = () => togStatus(rowIdx, col, newDone, btn);
+    if (newDone) {
+      await sheetUpdate(rowIdx, 'D', today);
+      // 날짜 input 업데이트
+      const dateInp = btn.closest('.li')?.querySelector('.date-inp');
+      if (dateInp) dateInp.value = toDateInput(today);
+    }
+    toast(newDone ? '✅ 완료로 변경됐어요' : '↩️ 미업로드로 변경됐어요');
   } else {
-    toast('❌ 날짜 변경 실패');
+    toast('❌ 변경 실패');
+    btn.disabled = false;
+    btn.className = `ch-btn ${isDone?'ch-done':'ch-none'}`;
+    btn.textContent = col==='E'
+      ? `📝 ${isDone?'블로그 완료':'블로그 미업로드'}`
+      : `📸 ${isDone?'인스타 완료':'인스타 미업로드'}`;
   }
+  toggling[rowIdx+col] = false;
 }
 
-let sheetCache = null;
-let sheetCacheTime = 0;
-const CACHE_TTL = 5 * 60 * 1000; // 5분 캐시
-
-async function loadAndCacheSheet(forceRefresh=false) {
-  const now = Date.now();
-  if (!forceRefresh && sheetCache && (now - sheetCacheTime) < CACHE_TTL) {
-    return sheetCache; // 캐시 사용
-  }
-  const rows = await loadSheetData();
-  if (rows) {
-    sheetCache = rows;
-    sheetCacheTime = now;
-  }
-  return rows;
+// ===== 날짜 변경 =====
+async function onDateChange(rowIdx, val) {
+  const koDate = toKoDate(val);
+  const ok = await sheetUpdate(rowIdx, 'D', koDate);
+  toast(ok ? '📅 날짜 업데이트됐어요' : '❌ 날짜 변경 실패');
 }
 
-async function renderSheetData() {
-  const badge = document.getElementById('sheetSyncBadge');
-  if(badge){ badge.className='sync-badge sync-ing'; badge.textContent='불러오는 중...'; }
-  let rows = sheetCache;
-  if(!rows) rows = await loadAndCacheSheet();
-  if(!rows || rows.length < 2){
-    if(badge){ badge.className='sync-badge sync-err'; badge.textContent='오류'; }
+// ===== 초안 편집 =====
+let draftEditState = {}; // rowIdx → col
+async function togDraftEdit(rowIdx, col) {
+  const box = document.getElementById(`de_${rowIdx}`);
+  const ta = document.getElementById(`de_ta_${rowIdx}`);
+  const label = document.getElementById(`de_label_${rowIdx}`);
+  if (!box || !ta) return;
+  if (draftEditState[rowIdx] === col) {
+    box.classList.remove('show');
+    draftEditState[rowIdx] = null;
     return;
   }
-  const items = parseSheetRows(rows);
-  // E열(4)=블로그상태, G열(6)=인스타상태 기준으로 분류
-  const pend = items.filter(({row})=>!((row[4]||'')==='작성완료')||!((row[6]||'')==='작성완료'));
-  const done = items.filter(({row})=>((row[4]||'')==='작성완료')&&((row[6]||'')==='작성완료'));
-  document.getElementById('pendList').innerHTML = pend.length
-    ? pend.reverse().slice(0,30).map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('')
-    : '<div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div>';
-  document.getElementById('doneList').innerHTML = done.length
-    ? done.reverse().slice(0,30).map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('')
-    : '<div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div>';
-  if(badge){ badge.className='sync-badge sync-ok'; badge.textContent=`전체 ${items.length}개`; }
+  draftEditState[rowIdx] = col;
+  box.classList.add('show');
+  label.textContent = col==='F' ? '📝 블로그 초안 수정' : '📸 인스타 초안 수정';
+  ta.setAttribute('data-col', col);
+  ta.setAttribute('data-rowidx', rowIdx);
+  ta.value = '불러오는 중...';
+  const rows = await sheetRead();
+  if (rows && rows[rowIdx-1]) {
+    const colIdx = col==='F' ? 5 : 7;
+    ta.value = rows[rowIdx-1][colIdx] || '';
+  } else { ta.value = ''; }
+  ta.focus();
+  box.scrollIntoView({ behavior:'smooth', block:'nearest' });
 }
 
-async function renderSheetLog() {
+async function saveDraftEdit(rowIdx) {
+  const ta = document.getElementById(`de_ta_${rowIdx}`);
+  if (!ta) return;
+  const col = ta.getAttribute('data-col');
+  const value = ta.value;
+  toast('저장 중...');
+  const ok = await sheetUpdate(rowIdx, col, value);
+  toast(ok ? '💾 저장됐어요' : '❌ 저장 실패');
+}
+
+function copyDraftEdit(rowIdx) {
+  const ta = document.getElementById(`de_ta_${rowIdx}`);
+  if (!ta) return;
+  navigator.clipboard.writeText(ta.value).then(() => toast('📋 복사됐어요'));
+}
+
+function closeDraftEdit(rowIdx) {
+  const box = document.getElementById(`de_${rowIdx}`);
+  if (box) box.classList.remove('show');
+  draftEditState[rowIdx] = null;
+}
+
+// ===== 기록 탭 렌더 =====
+async function renderLog() {
   const ll = document.getElementById('logList');
-  ll.innerHTML = '<div class="em"><div class="emi">🔄</div>불러오는 중...</div>';
-  let rows = sheetCache;
-  if (!rows) rows = await loadAndCacheSheet();
+  const rows = await sheetRead();
   if (!rows) {
-    ll.innerHTML = '<div class="em"><div class="emi">❌</div>데이터 불러오기 실패<br><small>새로고침 후 다시 시도해주세요</small></div>';
+    ll.innerHTML = '<div class="em"><div class="emi">❌</div>불러오기 실패<br><small>새로고침해주세요</small></div>';
     return;
   }
-  const items = parseSheetRows(rows);
-  // 컬럼: C=2(제목) D=3(날짜) E=4(블로그상태) F=5(블로그초안) G=6(인스타상태) H=7(인스타초안)
-  const blDone = items.filter(({row})=>(row[4]||'')==='작성완료').length;
-  const inDone = items.filter(({row})=>(row[6]||'')==='작성완료').length;
+  const items = parseRows(rows);
   document.getElementById('sTot').textContent = items.length;
-  document.getElementById('sBl').textContent = blDone;
-  document.getElementById('sIn').textContent = inDone;
-  document.getElementById('sSh').textContent = 0;
+  document.getElementById('sBl').textContent = items.filter(({row})=>row[4]==='작성완료').length;
+  document.getElementById('sIn').textContent = items.filter(({row})=>row[6]==='작성완료').length;
   const recent = [...items].reverse().slice(0,30);
   ll.innerHTML = recent.length
-    ? recent.map(({row,rowIdx})=>sheetRowToHtml(row,rowIdx)).join('')
+    ? recent.map(rowHtml).join('')
     : '<div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div>';
+}
+
+// ===== 현황 탭 렌더 =====
+async function renderStatus() {
+  const rows = await sheetRead();
+  if (!rows) {
+    document.getElementById('pendList').innerHTML = '<div class="em"><div class="emi">❌</div>불러오기 실패</div>';
+    return;
+  }
+  const items = parseRows(rows);
+  const pend = items.filter(({row})=>row[4]!=='작성완료'||row[6]!=='작성완료');
+  const done = items.filter(({row})=>row[4]==='작성완료'&&row[6]==='작성완료');
+  document.getElementById('pendList').innerHTML = pend.length
+    ? [...pend].reverse().slice(0,30).map(rowHtml).join('')
+    : '<div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div>';
+  document.getElementById('doneList').innerHTML = done.length
+    ? [...done].reverse().slice(0,30).map(rowHtml).join('')
+    : '<div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div>';
+}
+
+// ===== 로컬 초안 =====
+let drafts = JSON.parse(localStorage.getItem('ml_drafts')||'[]');
+function renderDrafts() {
+  document.getElementById('sDraft').textContent = drafts.length;
+  const dl = document.getElementById('draftList');
+  if (!drafts.length) {
+    dl.innerHTML = '<div class="em"><div class="emi">📝</div>초안 생성 시 자동 저장돼요</div>';
+    return;
+  }
+  dl.innerHTML = drafts.slice(0,20).map((d,i) => `
+    <div class="li">
+      <div class="lh">
+        <span class="lc ${d.type==='기록형'?'lcr':'lci'}">${d.cat}</span>
+        <span style="font-size:11px;color:var(--hint);">${d.date}</span>
+      </div>
+      <div class="lti">${d.title}</div>
+      <div class="ch-btns">
+        <button class="draft-btn draft-blog" onclick="togLocalDraft(${i},'blog')">📝 블로그</button>
+        <button class="draft-btn draft-insta" onclick="togLocalDraft(${i},'insta')">📸 인스타</button>
+        <button class="ch-btn ch-none" onclick="delDraft(${i})" style="background:#FFEBEE;color:#C62828;border:none;">🗑️</button>
+      </div>
+      <div class="draft-edit" id="ld_${i}">
+        <div class="draft-edit-hd">
+          <span class="draft-edit-label" id="ld_label_${i}"></span>
+          <div class="draft-edit-acts">
+            <button class="de-btn de-save" onclick="saveLocalDraft(${i})">💾 저장</button>
+            <button class="de-btn de-copy" onclick="copyLocalDraft(${i})">📋 복사</button>
+            <button class="de-btn de-close" onclick="closeLocalDraft(${i})">✕</button>
+          </div>
+        </div>
+        <textarea class="draft-ta" id="ld_ta_${i}"></textarea>
+      </div>
+    </div>`).join('');
+}
+
+let localDraftState = {};
+function togLocalDraft(i, ch) {
+  const box = document.getElementById(`ld_${i}`);
+  const ta = document.getElementById(`ld_ta_${i}`);
+  const label = document.getElementById(`ld_label_${i}`);
+  if (!box||!ta) return;
+  if (localDraftState[i]===ch) { box.classList.remove('show'); localDraftState[i]=null; return; }
+  localDraftState[i]=ch;
+  box.classList.add('show');
+  label.textContent = ch==='blog'?'📝 블로그 초안':'📸 인스타 초안';
+  ta.setAttribute('data-ch',ch); ta.setAttribute('data-i',i);
+  ta.value = (ch==='blog'?drafts[i]?.blog:drafts[i]?.insta)||'';
+  ta.focus();
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function saveLocalDraft(i) {
+  const ta = document.getElementById(`ld_ta_${i}`);
+  if (!ta) return;
+  const ch = ta.getAttribute('data-ch');
+  drafts[i][ch] = ta.value;
+  localStorage.setItem('ml_drafts', JSON.stringify(drafts));
+  toast('💾 로컬 초안 저장됐어요');
+}
+function copyLocalDraft(i) {
+  const ta = document.getElementById(`ld_ta_${i}`);
+  if (ta) navigator.clipboard.writeText(ta.value).then(()=>toast('📋 복사됐어요'));
+}
+function closeLocalDraft(i) {
+  const box = document.getElementById(`ld_${i}`);
+  if (box) box.classList.remove('show');
+  localDraftState[i]=null;
+}
+function delDraft(i) {
+  if (!confirm('이 초안을 삭제할까요?')) return;
+  drafts.splice(i,1);
+  localStorage.setItem('ml_drafts',JSON.stringify(drafts));
+  renderDrafts();
+  toast('삭제됐어요');
+}
+
+// ===== 시트 자동 저장 =====
+async function autoSave(catName, title, blog, insta, date) {
+  try {
+    const baseRow = ['', `[${catName}]`, title, date, '', '', '', '', '', ''];
+    const ok = await sheetAppend(baseRow);
+    if (!ok) { toast('⚠️ 시트 저장 실패'); return; }
+    // 방금 추가된 행 번호
+    sheetCache = null; sheetCacheTime = 0;
+    const rows = await sheetRead();
+    if (!rows) return;
+    const newRowIdx = rows.length;
+    if (blog) await sheetUpdate(newRowIdx, 'F', blog);
+    if (insta) await sheetUpdate(newRowIdx, 'H', insta);
+    sheetCache = null; sheetCacheTime = 0;
+    toast('✅ 시트에 자동 저장됐어요');
+  } catch(e) { console.error('autoSave error:', e); }
 }
 
 // ===== Claude API =====
 const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니다.
 브랜드: 말랑데이즈(mallangdayz) | 운영자: 말랑파파(남편·아빠 시점) | 등장인물: 말랑파파, 말랑맘, 말랑이(딸)
 미션: 남편에서 아빠가 되어가는 과정을 기록하고 가족의 성장을 아카이브로 남긴다.
-=== SEO 필수 원칙 === 제목: 검색자가 실제 검색할 단어 포함 | 본문 첫 문단: 핵심 키워드 자연스럽게 2~3회 | 소제목: 검색 의도 반영 | 결론 먼저 | 구체적 수치 포함
+최종 판단: 10년 뒤 말랑이와 함께 봐도 의미 있는 기록인가?
+
+=== SEO 필수 원칙 ===
+제목: 검색자가 실제 검색할 단어 포함 | 본문 첫 문단: 핵심 키워드 자연스럽게 2~3회 | 결론 먼저 | 구체적 수치
+
 === 카테고리별 원칙 ===
-[임신기록] 감정80%+정보20% | "안녕하세요 :) 말랑파파입니다." | 구조: 오프닝→이번주말랑이→이번주말랑맘→이번주우리부부→요즘생각(인용구)→오늘의한줄(말랑이에게)
-[연애회상] 감정70%+정보30% | "안녕하세요 :) 말랑파파입니다." | 과거회상, 말랑맘과의추억, 말랑이등장안함 | 구조: 오프닝→있었던일→느낀것→지금돌아보면
+[임신기록] 감정80%+정보20% | "안녕하세요 :) 말랑파파입니다." 시작 | 구조: 오프닝→이번주말랑이→이번주말랑맘→이번주우리부부→요즘생각→오늘의한줄(말랑이에게)
+[연애회상] 감정70%+정보30% | "안녕하세요 :) 말랑파파입니다." 시작 | 과거회상, 말랑이 등장 안함 | 구조: 오프닝→있었던일→느낀것→지금돌아보면
 [육아정보] 정보85%+경험15% | 구조: 결론→상세정보→말랑이경험→주의사항→총평
 [육아용품] 정보90%+경험10% | 구조: 한줄결론→구매이유→장단점→구매정보→추천대상
-[먹고기록하기] 정보80%+경험20% | URL분석활용 | 구조: 핵심정보(주소·시간·가격·주차)→방문계기→메뉴·맛→분위기→총평
-[살림재테크] 정보85%+경험15% | 시리즈 구성 가능 (1~3편)
-작성 방식:
-- 반드시 웹검색으로 최신 정부 정책 확인 후 작성
-- 검색 우선순위: ①정부24/고용노동부/복지로/국토교통부 공식 페이지 → ②법제처 국가법령정보센터 → ③최근 6개월 뉴스
-- 정보 출처와 기준 연도/월을 명시 (예: 2026년 기준, 고용노동부 발표)
-- 말랑파파 실제 상황/계획을 정책 설명과 자연스럽게 엮어서 작성
-- "내가 직접 알아봤더니" 톤으로 독자가 같이 알아가는 느낌
-- 숫자/금액/기간은 구체적으로 (예: 통상임금 80%, 최대 150만원, 12개월)
-- 시리즈면 이번 편 초점에 집중하되 다음 편 예고로 마무리
-구조: 훅(내 상황 공유) → 제도 핵심 요약(결론 먼저) → 상세 조건·금액 → 신청 방법 → 말랑파파 적용 계획/후기 → 주의사항 → 총평+다음편예고(시리즈일 때)
-=== 채널별 출력 ===
-블로그 초안 마지막에 반드시 아래 형식으로 태그 추가 (네이버 블로그 태그용):
-[네이버태그]
-#태그1 #태그2 #태그3 #태그4 #태그5 #태그6 #태그7 #태그8
-(카테고리 관련 핵심 검색 키워드 6~8개, # 붙여서 작성)
+[먹고기록하기] 정보80%+경험20% | 매장 기본정보(주소·시간·가격·주차) 먼저 | 구조: 기본정보→방문계기→메뉴맛→분위기→총평
+[살림재테크] 정보85%+경험15% | 웹검색으로 최신 정부정책 확인 후 작성 | 기준연도 명시 | 구조: 결론→조건→신청방법→경험→주의사항
 
-인스타 캡션 작성 원칙:
-- 1~2줄의 강렬한 훅으로 시작 (공감 또는 궁금증 유발)
-- 감정이 느껴지는 짧은 문장 3~5줄 (줄바꿈 자주)
-- 말랑파파 시점의 솔직한 한마디
-- 빈 줄 하나 후 "자세한 내용은 블로그에서 확인하세요 🔗 프로필 링크"
-- 빈 줄 하나 후 해시태그 (줄 나눠서)
+=== 출력 형식 (반드시 준수) ===
+[BLOG]
+블로그 초안 전체 내용
+마지막에 네이버 태그: #태그1 #태그2 #태그3 #태그4 #태그5 #태그6 #태그7 #태그8
 
-해시태그 카테고리별 최적화 (13~15개):
-- 임신기록: #임신기록 #임신일기 #예비아빠 #임신N주차 #만삭 #임산부일상 #태교 #태동 #임신맘 #출산준비중 #예비부모 #말랑데이즈 #mallangdayz + 주차별 키워드
-- 연애회상: #커플일상 #연애일기 #데이트기록 #커플스타그램 #신혼일상 #부부일상 #데이트코스 #말랑데이즈 #mallangdayz + 장소 키워드
-- 육아정보: #육아정보 #육아팁 #신생아 #초보아빠 #초보엄마 #육아일기 #신생아육아 #아기있는집 #말랑데이즈 #mallangdayz + 주제 키워드
-- 육아용품: #육아용품 #육아템추천 #신생아용품 #내돈내산 #육아필수템 #육아추천템 #아기용품 #말랑데이즈 #mallangdayz + 제품명
-- 먹고기록하기: #맛집추천 #먹스타그램 #맛스타그램 + 지역맛집 #데이트맛집 #말랑데이즈 #mallangdayz + 지역/음식종류 키워드
-- 살림재테크: #신혼재테크 #재테크 #신혼살림 #절약생활 #신생아특례대출 #말랑데이즈 #mallangdayz + 주제 키워드`;
+[INSTA]
+인스타 캡션 (훅 1~2줄 + 감정 3~5줄 + "자세한 내용은 블로그에서 확인하세요 🔗")
+해시태그 13~15개 (카테고리별: 임신기록→#임신기록 #임신일기 #예비아빠 #말랑데이즈, 연애회상→#커플일상 #연애일기 #신혼일상 #말랑데이즈, 육아정보/용품→#육아 #신생아 #초보아빠 #말랑데이즈, 먹고기록→#맛집추천 #먹스타그램 #말랑데이즈, 살림재테크→#신혼재테크 #재테크 #말랑데이즈)
 
-const SP_TITLE = `네이버 블로그 SEO 전문가. 카테고리와 키워드로 검색 최적화 제목 3개 추천. 조건: 실제 검색 키워드 포함, 클릭 유도, 20자 내외, 말랑데이즈 육아·임신·신혼 톤. 번호 없이 제목만 한 줄씩 3개만 출력.`;
+[PHOTO]
+사진 배치 가이드 (사진첨부시만)`;
+
+const SP_TITLE = `네이버 블로그 SEO 전문가. 카테고리와 키워드로 검색 최적화 제목 3개 추천. 조건: 실제 검색 키워드 포함, 클릭 유도, 20자 내외. 번호 없이 제목만 한 줄씩 3개만 출력.`;
 
 const FORMS = {
   임신기록:{fields:[{id:'week',lb:'임신 주차',ph:'예) 34주'},{id:'baby',lb:'이번 주 말랑이',ta:true,ph:'태동, 태아 변화, 초음파 내용'},{id:'mom',lb:'이번 주 말랑맘',ta:true,ph:'몸 변화, 감정, 에피소드'},{id:'couple',lb:'이번 주 우리 부부',ta:true,ph:'준비한 것, 나눈 대화'},{id:'letter',lb:'말랑이에게 한마디',ph:'예) 곧 만나자'}]},
-  연애회상:{fields:[{id:'when',lb:'그날 언제 / 장소',ph:'예) 2023년 봄, 일산 호수공원'},{id:'ep',lb:'그날 있었던 일',ta:true,ph:'소소하게 자유롭게. 말랑이는 등장 안 해요.'},{id:'feel',lb:'그때 느낀 것',ta:true,ph:'그날의 감정, 아내에 대해 느낀 것'},{id:'now',lb:'지금 돌아보면 (선택)',ph:'예) 그때 용기 내길 잘했다'}]},
-  육아정보:{fields:[{id:'topic',lb:'주제',ph:'예) 신생아 수면교육, 이유식 시작, 예방접종'},{id:'sum',lb:'핵심 내용',ta:true,ph:'주제에 대해 알고 있는 내용'},{id:'exp',lb:'말랑이 실제 경험 (선택)',ta:true,ph:'직접 적용해본 경험'},{id:'warn',lb:'주의사항 (선택)',ta:true,ph:'헷갈리기 쉬운 것'}]},
+  연애회상:{fields:[{id:'when',lb:'그날 언제 / 장소',ph:'예) 2023년 봄, 일산 호수공원'},{id:'ep',lb:'그날 있었던 일',ta:true,ph:'소소하게 자유롭게. 말랑이는 등장 안 해요.'},{id:'feel',lb:'그때 느낀 것',ta:true,ph:'감정, 아내에 대해 느낀 것'},{id:'now',lb:'지금 돌아보면 (선택)',ph:'예) 그때 용기 내길 잘했다'}]},
+  육아정보:{fields:[{id:'topic',lb:'주제',ph:'예) 신생아 수면교육, 이유식 시작, 예방접종'},{id:'sum',lb:'핵심 내용',ta:true,ph:'주제에 대해 알고 있는 내용'},{id:'exp',lb:'말랑이 실제 경험 (선택)',ta:true,ph:''},{id:'warn',lb:'주의사항 (선택)',ta:true,ph:''}]},
   육아용품:{fields:[{id:'product',lb:'제품명',ph:'예) 범보 멀티시트'},{id:'price',lb:'가격 / 구매처',ph:'예) 89,000원 / 쿠팡'},{id:'reason',lb:'구매 이유',ta:true,ph:''},{id:'pros',lb:'좋았던 점',ta:true,ph:''},{id:'cons',lb:'아쉬운 점',ta:true,ph:''},{id:'rec',lb:'추천 대상',ph:'예) 신생아 3개월 이상'},{id:'sp',lb:'구매 유형',sel:['내돈내산','협찬·제공']}]},
-  먹고기록:{fields:[{id:'menu',lb:'주문한 메뉴 & 가격',ta:true,ph:'예) 연어사시미 35,000원\n우동 12,000원'},{id:'taste',lb:'솔직한 맛 평가',ta:true,ph:'맛있었다면 뭐가, 별로였다면 왜'},{id:'ctx',lb:'방문 계기 (선택)',ph:'예) 만삭여행 중, 제주 여행에서'}]},
-  살림재테크:{fields:[
-    {id:'topic',lb:'주제',ph:'예) 2026년 육아휴직, 신생아특례대출, 신혼부부 청약'},
-    {id:'series',lb:'시리즈 구성',sel:['1편 (단독글)','2편 시리즈','3편 시리즈']},
-    {id:'my_situation',lb:'나의 상황 / 계획 / 경험',ta:true,ph:'예) 말랑이 출생 후 6개월 육아휴직 신청 예정. 급여는 통상임금 80%라고 들었는데 실제로 얼마나 받을지 계산해봤다.'},
-    {id:'extra',lb:'추가로 넣고 싶은 내용 (선택)',ta:true,ph:'궁금했던 점, 알아보면서 놀란 점 등'}]},
+  먹고기록:{fields:[{id:'menu',lb:'주문한 메뉴 & 가격',ta:true,ph:'예) 연어사시미 35,000원'},{id:'taste',lb:'솔직한 맛 평가',ta:true,ph:''},{id:'ctx',lb:'방문 계기 (선택)',ph:'예) 만삭여행 중'}]},
+  살림재테크:{fields:[{id:'topic',lb:'주제',ph:'예) 2026년 육아휴직, 신생아특례대출'},{id:'series',lb:'시리즈 구성',sel:['1편 (단독글)','2편 시리즈','3편 시리즈']},{id:'my_situation',lb:'나의 상황 / 계획 / 경험',ta:true,ph:'예) 말랑이 출생 후 육아휴직 6개월 신청 예정'},{id:'extra',lb:'추가 내용 (선택)',ta:true,ph:'궁금했던 점, 놀란 점 등'}]},
 };
 
-let cat='',type='',files=[],logs=JSON.parse(localStorage.getItem('ml')||'[]'),drafts=JSON.parse(localStorage.getItem('ml_drafts')||'[]'),cur={},stMap={},selTitle='';
-const STEPS=['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','채널별 버전 생성 중'];
-let selectedPlaceInfo = '';
+let selCatName='', selType='', files=[], selTitle='', placeInfo='', lastPlaceInfo=null;
+let writeStMap = {blog:false, insta:false};
 
-async function searchPlace(){
-  const q = document.getElementById('placeSearchInput').value.trim();
-  if(!q){ toast('매장명을 입력해주세요'); return; }
-  const pr = document.getElementById('placeResults');
-  pr.innerHTML = '<div class="place-loading">🔍 검색 중...</div>';
-  try{
-    const KEY=['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        tools:[{"type":"web_search_20250305","name":"web_search"}],
-        messages:[{role:'user',content:`"${q}" 매장의 정보를 검색해서 아래 JSON 형식으로만 답해줘. 다른 설명 없이 JSON만.
-{
-  "name": "매장명",
-  "address": "전체 주소",
-  "hours": "영업시간",
-  "parking": "주차 가능/불가/유료",
-  "phone": "전화번호",
-  "price": "가격대",
-  "category": "음식 종류",
-  "waiting": "웨이팅 여부"
-}`}]
-      })
-    });
-    const d = await res.json();
-    // 텍스트 블록에서 JSON 추출
-    const textBlock = d.content?.find(b=>b.type==='text');
-    const txt = textBlock?.text || '';
-    const jsonMatch = txt.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('정보를 찾을 수 없어요');
-    const info = JSON.parse(jsonMatch[0]);
-    renderPlaceCard(info);
-  }catch(e){
-    pr.innerHTML = `<div class="place-loading" style="color:#C62828;">❌ ${e.message||'검색 실패. 다시 시도해주세요.'}</div>`;
-  }
-}
-
-// 검색된 매장 정보 임시 저장
-let lastPlaceInfo = null;
-
-function renderPlaceCard(info){
-  lastPlaceInfo = info; // 전역에 저장
-  const pr = document.getElementById('placeResults');
-  pr.innerHTML = `<div class="place-card" id="placeCard" onclick="selectPlace()">
-    <div class="place-name">🏪 ${info.name||'매장명 없음'}</div>
-    <div class="place-addr">📍 ${info.address||'-'}</div>
-    <div class="place-addr">🕐 ${info.hours||'-'} | 🅿️ ${info.parking||'-'}</div>
-    <div class="place-addr">📞 ${info.phone||'-'} | 💰 ${info.price||'-'}</div>
-    <div style="margin-top:6px;font-size:11px;color:var(--ac);font-weight:600;">탭해서 이 매장으로 선택 →</div>
-  </div>`;
-}
-
-function selectPlace(){
-  const info = lastPlaceInfo;
-  if(!info){ toast('매장 정보가 없어요'); return; }
-  selectedPlaceInfo = `매장명: ${info.name||''}
-주소: ${info.address||''}
-영업시간: ${info.hours||''}
-주차: ${info.parking||''}
-전화번호: ${info.phone||''}
-가격대: ${info.price||''}
-카테고리: ${info.category||''}
-웨이팅: ${info.waiting||''}`.trim();
-  const ps = document.getElementById('placeSelected');
-  if(ps){
-    ps.style.display='block';
-    ps.innerHTML = `✅ <strong>${info.name}</strong> 선택됨<br>📍 ${info.address||''}<br>🕐 ${info.hours||''} | 🅿️ ${info.parking||'-'}`;
-  }
-  // 카드 선택 표시
-  const card = document.getElementById('placeCard');
-  if(card) card.classList.add('selected');
-  document.getElementById('placeResults').innerHTML='';
-  toast(`${info.name} 선택됐어요 ✓`);
-}
-
-function selCat(btn){
-  if(typeof btn === 'string') btn = document.querySelector(`.cb[data-cat="${btn}"]`);
+// ===== 카테고리 선택 =====
+function selCat(btn) {
   document.querySelectorAll('.cb').forEach(b=>b.classList.remove('sel'));
   btn.classList.add('sel');
-  cat=btn.dataset.cat; type=btn.dataset.type; selTitle='';
+  selCatName = btn.dataset.cat;
+  selType = btn.dataset.type;
+  selTitle = ''; placeInfo = ''; lastPlaceInfo = null;
+  // 폼 구성
   buildForm();
-  document.getElementById('fc').style.display='block';
+  document.getElementById('formCard').style.display='block';
   document.getElementById('oaEl').classList.remove('show');
   document.getElementById('ldEl').classList.remove('show');
-  document.getElementById('ftitle').textContent=cat;
-  document.getElementById('skw').value='';
-  document.getElementById('staArea').innerHTML='';
-  document.getElementById('stbox').classList.remove('show');
-  // 먹고기록일 때만 매장 검색 표시
-  const psa = document.getElementById('placeSearchArea');
-  if(psa) psa.style.display = cat==='먹고기록' ? 'block' : 'none';
-  // 매장 선택 초기화
-  selectedPlaceInfo = '';
-  lastPlaceInfo = null;
-  const ps = document.getElementById('placeSelected');
-  const pr = document.getElementById('placeResults');
-  const pi = document.getElementById('placeSearchInput');
-  if(ps){ ps.style.display='none'; ps.innerHTML=''; }
-  if(pr) pr.innerHTML='';
-  if(pi) pi.value='';
-  setTimeout(()=>document.getElementById('fc').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+  document.getElementById('formTitle').textContent = selCatName;
+  document.getElementById('seoKw').value='';
+  document.getElementById('seoOpts').style.display='none';
+  document.getElementById('seoOpts').innerHTML='';
+  document.getElementById('selTitleBox').classList.remove('show');
+  // 먹고기록만 매장검색 표시
+  document.getElementById('placeBox').style.display = selCatName==='먹고기록'?'block':'none';
+  document.getElementById('placeResult').innerHTML='';
+  document.getElementById('placeOk').classList.remove('show');
+  setTimeout(()=>document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
 
-function buildForm(){
-  const cfg=FORMS[cat]; if(!cfg)return;
-  document.getElementById('dynForm').innerHTML=cfg.fields.map(f=>{
-
-    if(f.sel) return `<div class="fr"><label class="fl">${f.lb}</label><select class="fsel" id="f_${f.id}">${f.sel.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
-    if(f.ta) return `<div class="fr"><label class="fl">${f.lb}</label><textarea class="fta" id="f_${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
+function buildForm() {
+  const fields = FORMS[selCatName]?.fields || [];
+  document.getElementById('dynForm').innerHTML = fields.map(f => {
+    if (f.sel) return `<div class="fr"><label class="fl">${f.lb}</label><select class="fsel" id="f_${f.id}">${f.sel.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+    if (f.ta) return `<div class="fr"><label class="fl">${f.lb}</label><textarea class="fta" id="f_${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
     return `<div class="fr"><label class="fl">${f.lb}</label><input class="fi" id="f_${f.id}" placeholder="${f.ph||''}"></div>`;
   }).join('');
 }
 
-async function genTitles(){
-  const kw=document.getElementById('skw').value.trim();
-  if(!kw){toast('키워드를 입력해주세요');return;}
-  if(!cat){toast('카테고리를 먼저 선택해주세요');return;}
-  const btn=document.getElementById('seoBtn');
+function gv(id) { const el=document.getElementById(`f_${id}`); return el?el.value.trim():''; }
+
+// ===== SEO 제목 추천 =====
+async function genTitles() {
+  const kw = document.getElementById('seoKw').value.trim();
+  if (!kw) { toast('키워드를 입력해주세요'); return; }
+  if (!selCatName) { toast('카테고리를 먼저 선택해주세요'); return; }
+  const btn = document.querySelector('.seo-btn');
   btn.disabled=true; btn.textContent='생성 중...';
-  document.getElementById('staArea').innerHTML='<div class="seold">⏳ 제목 추천 중...</div>';
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join(''),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:SP_TITLE,messages:[{role:'user',content:`카테고리: ${cat}\n키워드: ${kw}\n제목 3개만 추천해줘.`}]})});
-    const d=await res.json();
-    const titles=(d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
-    document.getElementById('staArea').innerHTML=`<div class="seotitles">${titles.map(t=>`<button class="seoto" onclick="pickTitle(this,'${t.replace(/'/g,"\\'")}')">📌 ${t}</button>`).join('')}</div>`;
-  }catch(e){document.getElementById('staArea').innerHTML='<div class="seold" style="color:#C0392B">오류가 발생했어요</div>';}
-  finally{btn.disabled=false;btn.textContent='제목 추천';}
+  const opts = document.getElementById('seoOpts');
+  opts.style.display='flex'; opts.innerHTML='<div style="color:var(--hint);font-size:12px;padding:8px;">⏳ 추천 중...</div>';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:300,system:SP_TITLE,messages:[{role:'user',content:`카테고리: ${selCatName}\n키워드: ${kw}\n제목 3개만 추천.`}]})
+    });
+    const d = await res.json();
+    if (d.error) throw new Error(d.error.message);
+    const titles = (d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
+    opts.innerHTML = titles.map(t=>`<button class="seo-opt" onclick="pickTitle(this,'${t.replace(/'/g,"&#39;")}')">${t}</button>`).join('');
+  } catch(e) {
+    opts.innerHTML = `<div style="color:#C62828;font-size:12px;padding:8px;">❌ ${e.message||'오류'}</div>`;
+  } finally { btn.disabled=false; btn.textContent='제목 추천'; }
 }
 
-function pickTitle(el,t){
-  document.querySelectorAll('.seoto').forEach(b=>b.classList.remove('sel'));
-  el.classList.add('sel'); selTitle=t;
-  document.getElementById('sttext').textContent=t;
-  document.getElementById('stbox').classList.add('show');
+function pickTitle(el, t) {
+  document.querySelectorAll('.seo-opt').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  selTitle = t;
+  document.getElementById('selTitleTxt').textContent = t;
+  document.getElementById('selTitleBox').classList.add('show');
   toast('제목 선택됐어요 ✓');
 }
 
-function addFiles(inp){Array.from(inp.files).forEach(f=>{files.push(f);const c=document.createElement('div');c.className='pc';c.innerHTML=`📎 ${f.name} <span class="pr" onclick="rmFile('${f.name}',this)">×</span>`;document.getElementById('pcs').appendChild(c);});}
-function rmFile(n,el){files=files.filter(f=>f.name!==n);el.parentElement.remove();}
-function gv(id){const el=document.getElementById(`f_${id}`);return el?el.value.trim():'';}
-
-function buildPrompt(){
-  const cfg=FORMS[cat];if(!cfg)return '';
-  // 매장 검색으로 가져온 정보
-  const urlPart = selectedPlaceInfo ? `\n\n[매장 기본 정보 - 블로그 상단에 반드시 포함]\n${selectedPlaceInfo}` : '';
-  const info=cfg.fields.map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
-  const tp=selTitle?`\n선택된 SEO 제목 (이 제목을 블로그 글 제목으로 사용): ${selTitle}`:'';
-  const kp=document.getElementById('skw').value.trim()?`\nSEO 키워드: ${document.getElementById('skw').value.trim()}`:'';
-  const ph=files.length>0?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
-  // 살림재테크 전용 프롬프트
-  if(cat==='살림재테크'){
-    const topic=gv('topic'), series=gv('series'), situation=gv('my_situation'), extra=gv('extra');
-    const today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
-    const seriesNum = series.startsWith('1') ? 1 : series.startsWith('2') ? 2 : 3;
-
-    let seriesGuide = '';
-    if(seriesNum===1){
-      seriesGuide = `[BLOG_1]
-1편: ${topic} 제도 총정리 (정책 중심, 결론→조건→금액→신청방법→주의사항 구조)
-
-[INSTA_SERIES]
-1편 인스타 캡션+해시태그`;
-    } else if(seriesNum===2){
-      seriesGuide = `아래 2편을 각각 완성도 있게 작성해줘.
-
-[BLOG_1]
-1편: ${topic} 제도 총정리 (정책·숫자 중심, 결론→조건→금액→신청방법→주의사항, 마지막에 "2편에서는 실제 신청 과정을 공유할게요" 예고)
-
-[BLOG_2]
-2편: 말랑파파 실제 신청/준비 후기 (경험 중심, 오프닝→준비과정→신청→결과→느낀점, 마지막에 "다음 편도 이어집니다" 멘트)
-
-[INSTA_SERIES]
-시리즈 공통 인스타 캡션+해시태그 (두 편 업로드 시 재사용 가능하게)`;
-    } else {
-      seriesGuide = `아래 3편을 각각 완성도 있게 작성해줘.
-
-[BLOG_1]
-1편: ${topic} 제도 총정리 (정책·숫자 중심, 결론→조건→금액→신청방법→주의사항, 2편 예고)
-
-[BLOG_2]
-2편: 말랑파파 실제 신청/준비 후기 (경험 중심, 준비→신청→결과, 3편 예고)
-
-[BLOG_3]
-3편: 실수령액 계산·꿀팁 총정리 (실용 정보, 계산법·절세팁·자주묻는질문, 시리즈 마무리)
-
-[INSTA_SERIES]
-시리즈 공통 인스타 캡션+해시태그`;
-    }
-
-    return `오늘 날짜: ${today}
-
-[살림재테크 시리즈 작성 요청]
-주제: ${topic}
-시리즈: ${seriesNum}편 구성
-나의 상황·계획·경험: ${situation||'없음'}
-추가로 넣을 내용: ${extra||'없음'}
-
-작성 전 반드시 웹검색으로 최신 정보 확인:
-1순위: 정부24(gov.kr) / 고용노동부(moel.go.kr) / 복지로(bokjiro.go.kr) / 국토교통부(molit.go.kr)
-2순위: 법제처 국가법령정보센터(law.go.kr)
-3순위: 최근 6개월 뉴스
-
-★ 검색한 최신 기준으로 작성하고 기준연도·출처 본문에 명시
-★ 말랑파파 시점, 독자가 같이 알아가는 "내가 직접 알아봤더니" 톤
-★ 숫자·금액·기간은 최대한 구체적으로
-
-${seriesGuide}`;
+// ===== 매장 검색 =====
+async function searchPlace() {
+  const q = document.getElementById('placeKw').value.trim();
+  if (!q) { toast('매장명을 입력해주세요'); return; }
+  const result = document.getElementById('placeResult');
+  result.innerHTML = '<div style="color:var(--hint);font-size:12px;padding:8px;">🔍 검색 중...</div>';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,tools:[{"type":"web_search_20250305","name":"web_search"}],messages:[{role:'user',content:`"${q}" 매장 정보를 검색해서 JSON만 답해줘: {"name":"매장명","address":"주소","hours":"영업시간","parking":"주차","phone":"전화번호","price":"가격대","category":"음식종류"}`}]})
+    });
+    const d = await res.json();
+    const txt = d.content?.filter(b=>b.type==='text').map(b=>b.text).join('')||'';
+    const m = txt.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('정보를 찾을 수 없어요');
+    lastPlaceInfo = JSON.parse(m[0]);
+    result.innerHTML = `<div class="place-card" onclick="selectPlace()">
+      <div class="place-name">🏪 ${lastPlaceInfo.name||q}</div>
+      <div class="place-info">📍 ${lastPlaceInfo.address||'-'}</div>
+      <div class="place-info">🕐 ${lastPlaceInfo.hours||'-'} | 🅿️ ${lastPlaceInfo.parking||'-'} | 📞 ${lastPlaceInfo.phone||'-'}</div>
+      <div style="margin-top:5px;font-size:11px;color:var(--ac);font-weight:600;">탭해서 선택 →</div>
+    </div>`;
+  } catch(e) {
+    result.innerHTML = `<div style="color:#C62828;font-size:12px;padding:8px;">❌ ${e.message}</div>`;
   }
-  return `카테고리: ${cat} (${type})${tp}${kp}\n${info}${urlPart}${ph}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+최적화 해시태그${files.length>0?'\n\n[PHOTO]\n사진 배치 안내 (사진N-[위치]-[이유])':''}`;
 }
 
-async function generate(){
-  if(!cat){toast('카테고리를 선택해주세요');return;}
-  document.getElementById('fc').style.display='none';
+function selectPlace() {
+  if (!lastPlaceInfo) return;
+  placeInfo = `매장명: ${lastPlaceInfo.name||''}\n주소: ${lastPlaceInfo.address||''}\n영업시간: ${lastPlaceInfo.hours||''}\n주차: ${lastPlaceInfo.parking||''}\n전화번호: ${lastPlaceInfo.phone||''}\n가격대: ${lastPlaceInfo.price||''}`;
+  document.getElementById('placeResult').innerHTML='';
+  const ok = document.getElementById('placeOk');
+  ok.textContent = `✅ ${lastPlaceInfo.name} 선택됨`;
+  ok.classList.add('show');
+  toast(`${lastPlaceInfo.name} 선택됐어요 ✓`);
+}
+
+// ===== 파일 =====
+function addFiles(inp) {
+  Array.from(inp.files).forEach(f=>{
+    files.push(f);
+    const c=document.createElement('div'); c.className='pc';
+    c.innerHTML=`📎 ${f.name} <span style="cursor:pointer;color:var(--hint);" onclick="rmFile('${f.name}',this)">×</span>`;
+    document.getElementById('pcs').appendChild(c);
+  });
+}
+function rmFile(n,el){files=files.filter(f=>f.name!==n);el.parentElement.remove();}
+
+// ===== 프롬프트 빌드 =====
+function buildPrompt() {
+  const fields = FORMS[selCatName]?.fields||[];
+  const info = fields.map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
+  const titlePart = selTitle?`\n선택된 SEO 제목 (이 제목을 블로그 제목으로 사용): ${selTitle}`:'';
+  const kwPart = document.getElementById('seoKw').value.trim()?`\nSEO 키워드: ${document.getElementById('seoKw').value.trim()}`:'';
+  const placePart = placeInfo?`\n\n[매장 기본정보 - 블로그 상단에 반드시 포함]\n${placeInfo}`:'';
+  const photoPart = files.length>0?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
+
+  // 살림재테크 특별 프롬프트
+  if (selCatName==='살림재테크') {
+    const topic=gv('topic'), series=gv('series'), situation=gv('my_situation'), extra=gv('extra');
+    const seriesNum=series.startsWith('3')?3:series.startsWith('2')?2:1;
+    const today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+    let seriesGuide='', outFmt='';
+    if(seriesNum===1){
+      seriesGuide='[단독글] 제도 총정리 + 나의 적용 계획';
+      outFmt='[BLOG]\n블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그';
+    } else {
+      const guides=['1편: 제도 핵심 총정리','2편: 실제 신청/경험 후기','3편: 실수령액 계산 + 주의사항'];
+      seriesGuide=guides.slice(0,seriesNum).join('\n');
+      outFmt=Array.from({length:seriesNum},(_,i)=>`[BLOG_${i+1}]\n${i+1}편 블로그 초안`).join('\n\n')+'\n\n'+Array.from({length:seriesNum},(_,i)=>`[INSTA_${i+1}]\n${i+1}편 인스타 캡션+해시태그`).join('\n\n');
+    }
+    return `오늘: ${today}\n주제: ${topic}\n시리즈: ${series}\n상황: ${situation||'없음'}\n추가: ${extra||'없음'}\n시리즈 구성:\n${seriesGuide}\n웹검색으로 최신 정부정책(정부24, 고용노동부, 법제처) 확인 후 작성. 기준연도 명시.\n\n${outFmt}`;
+  }
+  return `카테고리: ${selCatName} (${selType})${titlePart}${kwPart}\n${info}${placePart}${photoPart}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그${files.length>0?'\n\n[PHOTO]\n사진 배치 안내':''}`;
+}
+
+// ===== 초안 생성 =====
+async function generate() {
+  if (!selCatName) { toast('카테고리를 선택해주세요'); return; }
+  document.getElementById('formCard').style.display='none';
   document.getElementById('ldEl').classList.add('show');
   document.getElementById('oaEl').classList.remove('show');
-  const KEY=['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
-  const isFinance = cat==='살림재테크';
-  const stepList = isFinance
-    ? ['정부 공식 사이트 검색 중','법령 최신 기준 확인 중','정책 내용 분석 중','말랑파파 경험 녹이는 중','초안 마무리 중']
-    : STEPS;
+  const isFinance = selCatName==='살림재테크';
+  const steps = isFinance
+    ? ['정부 공식 사이트 검색 중','법령 최신 기준 확인 중','정책 내용 분석 중','초안 작성 중','마무리 중']
+    : ['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','채널별 생성 중'];
   let si=0;
-  const iv=setInterval(()=>{si=(si+1)%stepList.length;document.getElementById('ldStep').textContent=stepList[si];},1800);
-  try{
-    const body={
-      model:'claude-sonnet-4-6',
-      max_tokens: isFinance ? 6000 : 4000,
-      system:SP,
-      messages:[{role:'user',content:buildPrompt()}]
-    };
-    if(isFinance) body.tools=[{"type":"web_search_20250305","name":"web_search"}];
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+  const iv = setInterval(()=>{si=(si+1)%steps.length;document.getElementById('ldStep').textContent=steps[si];},1600);
+  try {
+    const body = {model:'claude-sonnet-4-6',max_tokens:isFinance?6000:4000,system:SP,messages:[{role:'user',content:buildPrompt()}]};
+    if (isFinance) body.tools=[{"type":"web_search_20250305","name":"web_search"}];
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify(body)
     });
-    const d=await res.json();
-    if(d.error){throw new Error(d.error.message||JSON.stringify(d.error));}
-    const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||d.content?.[0]?.text||'';
-    if(!txt){throw new Error('응답이 비어있어요. 잠시 후 다시 시도해주세요.');}
-    parseOut(txt);
-  }catch(e){
+    const d = await res.json();
+    if (d.error) throw new Error(d.error.message||JSON.stringify(d.error));
+    const txt = d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'';
+    if (!txt) throw new Error('응답이 비어있어요');
+    if (txt.includes('[BLOG_1]')) await parseSeriesOut(txt);
+    else parseNormal(txt);
+  } catch(e) {
     console.error('generate error:', e);
     toast('오류: '+(e.message||'다시 시도해주세요'));
-    document.getElementById('fc').style.display='block';
+    document.getElementById('formCard').style.display='block';
+  } finally {
+    clearInterval(iv);
+    document.getElementById('ldEl').classList.remove('show');
   }
-  finally{clearInterval(iv);document.getElementById('ldEl').classList.remove('show');}
 }
 
-async function parseOut(txt){
-  // 살림재테크 시리즈 감지
-  if(txt.includes('[BLOG_1]')){
-    await parseSeriesOut(txt);
-    return;
-  }
-  // 블로그: [BLOG] ~ [INSTA] 사이 (단, [네이버태그] 섹션 포함)
-  let blog='', insta='', photo='';
-  if(txt.includes('[BLOG]') && txt.includes('[INSTA]')){
-    blog = txt.split('[BLOG]')[1].split('[INSTA]')[0]||'';
-    const afterInsta = txt.split('[INSTA]')[1]||'';
-    insta = afterInsta.split('[PHOTO]')[0].split('[네이버태그]')[0]||'';
-    photo = txt.includes('[PHOTO]') ? txt.split('[PHOTO]')[1]||'' : '';
+// ===== 텍스트 파싱 =====
+function secText(txt, from, to) {
+  const si = txt.indexOf(`[${from}]`);
+  if (si === -1) return '';
+  const start = si + from.length + 2;
+  if (!to) return txt.slice(start).trim();
+  const ei = txt.indexOf(`[${to}]`, start);
+  return (ei === -1 ? txt.slice(start) : txt.slice(start, ei)).trim();
+}
+
+function parseNormal(txt) {
+  const blog = secText(txt, 'BLOG', 'INSTA') || txt;
+  const insta = secText(txt, 'INSTA', 'PHOTO') || secText(txt, 'INSTA', null);
+  const photo = secText(txt, 'PHOTO', null);
+  document.getElementById('blogTxt').textContent = blog;
+  document.getElementById('instaTxt').textContent = insta;
+  // 사진 가이드
+  if (photo && files.length>0) {
+    document.getElementById('photoGuide').innerHTML = `<div style="background:var(--pul);border:.5px solid #C4BEE0;border-radius:var(--rs);padding:14px;"><div style="font-size:12px;font-weight:600;color:var(--pu);margin-bottom:10px;">📷 사진 배치 가이드</div>${photo.split('\n').filter(l=>l.trim()).map((l,i)=>`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:.5px solid #D8D4EE;"><span style="width:22px;height:22px;border-radius:50%;background:var(--pu);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span><span style="font-size:12px;color:var(--sub);">${l}</span></div>`).join('')}</div>`;
   } else {
-    blog = txt; insta=''; photo='';
+    document.getElementById('photoGuide').innerHTML = '<div class="em"><div class="emi">📷</div>사진을 첨부하면 배치 가이드가 나와요</div>';
   }
-  document.getElementById('blogTxt').textContent=blog.trim();
-  document.getElementById('instaTxt').textContent=insta.trim();
-  // 일반 탭 표시
-  showNormalTabs();
-  if(photo&&files.length>0){
-    const lines=photo.trim().split('\n').filter(l=>l.trim());
-    document.getElementById('pgEl').innerHTML=`<div class="pg2"><div class="pg2t">📷 사진 배치 가이드</div>${lines.map((l,i)=>{const p=l.split('-').map(s=>s.trim());return `<div class="pg2i"><div class="pn">${i+1}</div><div class="pd"><div class="pp">${p[0]||''}</div>${p.slice(1).join(' — ')}</div></div>`;}).join('')}</div>`;
-  }else{document.getElementById('pgEl').innerHTML='<div class="em"><div class="emi">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div>';}
-  const fv=FORMS[cat]?.fields[0]?gv(FORMS[cat].fields[0].id):'';
-  showNormalTabs();
-  const title = selTitle||(fv?`${cat} - ${fv}`:cat);
+  // 업로드 체크 초기화
+  writeStMap={blog:false,insta:false};
+  document.getElementById('blogSt').className='sb2 bn'; document.getElementById('blogSt').textContent='미업로드'; document.getElementById('blogDate').textContent='-';
+  document.getElementById('instaSt').className='sb2 bn'; document.getElementById('instaSt').textContent='미업로드'; document.getElementById('instaDate').textContent='-';
+  // 로컬 초안 저장
+  const fv = FORMS[selCatName]?.fields[0]?gv(FORMS[selCatName].fields[0].id):'';
+  const title = selTitle||(fv?`${selCatName} - ${fv}`:selCatName);
   const now = new Date().toLocaleDateString('ko-KR');
-  cur={cat,type,blog,insta,title,date:now,bs:'',is:''};
-  stMap={blog:false,insta:false};
-  // 초안 로컬 자동저장
-  const draft={id:'draft_'+Date.now(),cat,type,title,date:now,blog:blog.trim(),insta:insta.trim()};
-  drafts.unshift(draft);
+  drafts.unshift({id:'draft_'+Date.now(),cat:selCatName,type:selType,title,date:now,blog,insta});
   if(drafts.length>50) drafts=drafts.slice(0,50);
   localStorage.setItem('ml_drafts',JSON.stringify(drafts));
-  renderDrafts();
-  updBadges();
+  // 시트 자동 저장
+  autoSave(selCatName, title, blog, insta, now);
+  // UI 표시
   document.getElementById('oaEl').classList.add('show');
-  swOut('blog',document.querySelector('.ot'));
-  setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
-  // 구글 시트 자동 기록
-  autoSaveToSheet(cat, title, blog.trim(), insta.trim(), now);
-}
-
-async function autoSaveToSheet(catName, title, blog, insta, date){
-  try{
-    // 1단계: 기본 정보 append (URL 짧게 유지)
-    const baseRow = ['', `[${catName}]`, title, date, '', '', '', '', '', ''];
-    const ok = await appendToSheet(baseRow);
-    if(!ok){ toast('⚠️ 시트 저장 실패'); return; }
-
-    // 방금 추가된 행 번호 찾기 (마지막 행)
-    const readRes = await fetch(AS_URL + '?action=read');
-    const readD = await readRes.json();
-    if(!readD.ok) throw new Error('읽기 실패');
-    const lastRowIdx = readD.data.length; // 헤더 포함 전체 행 수
-
-    // 2단계: 블로그 초안, 인스타 초안 각각 update (긴 텍스트 별도 저장)
-    if(blog) await updateSheetCell(lastRowIdx, 'F', blog);
-    if(insta) await updateSheetCell(lastRowIdx, 'H', insta);
-
-    // 캐시 초기화
-    sheetCache = null;
-    sheetCacheTime = 0;
-    toast('✅ 시트에 자동 저장됐어요');
-  }catch(e){
-    console.error('autoSave error:', e);
-    toast('⚠️ 저장 오류: ' + e.message);
-  }
-}
-
-function showNormalTabs(){
   swOut('blog', document.querySelector('.ot'));
-}
-
-function showSeriesTabs(count){
-  // 시리즈 탭 보이기, 일반 탭 숨기기
-  ['blog','insta'].forEach(id=>{
-    const t=document.getElementById('tab-'+id);
-    if(t) t.style.display='none';
-  });
-  document.getElementById('tab-photo').style.display='none';
-  for(let i=1;i<=3;i++){
-    const t=document.getElementById('tab-s'+i);
-    if(t) t.style.display = i<=count ? '' : 'none';
-  }
-  const si=document.getElementById('tab-sinsta');
-  if(si) si.style.display='';
-  swOut('s1', document.getElementById('tab-s1'));
-}
-
-function parseSeries(txt){
-  const s1=sec(txt,'BLOG_1','BLOG_2')||sec(txt,'BLOG_1','INSTA_SERIES')||'';
-  const s2=sec(txt,'BLOG_2','BLOG_3')||sec(txt,'BLOG_2','INSTA_SERIES')||'';
-  const s3=sec(txt,'BLOG_3','INSTA_SERIES')||'';
-  const sinsta=sec(txt,'INSTA_SERIES',null)||'';
-  const count = s3.trim() ? 3 : s2.trim() ? 2 : 1;
-
-  document.getElementById('s1Txt').textContent=s1.trim();
-  document.getElementById('s2Txt').textContent=s2.trim();
-  document.getElementById('s3Txt').textContent=s3.trim();
-  document.getElementById('sinstaTxt').textContent=sinsta.trim();
-
-  // 라벨 업데이트
-  const topic=gv('topic')||'살림재테크';
-  const t1=document.getElementById('tab-s1'), t2=document.getElementById('tab-s2'), t3=document.getElementById('tab-s3');
-  if(t1) t1.textContent=`📝 1편`;
-  if(t2) t2.textContent=`📝 2편`;
-  if(t3) t3.textContent=`📝 3편`;
-
-  showSeriesTabs(count);
-
-  // cur에 시리즈 저장
-  const fv=gv('topic');
-  cur={cat,type,blog:s1,insta:sinsta,s1:s1.trim(),s2:s2.trim(),s3:s3.trim(),isSeries:true,seriesCount:count,
-    title:fv?`${cat} - ${fv}`:cat,date:new Date().toLocaleDateString('ko-KR'),bs:'',is:''};
-  stMap={blog:false,insta:false};
-
-  // 초안 자동저장
-  const draft={id:'draft_'+Date.now(),cat,type,title:cur.title,date:cur.date,
-    blog:`[1편]\n${s1.trim()}${s2?'\n\n[2편]\n'+s2.trim():''}${s3?'\n\n[3편]\n'+s3.trim():''}`,
-    insta:sinsta.trim()};
-  drafts.unshift(draft);
-  if(drafts.length>50) drafts=drafts.slice(0,50);
-  localStorage.setItem('ml_drafts',JSON.stringify(drafts));
-  renderDrafts();
-
-  document.getElementById('oaEl').classList.add('show');
   setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
 }
 
-async function saveSeriesLog(num){
-  if(!cur.cat)return;
-  const entry={...cur,id:Date.now()};
-  logs.unshift(entry);
-  localStorage.setItem('ml',JSON.stringify(logs));
-  renderLog();
-  toast('저장 중...');
-  const now=new Date().toLocaleDateString('ko-KR');
-  const blogContent = cur['s'+num]||'';
-  const row=[
-    '',`[${cur.cat}]`,'',
-    `${cur.title} ${num}편`,
-    `${cur.title} ${num}편`,
-    now,'','',
-    cur.insta||'',
-    blogContent,
-    '','',''
-  ];
-  const ok=await appendToSheet(row);
-  toast(ok?`${num}편 저장 + 시트 기록 완료 ✅`:`앱에 저장됐어요 (시트 기록 실패)`);
-}
-
-async function parseSeriesOut(txt){
+async function parseSeriesOut(txt) {
   const has3=txt.includes('[BLOG_3]'), has2=txt.includes('[BLOG_2]');
   const count=has3?3:has2?2:1;
   const blogs=[], instas=[];
   for(let i=1;i<=count;i++){
-    const nb=i<count?`BLOG_${i+1}`:(txt.includes('[INSTA_1]')?'INSTA_1':null);
+    const nb=i<count?`BLOG_${i+1}`:`INSTA_1`;
     const ni=i<count?`INSTA_${i+1}`:null;
-    blogs.push((sec(txt,`BLOG_${i}`,nb)||'').trim());
-    instas.push((sec(txt,`INSTA_${i}`,ni)||'').trim());
+    blogs.push(secText(txt,`BLOG_${i}`,nb));
+    instas.push(secText(txt,`INSTA_${i}`,ni));
   }
-  const oaCard=document.querySelector('#oaEl .card');
-  if(oaCard){
+  // 탭 교체
+  const oaCard = document.querySelector('#oaEl .card');
+  if (oaCard) {
     let h='<div class="ct">📝 생성된 초안</div><div class="ots">';
-    for(let i=1;i<=count;i++) h+=`<button class="ot${i===1?" active":""}" onclick="swOut('series${i}',this)">${i}편</button>`;
-    h+='<button class="ot" onclick="swOut(\'photo\',this)">📷 사진배치</button></div>';
+    for(let i=1;i<=count;i++) h+=`<button class="ot${i===1?' active':''}" onclick="swOut('s${i}',this)">${i}편</button>`;
+    h+='<button class="ot" onclick="swOut(\'photo\',this)">📷 사진</button></div>';
     for(let i=1;i<=count;i++){
-      const b=blogs[i-1].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      const n=instas[i-1].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      h+=`<div class="oc${i===1?" active":""}" id="o-series${i}">
-        <div class="ob" id="blogTxt${i}" style="white-space:pre-wrap;">${b}</div>
-        <div class="oas"><button class="oab p" onclick="cpTxt('blogTxt${i}')">블로그 복사</button></div>
-        <div style="margin-top:12px;border-top:.5px solid var(--border);padding-top:12px;">
-        <div style="font-size:12px;font-weight:600;color:var(--sub);margin-bottom:8px;">📸 ${i}편 인스타</div>
-        <div class="ob" id="instaTxt${i}" style="white-space:pre-wrap;">${n}</div>
-        <div class="oas"><button class="oab p" onclick="cpTxt('instaTxt${i}')">인스타 복사</button></div>
+      h+=`<div class="oc${i===1?' active':''}" id="o-s${i}">
+        <div class="ob" id="s${i}BlogTxt">${blogs[i-1].replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+        <div class="oas"><button class="oab p" onclick="cpEl('s${i}BlogTxt')">블로그 복사</button></div>
+        <div style="margin-top:12px;border-top:.5px solid var(--border);padding-top:10px;">
+        <div style="font-size:12px;font-weight:600;color:var(--sub);margin-bottom:6px;">📸 ${i}편 인스타</div>
+        <div class="ob" id="s${i}InstaTxt">${instas[i-1].replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+        <div class="oas"><button class="oab p" onclick="cpEl('s${i}InstaTxt')">인스타 복사</button></div>
         </div></div>`;
     }
-    h+='<div class="oc" id="o-photo"><div id="pgEl"><div class="em"><div class="emi">📷</div>사진 첨부 시 배치 가이드가 나와요</div></div></div>';
+    h+='<div class="oc" id="o-photo"><div id="photoGuide"><div class="em"><div class="emi">📷</div>사진 첨부 시 가이드가 나와요</div></div></div>';
     oaCard.innerHTML=h;
   }
-  const fv=FORMS[cat]?.fields[0]?gv(FORMS[cat].fields[0].id):'';
-  const baseTitle=selTitle||(fv?`${cat} - ${fv}`:cat);
-  for(let i=1;i<=count;i++){
-    drafts.unshift({id:'draft_'+Date.now()+'_'+i,cat,type,title:`${baseTitle} ${i}편`,date:new Date().toLocaleDateString('ko-KR'),blog:blogs[i-1],insta:instas[i-1]});
+  // 각 편 저장
+  const fv=gv('topic'); const baseTitle=selTitle||(fv?`${selCatName} - ${fv}`:selCatName);
+  const now=new Date().toLocaleDateString('ko-KR');
+  for(let i=0;i<count;i++){
+    drafts.unshift({id:'draft_'+Date.now()+'_'+i,cat:selCatName,type:selType,title:`${baseTitle} ${i+1}편`,date:now,blog:blogs[i],insta:instas[i]});
+    await autoSave(selCatName, `${baseTitle} ${i+1}편`, blogs[i], instas[i], now);
   }
   if(drafts.length>50) drafts=drafts.slice(0,50);
   localStorage.setItem('ml_drafts',JSON.stringify(drafts));
-  renderDrafts();
-  const seriesDate = new Date().toLocaleDateString('ko-KR');
-  cur={cat,type,blog:blogs[0],insta:instas[0],title:baseTitle,date:seriesDate,bs:'',is:''};
-  stMap={blog:false,insta:false};
-  updBadges();
   document.getElementById('oaEl').classList.add('show');
   setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
-  // 시리즈 각 편 자동 저장
-  for(let i=0;i<count;i++){
-    await autoSaveToSheet(cat, `${baseTitle} ${i+1}편`, blogs[i], instas[i], seriesDate);
+}
+
+// ===== 글 작성 업로드 체크 =====
+function togWriteSt(ch) {
+  writeStMap[ch]=!writeStMap[ch];
+  const on=writeStMap[ch];
+  const today=new Date().toLocaleDateString('ko-KR');
+  if(ch==='blog'){
+    document.getElementById('blogSt').className=`sb2 ${on?'bd':'bn'}`;
+    document.getElementById('blogSt').textContent=on?'업로드 완료':'미업로드';
+    document.getElementById('blogDate').textContent=on?today:'-';
+  } else {
+    document.getElementById('instaSt').className=`sb2 ${on?'bd':'bn'}`;
+    document.getElementById('instaSt').textContent=on?'업로드 완료':'미업로드';
+    document.getElementById('instaDate').textContent=on?today:'-';
   }
 }
 
-function sec(t,s,e){const si=t.indexOf(`[${s}]`);if(si===-1)return null;const ei=e?t.indexOf(`[${e}]`):-1;return ei===-1?t.slice(si+s.length+2):t.slice(si+s.length+2,ei);}
-function swOut(id,btn){document.querySelectorAll('.ot').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.oc').forEach(c=>c.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById(`o-${id}`)?.classList.add('active');}
-function togSt(ch){
-  stMap[ch]=!stMap[ch];updBadges();
-  if(cur.cat){if(ch==='blog')cur.bs=stMap[ch]?'완료':'미업로드';if(ch==='insta')cur.is=stMap[ch]?'완료':'미업로드';}
+// ===== 유틸 =====
+function swOut(id,btn){
+  document.querySelectorAll('.ot').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.oc').forEach(c=>c.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.getElementById(`o-${id}`)?.classList.add('active');
 }
-function updBadges(){
-  const M={blog:'blB',insta:'inB'},D={blog:'bld',insta:'ind'};
-  ['blog','insta'].forEach(ch=>{
-    const el=document.getElementById(M[ch]),de=document.getElementById(D[ch]);
-    if(!el)return;
-    if(stMap[ch]){el.className='sb2 bd';el.textContent='업로드 완료';de.textContent=new Date().toLocaleDateString('ko-KR');}
-    else{el.className='sb2 bn';el.textContent='미업로드';de.textContent='-';}
-  });
-}
+function cpEl(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('📋 복사됐어요'));}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
-async function saveLog(){
-  // 초안 생성 시 자동 저장되므로 여기선 로컬 로그만 저장
-  if(!cur.cat)return;
-  const entry={...cur,id:Date.now()};
-  logs.unshift(entry);
-  localStorage.setItem('ml',JSON.stringify(logs));
-  renderLog();
-}
-
-function renderLog(){ renderSheetLog(); renderDrafts(); }
-
-function renderDrafts(){
-  const dl = document.getElementById('draftList');
-  document.getElementById('sDraft').textContent = drafts.length;
-  if(!drafts.length){
-    dl.innerHTML='<div class="em"><div class="emi">📝</div>저장된 초안이 없어요<br><small style="font-size:11px;margin-top:6px;display:block;">초안 생성 후 자동 저장돼요</small></div>';
-    return;
-  }
-  dl.innerHTML = drafts.slice(0,20).map((d,i) => `
-    <div class="li" id="draft_${i}">
-      <div class="lh">
-        <span class="lc ${d.type==='기록형'?'lcr':'lci'}">${d.cat}</span>
-        <span class="ld2">${d.date}</span>
-      </div>
-      <div class="lti">${d.title}</div>
-      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
-        <button class="lch2 tog-btn" onclick="toggleDraftView(${i},'blog')" style="background:#EBF2FD;color:#1565C0;border:none;">📝 블로그</button>
-        <button class="lch2 tog-btn" onclick="toggleDraftView(${i},'insta')" style="background:#F3E5F5;color:#6A1B9A;border:none;">📸 인스타</button>
-        <button class="lch2 tog-btn" onclick="deleteDraft(${i})" style="background:#FFEBEE;color:#C62828;border:none;">🗑️</button>
-      </div>
-      <div id="draft_view_${i}" style="display:none;margin-top:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <span id="draft_label_${i}" style="font-size:12px;font-weight:600;color:var(--sub);"></span>
-          <div style="display:flex;gap:6px;">
-            <button class="lch2 tog-btn" onclick="saveDraftEdit(${i})" style="background:#EDF4EE;color:#2E7D32;border:none;">💾 저장</button>
-            <button class="lch2 tog-btn" onclick="copyDraftEdit(${i})" style="background:#EBF2FD;color:#1565C0;border:none;">📋 복사</button>
-          </div>
-        </div>
-        <textarea id="draft_ta_${i}" style="width:100%;min-height:200px;font-size:13px;line-height:1.7;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:inherit;color:var(--text);background:var(--bg);resize:vertical;"></textarea>
-      </div>
-    </div>`).join('');
-}
-
-let draftViewState = {}; // {idx: 'blog'|'insta'|null}
-
-function toggleDraftView(idx, ch){
-  const view = document.getElementById(`draft_view_${idx}`);
-  const ta = document.getElementById(`draft_ta_${idx}`);
-  const label = document.getElementById(`draft_label_${idx}`);
-  const d = drafts[idx];
-  if(!d||!view||!ta) return;
-  if(draftViewState[idx]===ch){
-    // 같은 탭 다시 클릭 → 닫기
-    view.style.display='none';
-    draftViewState[idx]=null;
-    return;
-  }
-  draftViewState[idx]=ch;
-  view.style.display='block';
-  ta.value=(ch==='blog'?d.blog:d.insta)||'';
-  label.textContent=ch==='blog'?'📝 블로그 초안':'📸 인스타 초안';
-  ta.setAttribute('data-ch', ch);
-}
-
-function saveDraftEdit(idx){
-  const ta = document.getElementById(`draft_ta_${idx}`);
-  const ch = ta.getAttribute('data-ch');
-  if(!ta||!ch) return;
-  drafts[idx][ch] = ta.value;
-  localStorage.setItem('ml_drafts', JSON.stringify(drafts));
-  toast('수정 내용이 저장됐어요 ✅');
-}
-
-function copyDraftEdit(idx){
-  const ta = document.getElementById(`draft_ta_${idx}`);
-  if(!ta) return;
-  navigator.clipboard.writeText(ta.value).then(()=>toast('복사됐어요 📋'));
-}
-
-function deleteDraft(idx){
-  if(!confirm('이 초안을 삭제할까요?')) return;
-  drafts.splice(idx,1);
-  localStorage.setItem('ml_drafts',JSON.stringify(drafts));
-  draftViewState={};
-  renderDrafts();
-  toast('초안이 삭제됐어요');
-}
-
+// ===== 페이지 전환 =====
 function showPg(id){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));
   document.getElementById(`pg-${id}`).classList.add('active');
   document.getElementById(`t-${id}`).classList.add('active');
-  document.getElementById('topBadge').textContent={write:'글 작성',log:'기록',status:'현황'}[id];
+  document.getElementById('pgBadge').textContent={write:'글 작성',log:'기록',status:'현황'}[id];
   document.querySelector('.wrap').scrollTop=0;
-  if(id==='log'){
-    renderDrafts();
-    renderSheetLog();
-  }
-  if(id==='status'){
-    // 기록탭과 같은 캐시 사용 - 데이터 일치
-    renderSheetData();
-    renderSheetLog(); // pending/done 업데이트
-  }
+  if(id==='log'){ renderDrafts(); renderLog(); }
+  if(id==='status') renderStatus();
 }
 
-function cpTxt(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('복사됐어요 ✨'));}
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-
-// 크레딧 조회
-async function forceRefreshSheet(){
-  setSyncBadge('ing');
-  sheetCache = null;
-  sheetCacheTime = 0;
-  toast('시트 새로고침 중...');
-  await loadAndCacheSheet(true);
-  const activePg = document.querySelector('.pg.active');
-  if (activePg?.id === 'pg-log') renderSheetLog();
-  if (activePg?.id === 'pg-status') renderSheetData();
-}
-
-async function fetchCredit(){
-  // Anthropic API 연결 상태 + 크레딧 확인
+// ===== API 상태 확인 =====
+async function checkApi(){
   try{
-    const KEY=['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
-    // 모델 목록 조회로 API 키 유효성 확인
-    const res=await fetch('https://api.anthropic.com/v1/models',{
-      headers:{'x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}
-    });
-    const el=document.getElementById('creditBadge');
-    if(res.ok){
-      if(el) el.textContent='💳 API 활성';
-      el.style.background='#EDF4EE'; el.style.color='#2E7D32';
-    } else {
-      const d=await res.json();
-      if(el){
-        el.textContent='💳 크레딧 부족';
-        el.style.background='#FEECEC'; el.style.color='#C62828';
-      }
-    }
-  }catch(e){
-    const el=document.getElementById('creditBadge');
-    if(el){ el.textContent='💳 확인불가'; }
-  }
+    const res=await fetch('https://api.anthropic.com/v1/models',{headers:{'x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
+    const el=document.getElementById('apiBadge');
+    if(res.ok){el.textContent='💳 API 활성';el.style.background='#EDF4EE';el.style.color='#2E7D32';}
+    else{el.textContent='💳 크레딧 부족';el.style.background='#FEECEC';el.style.color='#C62828';}
+  }catch(e){document.getElementById('apiBadge').textContent='💳 확인불가';}
 }
 
-// 앱 시작 - 시트 연결은 탭 클릭 시 호출
-setSyncBadge('ok');
-fetchCredit();
+// ===== 모바일 터치이벤트 =====
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.querySelectorAll('.cb').forEach(btn=>{
+    btn.addEventListener('touchend',e=>{e.preventDefault();selCat(btn);},{passive:false});
+  });
+  document.querySelectorAll('.ti').forEach(btn=>{
+    btn.addEventListener('touchend',e=>{e.preventDefault();const id=btn.id.replace('t-','');showPg(id);},{passive:false});
+  });
+});
 
-// 모바일 터치 이벤트 직접 등록
-document.querySelectorAll('.cb').forEach(btn => {
-  btn.addEventListener('touchend', function(e){
-    e.preventDefault();
-    selCat(this);
-  }, {passive:false});
-});
-document.querySelectorAll('.ti').forEach(btn => {
-  btn.addEventListener('touchend', function(e){
-    e.preventDefault();
-    const id = this.id.replace('t-','');
-    showPg(id);
-  }, {passive:false});
-});
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded', renderDrafts);
-} else {
-  renderDrafts();
-}
+// ===== 초기화 =====
+renderDrafts();
+checkApi();
 </script>
 </body>
 </html>
