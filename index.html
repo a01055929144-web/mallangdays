@@ -242,7 +242,7 @@ input[type="file"]{display:none;}
             <button class="ot" id="tab-sinsta" onclick="swOut('sinsta',this)" style="display:none;">📸 인스타(시리즈)</button>
             <button class="ot" id="tab-photo" onclick="swOut('photo',this)">📷 사진배치</button>
           </div>
-          <div class="oc active" id="o-blog"><div class="ob" id="blogTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('blogTxt')">복사</button><button class="oab" onclick="saveLog()">저장 + 시트 기록</button></div></div>
+          <div class="oc active" id="o-blog"><div class="ob" id="blogTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('blogTxt')">복사</button><a href="https://docs.google.com/spreadsheets/d/17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE/edit" target="_blank" class="oab" style="text-decoration:none;text-align:center;">📊 시트에서 보기</a></div></div>
           <div class="oc" id="o-insta"><div class="ob" id="instaTxt"></div><div class="oas"><button class="oab p" onclick="cpTxt('instaTxt')">복사</button></div></div>
           <div class="oc" id="o-s1"><div class="ob" id="s1Txt"></div><div class="oas"><button class="oab p" onclick="cpTxt('s1Txt')">복사</button><button class="oab" onclick="saveSeriesLog(1)">저장</button></div></div>
           <div class="oc" id="o-s2"><div class="ob" id="s2Txt"></div><div class="oas"><button class="oab p" onclick="cpTxt('s2Txt')">복사</button><button class="oab" onclick="saveSeriesLog(2)">저장</button></div></div>
@@ -441,6 +441,10 @@ function sheetRowToHtml(r, rowIdx) {
   const iDone = (r[6]||'')==='작성완료';
   const bid = `st_${rowIdx}_E`, iid = `st_${rowIdx}_G`;
   const did = `date_${rowIdx}`;
+  const blogDraft = (r[5]||'').slice(0,50);
+  const instaDraft = (r[7]||'').slice(0,50);
+  const hasBlog = !!(r[5]||'').trim();
+  const hasInsta = !!(r[7]||'').trim();
   return `<div class="li">
     <div class="lh">
       <span class="lc ${isRec?'lcr':'lci'}">${cat.replace(/[\[\]]/g,'')}</span>
@@ -452,8 +456,79 @@ function sheetRowToHtml(r, rowIdx) {
     <div class="lch" style="flex-wrap:wrap;gap:6px;margin-top:6px;">
       <button id="${bid}" class="lch2 ${bDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'E',${bDone},'${bid}')">📝 ${bDone?'완료':'미업로드'}</button>
       <button id="${iid}" class="lch2 ${iDone?'cd':'cn'} tog-btn" onclick="toggleSheetStatus(${rowIdx},'G',${iDone},'${iid}')">📸 ${iDone?'완료':'미업로드'}</button>
+      ${hasBlog?`<button class="lch2 tog-btn" style="background:#EBF2FD;color:#1565C0;border:none;" onclick="editSheetDraft(${rowIdx},'F','blog_${rowIdx}')">📝 초안 보기</button>`:''}
+      ${hasInsta?`<button class="lch2 tog-btn" style="background:#F3E5F5;color:#6A1B9A;border:none;" onclick="editSheetDraft(${rowIdx},'H','insta_${rowIdx}')">📸 초안 보기</button>`:''}
+    </div>
+    <div id="sheet_edit_${rowIdx}" style="display:none;margin-top:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span id="sheet_edit_label_${rowIdx}" style="font-size:12px;font-weight:600;color:var(--sub);"></span>
+        <div style="display:flex;gap:6px;">
+          <button class="lch2 tog-btn" onclick="saveSheetDraft(${rowIdx})" style="background:#EDF4EE;color:#2E7D32;border:none;">💾 저장</button>
+          <button class="lch2 tog-btn" onclick="copySheetDraft(${rowIdx})" style="background:#EBF2FD;color:#1565C0;border:none;">📋 복사</button>
+          <button class="lch2 tog-btn" onclick="closeSheetEdit(${rowIdx})" style="background:#F5F5F5;color:#666;border:none;">✕ 닫기</button>
+        </div>
+      </div>
+      <textarea id="sheet_ta_${rowIdx}" style="width:100%;min-height:180px;font-size:13px;line-height:1.7;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:inherit;color:var(--text);background:var(--bg);resize:vertical;"></textarea>
     </div>
   </div>`;
+}
+
+let sheetEditState = {}; // {rowIdx: col}
+
+async function editSheetDraft(rowIdx, col, key){
+  const area = document.getElementById(`sheet_edit_${rowIdx}`);
+  const ta = document.getElementById(`sheet_ta_${rowIdx}`);
+  const label = document.getElementById(`sheet_edit_label_${rowIdx}`);
+  if(!area||!ta) return;
+  // 같은 거 다시 누르면 닫기
+  if(sheetEditState[rowIdx]===col){
+    area.style.display='none';
+    sheetEditState[rowIdx]=null;
+    return;
+  }
+  sheetEditState[rowIdx]=col;
+  area.style.display='block';
+  label.textContent = col==='F'?'📝 블로그 초안':'📸 인스타 초안';
+  ta.setAttribute('data-col', col);
+  ta.setAttribute('data-rowidx', rowIdx);
+  // 시트에서 현재 내용 가져오기
+  ta.value='불러오는 중...';
+  try{
+    const res=await fetch(AS_URL+'?action=read');
+    const d=await res.json();
+    if(d.ok && d.data[rowIdx-1]){
+      const colIdx = col==='F'?5:7;
+      ta.value=d.data[rowIdx-1][colIdx]||'';
+    }
+  }catch(e){ ta.value=''; }
+  ta.focus();
+  area.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function saveSheetDraft(rowIdx){
+  const ta=document.getElementById(`sheet_ta_${rowIdx}`);
+  if(!ta)return;
+  const col=ta.getAttribute('data-col');
+  const ok=await updateSheetCell(rowIdx,col,ta.value);
+  if(ok){
+    // 캐시 초기화
+    sheetCache=null; sheetCacheTime=0;
+    toast('💾 시트에 저장됐어요');
+  } else {
+    toast('❌ 저장 실패');
+  }
+}
+
+function copySheetDraft(rowIdx){
+  const ta=document.getElementById(`sheet_ta_${rowIdx}`);
+  if(!ta)return;
+  navigator.clipboard.writeText(ta.value).then(()=>toast('📋 복사됐어요'));
+}
+
+function closeSheetEdit(rowIdx){
+  const area=document.getElementById(`sheet_edit_${rowIdx}`);
+  if(area) area.style.display='none';
+  sheetEditState[rowIdx]=null;
 }
 
 async function editDate(rowIdx, did) {
@@ -863,25 +938,48 @@ function parseOut(txt){
   }else{document.getElementById('pgEl').innerHTML='<div class="em"><div class="emi">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div>';}
   const fv=FORMS[cat]?.fields[0]?gv(FORMS[cat].fields[0].id):'';
   showNormalTabs();
-  cur={cat,type,blog,insta,title:selTitle||(fv?`${cat} - ${fv}`:cat),date:new Date().toLocaleDateString('ko-KR'),bs:'',is:''};
+  const title = selTitle||(fv?`${cat} - ${fv}`:cat);
+  const now = new Date().toLocaleDateString('ko-KR');
+  cur={cat,type,blog,insta,title,date:now,bs:'',is:''};
   stMap={blog:false,insta:false};
-  // 초안 자동 임시저장 (blog, insta 반드시 포함)
-  const draft={
-    id:'draft_'+Date.now(),
-    cat, type,
-    title: selTitle||(fv?`${cat} - ${fv}`:cat),
-    date: new Date().toLocaleDateString('ko-KR'),
-    blog: blog.trim(),
-    insta: insta.trim()
-  };
+  // 초안 로컬 자동저장
+  const draft={id:'draft_'+Date.now(),cat,type,title,date:now,blog:blog.trim(),insta:insta.trim()};
   drafts.unshift(draft);
   if(drafts.length>50) drafts=drafts.slice(0,50);
-  localStorage.setItem('ml_drafts', JSON.stringify(drafts));
+  localStorage.setItem('ml_drafts',JSON.stringify(drafts));
   renderDrafts();
   updBadges();
   document.getElementById('oaEl').classList.add('show');
   swOut('blog',document.querySelector('.ot'));
   setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
+  // 구글 시트 자동 기록
+  autoSaveToSheet(title, blog.trim(), insta.trim(), now);
+}
+
+async function autoSaveToSheet(title, blog, insta, date){
+  try{
+    const row = [
+      '',
+      `[${cat}]`,
+      title,
+      date,
+      '',          // E: 블로그 상태 (빈값)
+      blog,        // F: 블로그 초안
+      '',          // G: 인스타 상태 (빈값)
+      insta,       // H: 인스타 초안
+      '',          // I: 예정일
+      ''           // J: 유튜브
+    ];
+    const ok = await appendToSheet(row);
+    if(ok){
+      toast('✅ 시트에 자동 저장됐어요');
+      // 캐시 초기화해서 기록/현황 탭 갱신
+      sheetCache = null;
+      sheetCacheTime = 0;
+    }
+  }catch(e){
+    console.error('autoSave error:', e);
+  }
 }
 
 function showNormalTabs(){
@@ -1028,29 +1126,12 @@ function updBadges(){
 }
 
 async function saveLog(){
+  // 초안 생성 시 자동 저장되므로 여기선 로컬 로그만 저장
   if(!cur.cat)return;
   const entry={...cur,id:Date.now()};
   logs.unshift(entry);
   localStorage.setItem('ml',JSON.stringify(logs));
   renderLog();
-  toast('저장 중...');
-  const now = new Date().toLocaleDateString('ko-KR');
-  // 시트 컬럼: No | 카테고리 | EP관리명 | EP노출명 | 콘텐츠제목 | 업로드일 | 블로그상태(G) | 블로그초안(H) | 인스타상태(I) | 인스타초안(J) | 유튜브(K) | 예정일(L) | 메모(M)
-  const row = [
-    '',               // A: No
-    `[${cur.cat}]`,  // B: 카테고리
-    cur.title,        // C: 콘텐츠 제목
-    now,              // D: 업로드일
-    '',               // E: 블로그 상태 (빈값 - 직접 토글)
-    cur.blog||'',     // F: 블로그 초안 전체
-    '',               // G: 인스타 상태 (빈값 - 직접 토글)
-    cur.insta||'',    // H: 인스타 초안 전체 (해시태그 포함)
-    '',               // I: 예정일
-    ''                // J: 유튜브(보류)
-  ];
-  const ok = await appendToSheet(row);
-  if(ok){ toast('저장 + 구글 시트 기록 완료 ✅'); }
-  else{ toast('앱에 저장됐어요 (시트 기록 실패)'); }
 }
 
 function renderLog(){ renderSheetLog(); renderDrafts(); }
