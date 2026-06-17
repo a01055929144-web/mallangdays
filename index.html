@@ -154,6 +154,8 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;b
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 input[type="file"]{display:none;}
 .dv{border:none;border-top:.5px solid var(--border);margin:14px 0;}
+.status-tab{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;color:var(--sub);touch-action:manipulation;transition:all .15s;}
+.status-tab.active{background:var(--text);color:#fff;border-color:var(--text);}
 </style>
 </head>
 <body>
@@ -295,17 +297,16 @@ input[type="file"]{display:none;}
 
     <!-- 현황 -->
     <div class="pg" id="pg-status">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:600;color:var(--sub);">구글 시트 현황</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="display:flex;gap:6px;">
+          <button class="status-tab active" id="st-pend" onclick="swStatus('pend')">⏳ 대기 <span id="pendCount" style="background:#FFE0CC;color:#B86A42;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
+          <button class="status-tab" id="st-done" onclick="swStatus('done')">✅ 완료 <span id="doneCount" style="background:#EDF4EE;color:#3A6B3E;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
+        </div>
         <button class="badge badge-sheet" onclick="refreshSheet()" style="cursor:pointer;border:none;font-family:inherit;">🔄 새로고침</button>
       </div>
-      <div class="card">
-        <div class="ct">⏳ 업로드 대기</div>
+      <div class="card" style="padding-top:12px;">
         <div id="pendList"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
-      </div>
-      <div class="card">
-        <div class="ct">✅ 업로드 완료</div>
-        <div id="doneList"><div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div></div>
+        <div id="doneList" style="display:none;"><div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div></div>
       </div>
     </div>
   </div>
@@ -655,13 +656,29 @@ function togLocalDraft(i, ch) {
   ta.focus();
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
-function saveLocalDraft(i) {
+async function saveLocalDraft(i) {
   const ta = document.getElementById(`ld_ta_${i}`);
   if (!ta) return;
   const ch = ta.getAttribute('data-ch');
-  drafts[i][ch] = ta.value;
+  const value = ta.value;
+  // 로컬 저장
+  drafts[i][ch] = value;
   localStorage.setItem('ml_drafts', JSON.stringify(drafts));
-  toast('💾 로컬 초안 저장됐어요');
+  toast('저장 중...');
+  // 구글 시트에서 제목으로 행 찾아서 업데이트
+  const title = drafts[i]?.title || '';
+  const col = ch === 'blog' ? 'F' : 'H'; // F=블로그초안, H=인스타초안
+  const rows = await sheetRead();
+  if (rows) {
+    // C열(인덱스2)에서 제목 매칭
+    const matched = rows.map((r,idx)=>({r,rowIdx:idx+1})).find(({r})=>(r[2]||'').trim()===title.trim());
+    if (matched) {
+      const ok = await sheetUpdate(matched.rowIdx, col, value);
+      toast(ok ? `💾 시트에도 저장됐어요 ✅` : '💾 로컬 저장됨 (시트 저장 실패)');
+      return;
+    }
+  }
+  toast('💾 로컬 저장됐어요 (시트 행 못 찾음)');
 }
 function copyLocalDraft(i) {
   const ta = document.getElementById(`ld_ta_${i}`);
