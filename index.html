@@ -571,6 +571,8 @@ const FORMS = {
   살림재테크:{fields:[
     {id:'topic',lb:'주제',ph:'예) 2026년 육아휴직, 신생아특례대출, 신혼부부 청약'},
     {id:'series',lb:'시리즈 구성',sel:['1편 (단독글)','2편 시리즈','3편 시리즈']},
+    {id:'my_situation',lb:'나의 상황 / 계획 / 경험',ta:true,ph:'예) 말랑이 출생 후 6개월 육아휴직 신청 예정. 급여는 통상임금 80%라고 들었는데 실제로 얼마나 받을지 계산해봤다.'},
+    {id:'extra',lb:'추가로 넣고 싶은 내용 (선택)',ta:true,ph:'궁금했던 점, 알아보면서 놀란 점 등'}]},
     
     {id:'my_situation',lb:'나의 상황 / 계획 / 경험',ta:true,ph:'예) 말랑이 출생 후 6개월 육아휴직 신청 예정. 급여는 통상임금 80%라고 들었는데 실제 계산해봤다.'},
     {id:'extra',lb:'추가로 넣고 싶은 내용 (선택)',ta:true,ph:'궁금했던 점, 알아보면서 놀란 점 등'}]},
@@ -815,9 +817,9 @@ async function generate(){
 }
 
 function parseOut(txt){
-  // 살림재테크 시리즈 모드
-  if(cat==='살림재테크' && txt.includes('[BLOG_1]')){
-    parseSeries(txt);
+  // 살림재테크 시리즈 감지
+  if(txt.includes('[BLOG_1]')){
+    parseSeriesOut(txt);
     return;
   }
   const blog=sec(txt,'BLOG','INSTA')||txt;
@@ -943,6 +945,87 @@ async function saveSeriesLog(num){
   ];
   const ok=await appendToSheet(row);
   toast(ok?`${num}편 저장 + 시트 기록 완료 ✅`:`앱에 저장됐어요 (시트 기록 실패)`);
+}
+
+function parseSeriesOut(txt){
+  // 몇 편짜리인지 감지
+  const has3 = txt.includes('[BLOG_3]');
+  const has2 = txt.includes('[BLOG_2]');
+  const count = has3 ? 3 : has2 ? 2 : 1;
+
+  const blogs = [], instas = [];
+  for(let i=1;i<=count;i++){
+    const nextBlog = i<count ? `BLOG_${i+1}` : (txt.includes('[INSTA_1]') ? 'INSTA_1' : null);
+    const nextInsta = i<count ? `INSTA_${i+1}` : null;
+    blogs.push((sec(txt,`BLOG_${i}`,nextBlog)||'').trim());
+    instas.push((sec(txt,`INSTA_${i}`,nextInsta)||'').trim());
+  }
+
+  // 탭 UI를 시리즈용으로 교체
+  const tabsEl = document.querySelector('.ots');
+  const photoTab = document.getElementById('o-photo');
+  if(tabsEl){
+    let tabsHtml = '';
+    for(let i=1;i<=count;i++){
+      tabsHtml += `<button class="ot${i===1?' active':''}" onclick="swOut('series${i}',this)">${i}편</button>`;
+    }
+    tabsHtml += '<button class="ot" onclick="swOut('photo',this)">📷 사진배치</button>';
+    tabsEl.innerHTML = tabsHtml;
+  }
+
+  // 컨텐츠 영역 교체
+  const oaCard = document.querySelector('#oaEl .card');
+  if(oaCard){
+    let contentHtml = '<div class="ct">📝 생성된 초안</div><div class="ots">';
+    for(let i=1;i<=count;i++){
+      contentHtml += `<button class="ot${i===1?' active':''}" onclick="swOut('series${i}',this)">${i}편</button>`;
+    }
+    contentHtml += '<button class="ot" onclick="swOut('photo',this)">📷 사진배치</button></div>';
+    for(let i=1;i<=count;i++){
+      contentHtml += `<div class="oc${i===1?' active':''}" id="o-series${i}">
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:600;color:var(--sub);">📝 ${i}편 블로그</span>
+        </div>
+        <div class="ob" id="blogTxt${i}">${blogs[i-1].replace(/</g,'&lt;')}</div>
+        <div class="oas">
+          <button class="oab p" onclick="cpTxt('blogTxt${i}')">복사</button>
+        </div>
+        <div style="margin-top:12px;border-top:.5px solid var(--border);padding-top:12px;">
+          <div style="font-size:12px;font-weight:600;color:var(--sub);margin-bottom:8px;">📸 ${i}편 인스타</div>
+          <div class="ob" id="instaTxt${i}">${instas[i-1].replace(/</g,'&lt;')}</div>
+          <div class="oas"><button class="oab p" onclick="cpTxt('instaTxt${i}')">복사</button></div>
+        </div>
+      </div>`;
+    }
+    contentHtml += '<div class="oc" id="o-photo"><div id="pgEl"><div class="em"><div class="emi">📷</div>사진을 첨부하면<br>배치 가이드가 나와요</div></div></div>';
+    oaCard.innerHTML = contentHtml;
+  }
+
+  // 저장용 cur 설정 (1편 기준)
+  const fv = FORMS[cat]?.fields[0]?gv(FORMS[cat].fields[0].id):'';
+  const baseTitle = selTitle||(fv?`${cat} - ${fv}`:cat);
+
+  // 각 편 자동 초안 저장
+  for(let i=1;i<=count;i++){
+    const draft={
+      id:'draft_'+Date.now()+'_'+i,
+      cat, type,
+      title:`${baseTitle} ${i}편`,
+      date:new Date().toLocaleDateString('ko-KR'),
+      blog: blogs[i-1],
+      insta: instas[i-1]
+    };
+    drafts.unshift(draft);
+  }
+  if(drafts.length>50) drafts=drafts.slice(0,50);
+  localStorage.setItem('ml_drafts', JSON.stringify(drafts));
+  renderDrafts();
+
+  cur={cat,type,blog:blogs[0],insta:instas[0],title:baseTitle,date:new Date().toLocaleDateString('ko-KR'),bs:'미업로드',is:'미업로드'};
+  stMap={blog:false,insta:false};
+  updBadges();
+  document.getElementById('oaEl').classList.add('show');
+  setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
 }
 
 function sec(t,s,e){const si=t.indexOf(`[${s}]`);if(si===-1)return null;const ei=e?t.indexOf(`[${e}]`):-1;return ei===-1?t.slice(si+s.length+2):t.slice(si+s.length+2,ei);}
