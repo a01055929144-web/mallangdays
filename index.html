@@ -292,8 +292,12 @@ input[type="file"]{display:none;}
 
     <!-- 현황 -->
     <div class="pg" id="pg-status">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:600;color:var(--sub);">구글 시트 현황</div>
+        <button class="badge badge-sheet" onclick="refreshSheet()" style="cursor:pointer;border:none;font-family:inherit;">🔄 새로고침</button>
+      </div>
       <div class="card">
-        <div class="ct">⏳ 업로드 대기 <button class="badge badge-sheet" onclick="refreshSheet()" style="cursor:pointer;border:none;">🔄 새로고침</button></div>
+        <div class="ct">⏳ 업로드 대기</div>
         <div id="pendList"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
       </div>
       <div class="card">
@@ -458,30 +462,36 @@ async function togStatus(rowIdx, col, isDone, btn) {
   if (toggling[rowIdx+col]) return;
   toggling[rowIdx+col] = true;
   const newDone = !isDone;
-  const newVal = newDone ? '작성완료' : '';
+  const newVal = newDone ? '작성완료' : '미작성';
   const today = new Date().toLocaleDateString('ko-KR');
+  const origClass = btn.className;
+  const origText = btn.textContent;
   btn.disabled = true; btn.textContent = '⏳';
   const ok = await sheetUpdate(rowIdx, col, newVal);
   if (ok) {
+    // 캐시도 업데이트
+    if (sheetCache && sheetCache[rowIdx-1]) {
+      const colIdx = col.charCodeAt(0) - 65;
+      sheetCache[rowIdx-1][colIdx] = newVal;
+    }
     btn.className = `ch-btn ${newDone?'ch-done':'ch-none'}`;
     btn.textContent = col==='E'
       ? `📝 ${newDone?'블로그 완료':'블로그 미업로드'}`
       : `📸 ${newDone?'인스타 완료':'인스타 미업로드'}`;
-    btn.onclick = () => togStatus(rowIdx, col, newDone, btn);
+    btn.disabled = false;
+    btn.setAttribute('onclick', `togStatus(${rowIdx},'${col}',${newDone},this)`);
     if (newDone) {
       await sheetUpdate(rowIdx, 'D', today);
-      // 날짜 input 업데이트
+      if (sheetCache && sheetCache[rowIdx-1]) sheetCache[rowIdx-1][3] = today;
       const dateInp = btn.closest('.li')?.querySelector('.date-inp');
       if (dateInp) dateInp.value = toDateInput(today);
     }
     toast(newDone ? '✅ 완료로 변경됐어요' : '↩️ 미업로드로 변경됐어요');
   } else {
-    toast('❌ 변경 실패');
+    toast('❌ 변경 실패. 다시 시도해주세요.');
     btn.disabled = false;
-    btn.className = `ch-btn ${isDone?'ch-done':'ch-none'}`;
-    btn.textContent = col==='E'
-      ? `📝 ${isDone?'블로그 완료':'블로그 미업로드'}`
-      : `📸 ${isDone?'인스타 완료':'인스타 미업로드'}`;
+    btn.className = origClass;
+    btn.textContent = origText;
   }
   toggling[rowIdx+col] = false;
 }
@@ -552,8 +562,8 @@ async function renderLog() {
   }
   const items = parseRows(rows);
   document.getElementById('sTot').textContent = items.length;
-  document.getElementById('sBl').textContent = items.filter(({row})=>row[4]==='작성완료').length;
-  document.getElementById('sIn').textContent = items.filter(({row})=>row[6]==='작성완료').length;
+  document.getElementById('sBl').textContent = items.filter(({row})=>(row[4]||'')==='작성완료').length;
+  document.getElementById('sIn').textContent = items.filter(({row})=>(row[6]||'')==='작성완료').length;
   const recent = [...items].reverse().slice(0,30);
   ll.innerHTML = recent.length
     ? recent.map(rowHtml).join('')
@@ -568,8 +578,9 @@ async function renderStatus() {
     return;
   }
   const items = parseRows(rows);
-  const pend = items.filter(({row})=>row[4]!=='작성완료'||row[6]!=='작성완료');
-  const done = items.filter(({row})=>row[4]==='작성완료'&&row[6]==='작성완료');
+  const isDone = (v) => v==='작성완료';
+  const pend = items.filter(({row})=>!isDone(row[4])||!isDone(row[6]));
+  const done = items.filter(({row})=>isDone(row[4])&&isDone(row[6]));
   document.getElementById('pendList').innerHTML = pend.length
     ? [...pend].reverse().slice(0,30).map(rowHtml).join('')
     : '<div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div>';
@@ -656,19 +667,36 @@ function delDraft(i) {
 // ===== 시트 자동 저장 =====
 async function autoSave(catName, title, blog, insta, date) {
   try {
+    // 1단계: 기본 정보 append
     const baseRow = ['', `[${catName}]`, title, date, '', '', '', '', '', ''];
     const ok = await sheetAppend(baseRow);
     if (!ok) { toast('⚠️ 시트 저장 실패'); return; }
-    // 방금 추가된 행 번호
+    // 2단계: 캐시 무효화 후 최신 행 번호 확인
     sheetCache = null; sheetCacheTime = 0;
     const rows = await sheetRead();
-    if (!rows) return;
-    const newRowIdx = rows.length;
-    if (blog) await sheetUpdate(newRowIdx, 'F', blog);
-    if (insta) await sheetUpdate(newRowIdx, 'H', insta);
+    if (!rows) { toast('⚠️ 행 번호 확인 실패'); return; }
+    const newRowIdx = rows.length; // 헤더 포함 전체 행 수 = 새 행 번호
+    console.log('autoSave newRowIdx:', newRowIdx, 'blog length:', blog?.length, 'insta length:', insta?.length);
+    // 3단계: 블로그/인스타 초안 업데이트
+    let blogOk = true, instaOk = true;
+    if (blog && blog.trim()) {
+      blogOk = await sheetUpdate(newRowIdx, 'F', blog.trim());
+      console.log('blog update:', blogOk);
+    }
+    if (insta && insta.trim()) {
+      instaOk = await sheetUpdate(newRowIdx, 'H', insta.trim());
+      console.log('insta update:', instaOk);
+    }
     sheetCache = null; sheetCacheTime = 0;
-    toast('✅ 시트에 자동 저장됐어요');
-  } catch(e) { console.error('autoSave error:', e); }
+    if (blogOk && instaOk) {
+      toast('✅ 시트에 자동 저장됐어요');
+    } else {
+      toast('⚠️ 일부 저장 실패. 시트 확인해주세요.');
+    }
+  } catch(e) {
+    console.error('autoSave error:', e);
+    toast('⚠️ 저장 오류: ' + e.message);
+  }
 }
 
 // ===== Claude API =====
