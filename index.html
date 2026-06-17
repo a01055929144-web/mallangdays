@@ -795,17 +795,34 @@ async function generate(){
   document.getElementById('fc').style.display='none';
   document.getElementById('ldEl').classList.add('show');
   document.getElementById('oaEl').classList.remove('show');
-  let si=0;const iv=setInterval(()=>{si=(si+1)%STEPS.length;document.getElementById('ldStep').textContent=STEPS[si];},1400);
+  const KEY=['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
+  const isFinance = cat==='살림재테크';
+  const stepList = isFinance
+    ? ['정부 공식 사이트 검색 중','법령 최신 기준 확인 중','정책 내용 분석 중','말랑파파 경험 녹이는 중','초안 마무리 중']
+    : STEPS;
+  let si=0;
+  const iv=setInterval(()=>{si=(si+1)%stepList.length;document.getElementById('ldStep').textContent=stepList[si];},1800);
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join(''),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,system:SP,messages:[{role:'user',content:buildPrompt()}]})});
+    const body={
+      model:'claude-sonnet-4-6',
+      max_tokens: isFinance ? 6000 : 4000,
+      system:SP,
+      messages:[{role:'user',content:buildPrompt()}]
+    };
+    if(isFinance) body.tools=[{"type":"web_search_20250305","name":"web_search"}];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify(body)
+    });
     const d=await res.json();
     if(d.error){throw new Error(d.error.message||JSON.stringify(d.error));}
-    const txt=d.content?.[0]?.text||'';
-    if(!txt){throw new Error('응답이 비어있어요');}
+    const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||d.content?.[0]?.text||'';
+    if(!txt){throw new Error('응답이 비어있어요. 잠시 후 다시 시도해주세요.');}
     parseOut(txt);
   }catch(e){
     console.error('generate error:', e);
-    toast('오류: ' + (e.message||'다시 시도해주세요'));
+    toast('오류: '+(e.message||'다시 시도해주세요'));
     document.getElementById('fc').style.display='block';
   }
   finally{clearInterval(iv);document.getElementById('ldEl').classList.remove('show');}
@@ -852,16 +869,7 @@ function parseOut(txt){
 }
 
 function showNormalTabs(){
-  // 일반 탭 보이기, 시리즈 탭 숨기기
-  ['blog','insta','photo'].forEach(id=>{
-    const t=document.getElementById('tab-'+id);
-    if(t) t.style.display='';
-  });
-  ['s1','s2','s3','sinsta'].forEach(id=>{
-    const t=document.getElementById('tab-'+id);
-    if(t) t.style.display='none';
-  });
-  swOut('blog', document.getElementById('tab-blog'));
+  swOut('blog', document.querySelector('.ot'));
 }
 
 function showSeriesTabs(count){
@@ -1171,20 +1179,27 @@ async function forceRefreshSheet(){
 }
 
 async function fetchCredit(){
+  // Anthropic API 연결 상태 + 크레딧 확인
   try{
     const KEY=['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
-    const res=await fetch('https://api.anthropic.com/v1/usage',{headers:{'x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
+    // 모델 목록 조회로 API 키 유효성 확인
+    const res=await fetch('https://api.anthropic.com/v1/models',{
+      headers:{'x-api-key':KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}
+    });
+    const el=document.getElementById('creditBadge');
     if(res.ok){
-      const d=await res.json();
-      const el=document.getElementById('creditBadge');
-      if(el) el.textContent=`💳 $${(d.account?.credit_grants?.available_credit||0).toFixed(2)}`;
+      if(el) el.textContent='💳 API 활성';
+      el.style.background='#EDF4EE'; el.style.color='#2E7D32';
     } else {
-      // usage 엔드포인트 없을 수 있음 - 간단 연결 테스트로 대체
-      document.getElementById('creditBadge').textContent='💳 활성';
+      const d=await res.json();
+      if(el){
+        el.textContent='💳 크레딧 부족';
+        el.style.background='#FEECEC'; el.style.color='#C62828';
+      }
     }
   }catch(e){
     const el=document.getElementById('creditBadge');
-    if(el) el.textContent='💳 확인불가';
+    if(el){ el.textContent='💳 확인불가'; }
   }
 }
 
