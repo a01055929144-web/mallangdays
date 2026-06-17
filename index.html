@@ -316,9 +316,17 @@ function setSyncBadge(state) {
 
 async function appendToSheet(row) {
   try {
-    const url = AS_URL + '?action=append&row=' + encodeURIComponent(JSON.stringify(row));
+    // URL 길이 제한 대비 - 초안 컬럼(F,H) 길이 제한
+    const safeRow = row.map((v,i) => {
+      if((i===5||i===7) && typeof v==='string' && v.length>3000){
+        return v.slice(0,3000) + '...(이하 생략)';
+      }
+      return v;
+    });
+    const url = AS_URL + '?action=append&row=' + encodeURIComponent(JSON.stringify(safeRow));
     const res = await fetch(url);
-    const d = await res.json();
+    const text = await res.text();
+    const d = JSON.parse(text);
     if (!d.ok) throw new Error(d.error||'오류');
     return true;
   } catch(e) {
@@ -947,32 +955,34 @@ function parseOut(txt){
   swOut('blog',document.querySelector('.ot'));
   setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
   // 구글 시트 자동 기록
-  autoSaveToSheet(title, blog.trim(), insta.trim(), now);
+  autoSaveToSheet(cat, title, blog.trim(), insta.trim(), now);
 }
 
-async function autoSaveToSheet(title, blog, insta, date){
+async function autoSaveToSheet(catName, title, blog, insta, date){
   try{
     const row = [
       '',
-      `[${cat}]`,
+      `[${catName}]`,
       title,
       date,
-      '',          // E: 블로그 상태 (빈값)
-      blog,        // F: 블로그 초안
-      '',          // G: 인스타 상태 (빈값)
-      insta,       // H: 인스타 초안
-      '',          // I: 예정일
-      ''           // J: 유튜브
+      '',
+      blog,
+      '',
+      insta,
+      '',
+      ''
     ];
     const ok = await appendToSheet(row);
     if(ok){
       toast('✅ 시트에 자동 저장됐어요');
-      // 캐시 초기화해서 기록/현황 탭 갱신
       sheetCache = null;
       sheetCacheTime = 0;
+    } else {
+      toast('⚠️ 시트 저장 실패 - 다시 시도해주세요');
     }
   }catch(e){
     console.error('autoSave error:', e);
+    toast('⚠️ 시트 저장 오류: ' + e.message);
   }
 }
 
@@ -1096,11 +1106,16 @@ function parseSeriesOut(txt){
   if(drafts.length>50) drafts=drafts.slice(0,50);
   localStorage.setItem('ml_drafts',JSON.stringify(drafts));
   renderDrafts();
-  cur={cat,type,blog:blogs[0],insta:instas[0],title:baseTitle,date:new Date().toLocaleDateString('ko-KR'),bs:'',is:''};
+  const seriesDate = new Date().toLocaleDateString('ko-KR');
+  cur={cat,type,blog:blogs[0],insta:instas[0],title:baseTitle,date:seriesDate,bs:'',is:''};
   stMap={blog:false,insta:false};
   updBadges();
   document.getElementById('oaEl').classList.add('show');
   setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
+  // 시리즈 각 편 자동 저장
+  for(let i=0;i<count;i++){
+    await autoSaveToSheet(cat, `${baseTitle} ${i+1}편`, blogs[i], instas[i], seriesDate);
+  }
 }
 
 function sec(t,s,e){const si=t.indexOf(`[${s}]`);if(si===-1)return null;const ei=e?t.indexOf(`[${e}]`):-1;return ei===-1?t.slice(si+s.length+2):t.slice(si+s.length+2,ei);}
