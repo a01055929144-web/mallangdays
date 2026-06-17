@@ -149,7 +149,7 @@ input[type="file"]{display:none;}
     <div><div class="tl">🌸 말랑데이즈</div><div class="ts">콘텐츠 스튜디오</div></div>
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
       <a href="https://docs.google.com/spreadsheets/d/17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE/edit" target="_blank" class="sync-badge" style="background:#E8F5E9;color:#2E7D32;text-decoration:none;">📊 시트</a>
-      <div class="sync-badge sync-ing" id="syncBadge">⏳ 연결 중</div>
+      <div class="sync-badge sync-ok" id="syncBadge" onclick="forceRefreshSheet()" style="cursor:pointer;" title="탭해서 새로고침">✅ 시트 연결됨</div>
       <div class="sync-badge" id="creditBadge" style="background:#FFF8E1;color:#F57F17;">💳 확인 중</div>
       <div class="tb" id="topBadge">글 작성</div>
     </div>
@@ -330,14 +330,23 @@ async function updateSheetCell(rowIdx, col, value) {
 
 async function loadSheetData() {
   try {
-    const res = await fetch(AS_URL + '?action=read');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
+    const res = await fetch(AS_URL + '?action=read', {signal: controller.signal});
+    clearTimeout(timer);
     const d = await res.json();
     if (!d.ok) throw new Error(d.error||'오류');
     setSyncBadge('ok');
     return d.data || [];
   } catch(e) {
-    console.error('Sheet load error:', e);
-    setSyncBadge('err');
+    if (e.name === 'AbortError') {
+      console.error('Sheet load timeout');
+      setSyncBadge('err');
+      toast('시트 연결 시간 초과. 다시 시도해주세요.');
+    } else {
+      console.error('Sheet load error:', e);
+      setSyncBadge('err');
+    }
     return null;
   }
 }
@@ -447,10 +456,19 @@ async function editDate(rowIdx, did) {
 }
 
 let sheetCache = null;
+let sheetCacheTime = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5분 캐시
 
-async function loadAndCacheSheet() {
+async function loadAndCacheSheet(forceRefresh=false) {
+  const now = Date.now();
+  if (!forceRefresh && sheetCache && (now - sheetCacheTime) < CACHE_TTL) {
+    return sheetCache; // 캐시 사용
+  }
   const rows = await loadSheetData();
-  if (rows) sheetCache = rows;
+  if (rows) {
+    sheetCache = rows;
+    sheetCacheTime = now;
+  }
   return rows;
 }
 
@@ -470,8 +488,12 @@ async function renderSheetData() {
 
 async function renderSheetLog() {
   const ll = document.getElementById('logList');
+  // 캐시 있으면 즉시 렌더링
   let rows = sheetCache;
-  if (!rows) rows = await loadAndCacheSheet();
+  if (!rows) {
+    ll.innerHTML = '<div class="em"><div class="emi">🔄</div>불러오는 중...</div>';
+    rows = await loadAndCacheSheet();
+  }
   const items = rows ? parseSheetRows(rows) : [];
   const total = items.length;
   const blDone = items.filter(({row})=>(row[6]||'').includes('완료')||(row[6]||'').includes('작성')).length;
@@ -1129,7 +1151,7 @@ function showPg(id){
   document.getElementById(`t-${id}`).classList.add('active');
   document.getElementById('topBadge').textContent={write:'글 작성',log:'기록',status:'현황'}[id];
   document.querySelector('.wrap').scrollTop=0;
-  if(id==='log') renderSheetLog();
+  if(id==='log'){ renderDrafts(); renderSheetLog(); }
   if(id==='status') renderSheetData();
 }
 
@@ -1137,6 +1159,17 @@ function cpTxt(id){navigator.clipboard.writeText(document.getElementById(id).tex
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
 // 크레딧 조회
+async function forceRefreshSheet(){
+  setSyncBadge('ing');
+  sheetCache = null;
+  sheetCacheTime = 0;
+  toast('시트 새로고침 중...');
+  await loadAndCacheSheet(true);
+  const activePg = document.querySelector('.pg.active');
+  if (activePg?.id === 'pg-log') renderSheetLog();
+  if (activePg?.id === 'pg-status') renderSheetData();
+}
+
 async function fetchCredit(){
   try{
     const KEY=['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
@@ -1155,10 +1188,9 @@ async function fetchCredit(){
   }
 }
 
-// 초기 토큰 연결 + 데이터 로드
-getGToken().then(()=>renderSheetLog()).catch(()=>{});
+// 앱 시작 - 시트 연결은 탭 클릭 시 호출
+setSyncBadge('ok'); // 일단 연결됨으로 표시, 실제 오류 시 변경
 fetchCredit();
-// DOM 준비 후 초안 렌더링
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded', renderDrafts);
 } else {
