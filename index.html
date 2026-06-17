@@ -304,7 +304,7 @@ input[type="file"]{display:none;}
 
 <script>
 // ===== 구글 시트 설정 (Apps Script 방식) =====
-const AS_URL = 'https://script.google.com/macros/s/AKfycbyhnM-OSSUzJTR5Pu4MpWn8Qpiw-Asu81uLVUpxflGKB-QJoBdS8ptLYu5f6w00vnQB/exec';
+const AS_URL = 'https://script.google.com/macros/s/AKfycbyWuykxfWtHGYVZs9q7gSOFJGmrjOiZuDzkAX9zFuipF-10lq8i_3p0R4FYOsHqw74U/exec';
 
 function setSyncBadge(state) {
   const b = document.getElementById('syncBadge');
@@ -316,13 +316,9 @@ function setSyncBadge(state) {
 
 async function appendToSheet(row) {
   try {
-    const res = await fetch(AS_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({action:'append', row:row})
-    });
-    const text = await res.text();
-    const d = JSON.parse(text);
+    const url = AS_URL + '?action=append&row=' + encodeURIComponent(JSON.stringify(row));
+    const res = await fetch(url);
+    const d = await res.json();
     if (!d.ok) throw new Error(d.error||'오류');
     return true;
   } catch(e) {
@@ -333,13 +329,9 @@ async function appendToSheet(row) {
 
 async function updateSheetCell(rowIdx, col, value) {
   try {
-    const res = await fetch(AS_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({action:'update', rowIdx:rowIdx, col:col, value:value})
-    });
-    const text = await res.text();
-    const d = JSON.parse(text);
+    const url = AS_URL + '?action=update&rowIdx=' + rowIdx + '&col=' + encodeURIComponent(col) + '&value=' + encodeURIComponent(String(value));
+    const res = await fetch(url);
+    const d = await res.json();
     if (!d.ok) throw new Error(d.error||'오류');
     return true;
   } catch(e) {
