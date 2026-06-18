@@ -7,8 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1781734363">
-<title>말랑데이즈</title>
+<meta name="version" content="1781752321">말랑데이즈</title>
 <style>
 :root{
   --bg:#FAFAF8;--surface:#FFF;--border:#E8E6E0;--text:#1A1916;--sub:#6B6860;--hint:#A8A49E;
@@ -1260,6 +1259,10 @@ function renderRec(items) {
 async function useRec(i) {
   const item = window._recItems?.[i];
   if (!item) return;
+  // 저장 안 된 경우 시트에 기록
+  if (!recArchive.some(r=>r.title===item.title)) {
+    await saveRec(i);
+  }
   // 해당 카테고리 선택 후 글 작성 탭으로
   showPg('write');
   const btn = document.querySelector(`.cb[data-cat="${item.category}"]`);
@@ -1280,17 +1283,34 @@ async function useRec(i) {
   }
 }
 
-function saveRec(i) {
+async function saveRec(i) {
   const item = window._recItems?.[i];
   if (!item) return;
-  const saved = {...item, savedAt: new Date().toLocaleDateString('ko-KR')};
   // 중복 체크
   if (recArchive.some(r=>r.title===item.title)) { toast('이미 저장된 추천이에요'); return; }
+  const today = new Date().toLocaleDateString('ko-KR');
+  const saved = {...item, savedAt: today};
   recArchive.unshift(saved);
   if (recArchive.length>30) recArchive=recArchive.slice(0,30);
   localStorage.setItem('rec_archive', JSON.stringify(recArchive));
   renderArchive();
-  toast('📚 저장됐어요');
+  // 콘텐츠 기획표에 자동 저장
+  toast('저장 중...');
+  const row = [
+    '',                        // A: No
+    `[추천][${item.category||''}]`, // B: 카테고리
+    item.title||'',            // C: 제목
+    today,                     // D: 저장일
+    '',                        // E: 블로그 상태 (미작성)
+    '',                        // F: 블로그 초안
+    '',                        // G: 인스타 상태
+    '',                        // H: 인스타 초안
+    today,                     // I: 예정일
+    ''                         // J: 유튜브
+  ];
+  const ok = await sheetAppend(row);
+  sheetCache = null; sheetCacheTime = 0;
+  toast(ok ? '📚 저장 + 시트에 기록됐어요 ✅' : '📚 저장됐어요 (시트 기록 실패)');
 }
 
 function renderArchive() {
