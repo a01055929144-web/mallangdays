@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1781755015">말랑데이즈</title>
+<meta name="version" content="1781755359">말랑데이즈</title>
 <style>
 :root{
   --bg:#FAFAF8;--surface:#FFF;--border:#E8E6E0;--text:#1A1916;--sub:#6B6860;--hint:#A8A49E;
@@ -116,9 +116,9 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;b
 /* 통계 */
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
 .sc2{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rs);padding:14px;}
-.kpi-card{cursor:pointer;transition:all .15s;touch-action:manipulation;}
-.kpi-card:active{transform:scale(.97);}
-.kpi-card.active{border-color:var(--ac);background:var(--acl);}
+.kpi-card{cursor:pointer;transition:all .15s;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+.kpi-card:active{transform:scale(.97);opacity:.8;}
+.kpi-card.active{border-color:var(--ac) !important;background:var(--acl) !important;box-shadow:0 0 0 2px var(--ac);}
 .kpi-card.active .sl2{color:var(--ac);}
 .kpi-card.active .sn{color:var(--acd);}
 .sn{font-size:26px;font-weight:700;color:var(--text);}.sl2{font-size:11px;color:var(--hint);margin-top:2px;}
@@ -888,21 +888,30 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 제목: 검색자가 실제 검색할 단어 포함 | 본문 첫 문단: 핵심 키워드 자연스럽게 2~3회 | 결론 먼저 | 구체적 수치
 
 === 카테고리별 원칙 ===
-[임신기록] 감정80%+정보20% | "안녕하세요 :) 말랑파파입니다." 시작 | 구조: 오프닝→이번주말랑이→이번주말랑맘→이번주우리부부→요즘생각→오늘의한줄(말랑이에게)
+[임신기록] 감정80%+정보20% | "안녕하세요, 말랑파파에요! 😊" 시작 | 마크다운 헤딩 없이 자연스럽게 흘러가는 글 | 구조: 오프닝→이번주말랑이→이번주말랑맘→이번주우리부부→요즘생각→말랑이에게한마디
 [연애회상] 감정70%+정보30% | "안녕하세요 :) 말랑파파입니다." 시작 | 과거회상, 말랑이 등장 안함 | 구조: 오프닝→있었던일→느낀것→지금돌아보면
 [육아정보] 정보85%+경험15% | 구조: 결론→상세정보→말랑이경험→주의사항→총평
 [육아용품] 정보90%+경험10% | 구조: 한줄결론→구매이유→장단점→구매정보→추천대상
 [먹고기록하기] 정보80%+경험20% | 매장 기본정보(주소·시간·가격·주차) 먼저 | 구조: 기본정보→방문계기→메뉴맛→분위기→총평
 [살림재테크] 정보85%+경험15% | 웹검색으로 최신 정부정책 확인 후 작성 | 기준연도 명시 | 구조: 결론→조건→신청방법→경험→주의사항
 
+=== 블로그 작성 규칙 (절대 준수) ===
+- ## ### 등 마크다운 헤딩 절대 사용 금지
+- 볼드(**텍스트**), 이탤릭(*텍스트*) 등 마크다운 문법 사용 금지
+- 소제목이 필요하면 줄바꿈 후 일반 텍스트로 자연스럽게 작성
+- 네이버 블로그에 그대로 복붙 가능한 완성형 원고
+- 문단 사이 빈 줄 하나씩 → 가독성 확보
+- 한 문단 2~3문장. 길게 이어 쓰지 않기
+
 === 출력 형식 (반드시 준수) ===
 [BLOG]
-블로그 초안 전체 내용
-마지막에 네이버 태그: #태그1 #태그2 #태그3 #태그4 #태그5 #태그6 #태그7 #태그8
+(마크다운 없는 완성형 블로그 글. 바로 복붙 가능한 형태)
+(마지막 줄에만) 네이버태그: #태그1 #태그2 #태그3 #태그4 #태그5 #태그6 #태그7 #태그8
 
 [INSTA]
-인스타 캡션 (훅 1~2줄 + 감정 3~5줄 + "자세한 내용은 블로그에서 확인하세요 🔗")
-해시태그 13~15개 (카테고리별: 임신기록→#임신기록 #임신일기 #예비아빠 #말랑데이즈, 연애회상→#커플일상 #연애일기 #신혼일상 #말랑데이즈, 육아정보/용품→#육아 #신생아 #초보아빠 #말랑데이즈, 먹고기록→#맛집추천 #먹스타그램 #말랑데이즈, 살림재테크→#신혼재테크 #재테크 #말랑데이즈)
+(훅 1~2줄 + 감정 3~5줄 + "자세한 내용은 블로그에서 확인하세요 🔗")
+(빈 줄)
+#해시태그1 #해시태그2 ... (13~15개, 카테고리별: 임신기록→#임신기록 #임신일기 #예비아빠 #말랑데이즈, 연애회상→#커플일상 #연애일기 #신혼일상 #말랑데이즈, 육아정보/용품→#육아 #신생아 #초보아빠 #말랑데이즈, 먹고기록→#맛집추천 #먹스타그램 #말랑데이즈, 살림재테크→#신혼재테크 #재테크 #말랑데이즈)
 
 [PHOTO]
 사진 배치 가이드 (사진첨부시만)`;
@@ -1228,23 +1237,21 @@ function showPg(id){
 let activeKpi = null;
 
 function setKpi(type) {
-  // 같은 카드 다시 클릭 시 필터 해제
+  // 같은 카드 다시 클릭 시 필터 해제 → 대기 탭으로
   if (activeKpi === type) {
     activeKpi = null;
     document.querySelectorAll('.kpi-card').forEach(k=>k.classList.remove('active'));
-    swLog('pend'); // 기본 대기 탭으로
+    swLog('pend');
     return;
   }
   activeKpi = type;
   document.querySelectorAll('.kpi-card').forEach(k=>k.classList.remove('active'));
-  document.getElementById(`kpi-${type}`).classList.add('active');
-  if (type === 'draft') { swLog('draft'); return; }
-  if (type === 'all') {
-    // 전체: 대기+완료 모두 보이게
-    swLog('pend');
-    return;
-  }
-  swLog(type); // 'pend' or 'done'
+  const kpiEl = document.getElementById(`kpi-${type}`);
+  if (kpiEl) kpiEl.classList.add('active');
+  // 탭 전환
+  if (type === 'draft') { swLog('draft'); }
+  else if (type === 'done') { swLog('done'); }
+  else { swLog('pend'); } // all, pend
 }
 
 // ===== 추천 탭 =====
@@ -1574,6 +1581,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
   document.querySelectorAll('.ti').forEach(btn=>{
     btn.addEventListener('touchend',e=>{e.preventDefault();const id=btn.id.replace('t-','');showPg(id);},{passive:false});
+  });
+  // KPI 카드 터치이벤트
+  document.querySelectorAll('.kpi-card').forEach(card=>{
+    card.addEventListener('touchend',e=>{
+      e.preventDefault();
+      const type=card.id.replace('kpi-','');
+      setKpi(type);
+    },{passive:false});
   });
   // 추천 탭 날짜 표시
   document.getElementById('recDate').textContent = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
