@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1781752548">말랑데이즈</title>
+<meta name="version" content="1781754663">말랑데이즈</title>
 <style>
 :root{
   --bg:#FAFAF8;--surface:#FFF;--border:#E8E6E0;--text:#1A1916;--sub:#6B6860;--hint:#A8A49E;
@@ -116,6 +116,11 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;b
 /* 통계 */
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
 .sc2{background:var(--surface);border:.5px solid var(--border);border-radius:var(--rs);padding:14px;}
+.kpi-card{cursor:pointer;transition:all .15s;touch-action:manipulation;}
+.kpi-card:active{transform:scale(.97);}
+.kpi-card.active{border-color:var(--ac);background:var(--acl);}
+.kpi-card.active .sl2{color:var(--ac);}
+.kpi-card.active .sn{color:var(--acd);}
 .sn{font-size:26px;font-weight:700;color:var(--text);}.sl2{font-size:11px;color:var(--hint);margin-top:2px;}
 /* 로그 아이템 */
 .li{padding:14px 0;border-bottom:.5px solid var(--border);}
@@ -289,10 +294,10 @@ input[type="file"]{display:none;}
     <!-- 기록 -->
     <div class="pg" id="pg-log">
       <div class="stats">
-        <div class="sc2"><div class="sn" id="sTot">-</div><div class="sl2">전체</div></div>
-        <div class="sc2"><div class="sn" id="sBl">-</div><div class="sl2">블로그 완료</div></div>
-        <div class="sc2"><div class="sn" id="sIn">-</div><div class="sl2">인스타 완료</div></div>
-        <div class="sc2"><div class="sn" id="sDraft">0</div><div class="sl2">저장 초안</div></div>
+        <div class="sc2 kpi-card" id="kpi-all" onclick="setKpi('all')"><div class="sn" id="sTot">-</div><div class="sl2">전체</div></div>
+        <div class="sc2 kpi-card" id="kpi-pend" onclick="setKpi('pend')"><div class="sn" id="sBl">-</div><div class="sl2">업로드 대기</div></div>
+        <div class="sc2 kpi-card" id="kpi-done" onclick="setKpi('done')"><div class="sn" id="sIn">-</div><div class="sl2">업로드 완료</div></div>
+        <div class="sc2 kpi-card" id="kpi-draft" onclick="setKpi('draft')"><div class="sn" id="sDraft">0</div><div class="sl2">저장 초안</div></div>
       </div>
       <!-- 탭 전환 -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -314,6 +319,32 @@ input[type="file"]{display:none;}
 
     <!-- 추천 -->
     <div class="pg" id="pg-rec">
+      <!-- 페르소나 설정 -->
+      <div class="card" id="personaCard">
+        <div class="ct" onclick="togPersona()" style="cursor:pointer;justify-content:space-between;">
+          <span>👤 말랑파파 현재 상황 <small style="font-size:11px;font-weight:400;color:var(--hint);">추천에 반영돼요</small></span>
+          <span id="personaToggleIcon">▼</span>
+        </div>
+        <div id="personaForm">
+          <div class="fr">
+            <label class="fl">🤰 임신/출산 현황</label>
+            <input class="fi" id="p_preg" placeholder="예) 말랑이 출생 3개월, 모유수유 중">
+          </div>
+          <div class="fr">
+            <label class="fl">📅 요즘 일상/이슈</label>
+            <textarea class="fta" id="p_daily" placeholder="예) 육아휴직 2개월차, 말랑맘 직장복귀 준비 중, 제주 여행 다녀옴" style="min-height:70px;"></textarea>
+          </div>
+          <div class="fr">
+            <label class="fl">💭 요즘 관심사/고민</label>
+            <textarea class="fta" id="p_interest" placeholder="예) 신생아특례대출 알아보는 중, 이유식 시작 고민, 육아용품 추가 구매 예정" style="min-height:70px;"></textarea>
+          </div>
+          <div class="fr" style="margin-bottom:0;">
+            <label class="fl">📝 최근 작성한 글 (선택)</label>
+            <input class="fi" id="p_recent" placeholder="예) 임신 36주 기록, 출산가방 준비물">
+          </div>
+        </div>
+      </div>
+      <!-- 추천 헤더 -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
         <div>
           <div style="font-size:15px;font-weight:600;">✨ 오늘의 콘텐츠 추천</div>
@@ -324,12 +355,33 @@ input[type="file"]{display:none;}
       <!-- 로딩 -->
       <div id="recLoading" style="display:none;text-align:center;padding:40px 20px;">
         <div class="sp"></div>
-        <div class="ldt">오늘 검색량 분석 중...</div>
+        <div class="ldt">콘텐츠 아이디어 찾는 중...</div>
         <div class="lds" id="recStep">트렌드 수집 중</div>
       </div>
       <!-- 추천 목록 -->
       <div id="recList">
-        <div class="em"><div class="emi">✨</div>추천 받기를 탭하면<br>오늘 핫한 콘텐츠를 추천해드려요</div>
+        <div class="em"><div class="emi">✨</div>추천 받기를 탭하면<br>말랑파파 상황에 맞는 콘텐츠를 추천해드려요</div>
+      </div>
+      <!-- 글작성 폼 (추천 선택 후) -->
+      <div id="recFormArea" style="display:none;">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div class="ct" style="margin:0;">✏️ <span id="recFormTitle"></span></div>
+            <button onclick="closeRecForm()" style="background:none;border:none;font-size:20px;color:var(--hint);cursor:pointer;">✕</button>
+          </div>
+          <!-- SEO 섹션 -->
+          <div class="seo-box">
+            <div class="seo-title">🔍 SEO 제목</div>
+            <div class="seo-row">
+              <input class="fi" id="recSeoKw" placeholder="키워드 입력">
+              <button class="seo-btn" onclick="genRecTitles()">추천</button>
+            </div>
+            <div class="seo-opts" id="recSeoOpts" style="display:none;"></div>
+            <div class="sel-title" id="recSelTitleBox">선택된 제목: <span id="recSelTitleTxt"></span></div>
+          </div>
+          <div id="recDynForm"></div>
+          <button class="gen-btn" onclick="generateFromRec()">✨ 초안 생성하기</button>
+        </div>
       </div>
       <!-- 아카이브 -->
       <div class="card" id="recArchiveCard" style="display:none;">
@@ -1168,20 +1220,71 @@ function showPg(id){
   if(id==='rec') initRec();
 }
 
+// ===== KPI 필터 =====
+let activeKpi = null;
+
+function setKpi(type) {
+  // 같은 카드 다시 클릭 시 필터 해제
+  if (activeKpi === type) {
+    activeKpi = null;
+    document.querySelectorAll('.kpi-card').forEach(k=>k.classList.remove('active'));
+    swLog('pend'); // 기본 대기 탭으로
+    return;
+  }
+  activeKpi = type;
+  document.querySelectorAll('.kpi-card').forEach(k=>k.classList.remove('active'));
+  document.getElementById(`kpi-${type}`).classList.add('active');
+  if (type === 'draft') { swLog('draft'); return; }
+  if (type === 'all') {
+    // 전체: 대기+완료 모두 보이게
+    swLog('pend');
+    return;
+  }
+  swLog(type); // 'pend' or 'done'
+}
+
 // ===== 추천 탭 =====
 let recArchive = JSON.parse(localStorage.getItem('rec_archive')||'[]');
-let recGenerated = false;
+let recPersona = JSON.parse(localStorage.getItem('rec_persona')||'{}');
+let recSelItem = null; // 현재 선택된 추천 아이템
+let recSelTitle = '';
 
 function initRec() {
   renderArchive();
-  // 오늘 날짜 표시
   document.getElementById('recDate').textContent = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  // 저장된 페르소나 복원
+  if (recPersona.preg) document.getElementById('p_preg').value = recPersona.preg;
+  if (recPersona.daily) document.getElementById('p_daily').value = recPersona.daily;
+  if (recPersona.interest) document.getElementById('p_interest').value = recPersona.interest;
+  if (recPersona.recent) document.getElementById('p_recent').value = recPersona.recent;
+}
+
+function togPersona() {
+  const form = document.getElementById('personaForm');
+  const icon = document.getElementById('personaToggleIcon');
+  const isHidden = form.style.display === 'none';
+  form.style.display = isHidden ? 'block' : 'none';
+  icon.textContent = isHidden ? '▲' : '▼';
+  // 닫을 때 저장
+  if (!isHidden) savePersona();
+}
+
+function savePersona() {
+  recPersona = {
+    preg: document.getElementById('p_preg')?.value||'',
+    daily: document.getElementById('p_daily')?.value||'',
+    interest: document.getElementById('p_interest')?.value||'',
+    recent: document.getElementById('p_recent')?.value||''
+  };
+  localStorage.setItem('rec_persona', JSON.stringify(recPersona));
 }
 
 async function genRec() {
+  savePersona(); // 추천 전 페르소나 저장
   const btn = document.getElementById('recBtn');
   const loading = document.getElementById('recLoading');
   const list = document.getElementById('recList');
+  document.getElementById('recFormArea').style.display='none'; // 폼 닫기
   btn.disabled=true; btn.textContent='분석 중...';
   loading.style.display='block'; list.innerHTML='';
   const steps=['트렌드 수집 중','검색량 분석 중','카테고리 매칭 중','추천 콘텐츠 구성 중'];
@@ -1198,7 +1301,14 @@ async function genRec() {
         tools:[{"type":"web_search_20250305","name":"web_search"}],
         messages:[{role:'user',content:`오늘(${today}) 대한민국에서 임신·육아·신혼·맛집·재테크 관련 검색량이 급상승하거나 이슈인 키워드를 웹검색으로 파악해줘.
 
-말랑데이즈 블로그(예비아빠/신혼부부/임신/육아 콘텐츠)에 맞는 주제 5개를 추천해줘.
+[말랑파파 현재 상황]
+${recPersona.preg ? '임신/출산: ' + recPersona.preg : ''}
+${recPersona.daily ? '요즘 일상: ' + recPersona.daily : ''}
+${recPersona.interest ? '관심사/고민: ' + recPersona.interest : ''}
+${recPersona.recent ? '최근 작성글: ' + recPersona.recent : ''}
+
+위 말랑파파의 실제 상황과 오늘 트렌드를 결합해서, 말랑파파가 실제로 쓸 수 있는 콘텐츠 5개를 추천해줘.
+단순한 트렌드 나열이 아니라 "말랑파파의 삶에서 나온 이야기"처럼 보여야 해.
 
 아래 JSON 형식으로만 답해줘 (다른 설명 없이):
 {
@@ -1207,10 +1317,10 @@ async function genRec() {
     {
       "type": "hot|trend|season",
       "category": "임신기록|연애회상|육아정보|육아용품|먹고기록|살림재테크",
-      "title": "블로그 글 제목 (SEO 최적화)",
-      "desc": "이 주제를 써야 하는 이유 한 줄",
+      "title": "블로그 글 제목 (SEO 최적화, 말랑파파 실제 경험 반영)",
+      "desc": "이 주제를 지금 써야 하는 이유 (말랑파파 상황과 연결)",
       "keyword": "핵심 검색 키워드",
-      "hook": "말랑파파 시점의 도입 문장 한 줄"
+      "hook": "말랑파파가 실제로 쓸 법한 자연스러운 도입 문장"
     }
   ]
 }`}]
@@ -1254,29 +1364,111 @@ function renderRec(items) {
 }
 
 async function useRec(i) {
-  const item = window._recItems?.[i];
+  const item = (window._recItems||recArchive)?.[i];
   if (!item) return;
-  // 저장 안 된 경우 시트에 기록
-  if (!recArchive.some(r=>r.title===item.title)) {
-    await saveRec(i);
-  }
-  // 해당 카테고리 선택 후 글 작성 탭으로
+  recSelItem = item;
+  recSelTitle = item.title||'';
+  // 추천탭 내 폼 표시
+  const formArea = document.getElementById('recFormArea');
+  const formTitle = document.getElementById('recFormTitle');
+  formArea.style.display='block';
+  formTitle.textContent = item.category||'';
+  // 카테고리에 맞는 폼 렌더
+  buildRecForm(item.category);
+  // SEO 키워드/제목 자동 입력
+  document.getElementById('recSeoKw').value = item.keyword||'';
+  document.getElementById('recSelTitleTxt').textContent = item.title;
+  document.getElementById('recSelTitleBox').classList.add('show');
+  // 추천 목록 위로 스크롤
+  formArea.scrollIntoView({behavior:'smooth',block:'start'});
+  toast('✏️ 내용을 입력하고 초안을 생성해주세요');
+}
+
+function buildRecForm(catName) {
+  const fields = FORMS[catName]?.fields || [];
+  document.getElementById('recDynForm').innerHTML = fields.map(f => {
+    if (f.sel) return `<div class="fr"><label class="fl">${f.lb}</label><select class="fsel" id="rf_${f.id}">${f.sel.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+    if (f.ta) return `<div class="fr"><label class="fl">${f.lb}</label><textarea class="fta" id="rf_${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
+    return `<div class="fr"><label class="fl">${f.lb}</label><input class="fi" id="rf_${f.id}" placeholder="${f.ph||''}"></div>`;
+  }).join('');
+}
+
+function closeRecForm() {
+  document.getElementById('recFormArea').style.display='none';
+  recSelItem = null; recSelTitle = '';
+}
+
+async function genRecTitles() {
+  const kw = document.getElementById('recSeoKw').value.trim();
+  if (!kw||!recSelItem) return;
+  const btn = document.querySelector('.seo-btn');
+  btn.disabled=true; btn.textContent='생성 중...';
+  const opts = document.getElementById('recSeoOpts');
+  opts.style.display='flex'; opts.innerHTML='<div style="color:var(--hint);font-size:12px;">⏳ 추천 중...</div>';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:300,system:SP_TITLE,messages:[{role:'user',content:`카테고리: ${recSelItem.category}
+키워드: ${kw}
+제목 3개만 추천.`}]})
+    });
+    const d = await res.json();
+    const titles = (d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
+    opts.innerHTML = titles.map(t=>`<button class="seo-opt" onclick="pickRecTitle(this,'${t.replace(/'/g,"&#39;")}')">${t}</button>`).join('');
+  } catch(e) { opts.innerHTML='<div style="color:#C62828;font-size:12px;">❌ 오류</div>'; }
+  finally { btn.disabled=false; btn.textContent='추천'; }
+}
+
+function pickRecTitle(el, t) {
+  document.querySelectorAll('#recSeoOpts .seo-opt').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  recSelTitle = t;
+  document.getElementById('recSelTitleTxt').textContent = t;
+  document.getElementById('recSelTitleBox').classList.add('show');
+  toast('제목 선택됐어요 ✓');
+}
+
+function gvr(id) { const el=document.getElementById(`rf_${id}`); return el?el.value.trim():''; }
+
+async function generateFromRec() {
+  if (!recSelItem) return;
+  const catName = recSelItem.category;
+  const fields = FORMS[catName]?.fields||[];
+  const info = fields.map(f=>{const v=gvr(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
+  const titlePart = recSelTitle?`\n선택된 SEO 제목: ${recSelTitle}`:'';
+  const kwPart = document.getElementById('recSeoKw').value.trim()?`\nSEO 키워드: ${document.getElementById('recSeoKw').value.trim()}`:'';
+  const personaPart = `\n\n[말랑파파 현재 상황]\n${recPersona.preg?'임신/출산: '+recPersona.preg:''}\n${recPersona.daily?'요즘 일상: '+recPersona.daily:''}`;
+  const prompt = `카테고리: ${catName}${titlePart}${kwPart}\n${info}${personaPart}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그`;
+  // 글작성 탭으로 이동 후 생성
+  selCatName = catName;
+  selType = FORMS[catName]?'기록형':'정보형';
+  selTitle = recSelTitle;
+  // 로딩 UI는 글작성 탭에서
   showPg('write');
-  const btn = document.querySelector(`.cb[data-cat="${item.category}"]`);
-  if (btn) {
-    selCat(btn);
-    // SEO 키워드 자동 입력
-    setTimeout(()=>{
-      const kwEl = document.getElementById('seoKw');
-      if (kwEl) { kwEl.value = item.keyword; }
-      // 제목 자동 선택
-      selTitle = item.title;
-      document.getElementById('selTitleTxt').textContent = item.title;
-      document.getElementById('selTitleBox').classList.add('show');
-      toast(`"${item.title}" 제목이 선택됐어요 ✓`);
-    },300);
-  } else {
-    toast('카테고리를 찾을 수 없어요. 직접 선택해주세요.');
+  document.getElementById('formCard').style.display='none';
+  document.getElementById('ldEl').classList.add('show');
+  document.getElementById('oaEl').classList.remove('show');
+  const steps=['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','마무리 중'];
+  let si=0;
+  const iv=setInterval(()=>{si=(si+1)%steps.length;document.getElementById('ldStep').textContent=steps[si];},1600);
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,system:SP,messages:[{role:'user',content:prompt}]})
+    });
+    const d = await res.json();
+    if(d.error) throw new Error(d.error.message);
+    const txt = d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'';
+    if(!txt) throw new Error('응답이 비어있어요');
+    parseNormal(txt);
+  } catch(e) {
+    toast('오류: '+(e.message||'다시 시도해주세요'));
+    document.getElementById('ldEl').classList.remove('show');
+  } finally {
+    clearInterval(iv);
+    document.getElementById('ldEl').classList.remove('show');
   }
 }
 
