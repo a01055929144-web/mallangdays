@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1781754663">말랑데이즈</title>
+<meta name="version" content="1781755015">말랑데이즈</title>
 <style>
 :root{
   --bg:#FAFAF8;--surface:#FFF;--border:#E8E6E0;--text:#1A1916;--sub:#6B6860;--hint:#A8A49E;
@@ -366,9 +366,11 @@ input[type="file"]{display:none;}
       <div id="recFormArea" style="display:none;">
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <div class="ct" style="margin:0;">✏️ <span id="recFormTitle"></span></div>
+            <div class="ct" style="margin:0;flex:1;">✏️ <span id="recFormTitle" style="font-size:13px;"></span></div>
             <button onclick="closeRecForm()" style="background:none;border:none;font-size:20px;color:var(--hint);cursor:pointer;">✕</button>
           </div>
+          <!-- 추천 근거 힌트 -->
+          <div id="recHintBox" style="display:none;background:var(--acl);border:.5px solid #F0C9A0;border-radius:var(--rs);padding:12px;margin-bottom:14px;"></div>
           <!-- SEO 섹션 -->
           <div class="seo-box">
             <div class="seo-title">🔍 SEO 제목</div>
@@ -451,28 +453,19 @@ async function sheetAppend(row) {
 
 async function sheetUpdate(rowIdx, col, value) {
   try {
-    // 긴 텍스트 청크 분할
-    const CHUNK = 1500;
     const str = String(value || '');
-    if (str.length > CHUNK) {
-      for (let i = 0; i < str.length; i += CHUNK) {
-        const chunk = str.slice(i, i + CHUNK);
-        const isAppend = i > 0 ? '1' : '0';
-        const url = `${AS_URL}?action=update&rowIdx=${rowIdx}&col=${encodeURIComponent(col)}&value=${encodeURIComponent(chunk)}&append=${isAppend}`;
-        const res = await fetch(url);
-        const d = await res.json();
-        if (!d.ok) throw new Error(d.error);
-      }
-    } else {
-      const url = `${AS_URL}?action=update&rowIdx=${rowIdx}&col=${encodeURIComponent(col)}&value=${encodeURIComponent(str)}`;
-      const res = await fetch(url);
-      const d = await res.json();
-      if (!d.ok) throw new Error(d.error);
-    }
+    // URL 최대 길이 제한으로 8000자까지만 저장 (블로그 초안 충분히 커버)
+    const safeStr = str.length > 8000 ? str.slice(0, 8000) : str;
+    const url = `${AS_URL}?action=update&rowIdx=${rowIdx}&col=${encodeURIComponent(col)}&value=${encodeURIComponent(safeStr)}`;
+    const res = await fetch(url);
+    const text = await res.text();
+    let d;
+    try { d = JSON.parse(text); } catch(e) { throw new Error('응답 파싱 실패: ' + text.slice(0,100)); }
+    if (!d.ok) throw new Error(d.error||'업데이트 실패');
     // 캐시 업데이트
     if (sheetCache && sheetCache[rowIdx-1]) {
       const colIdx = col.charCodeAt(0) - 65;
-      sheetCache[rowIdx-1][colIdx] = str;
+      sheetCache[rowIdx-1][colIdx] = safeStr;
     }
     return true;
   } catch(e) { console.error('sheetUpdate error:', e); return false; }
@@ -823,44 +816,55 @@ function delDraft(i) {
 // ===== 시트 자동 저장 =====
 async function autoSave(catName, title, blog, insta, date) {
   try {
-    // 블로그/인스타 초안을 행에 포함해서 한번에 append (URL 길이 제한으로 앞 500자만)
-    // 전체 초안은 별도 update로 저장
+    console.log('autoSave 시작:', {catName, title, blogLen: blog?.length, instaLen: insta?.length});
+    // 1단계: 기본 행 추가
     const baseRow = ['', `[${catName}]`, title, date, '', '', '', '', '', ''];
     const ok = await sheetAppend(baseRow);
-    if (!ok) { toast('⚠️ 시트 저장 실패'); return; }
+    if (!ok) { toast('⚠️ 시트 행 추가 실패'); return; }
 
-    // 잠깐 대기 후 행 번호 확인 (시트 반영 시간)
-    await new Promise(r => setTimeout(r, 800));
+    // 2단계: 1초 대기 (시트 반영 시간 확보)
+    await new Promise(r => setTimeout(r, 1000));
     sheetCache = null; sheetCacheTime = 0;
     const rows = await sheetRead();
-    if (!rows) { toast('⚠️ 행 번호 확인 실패'); return; }
+    if (!rows) { toast('⚠️ 시트 읽기 실패'); return; }
 
-    // 제목으로 방금 추가된 행 찾기 (마지막 행부터 역순 탐색)
+    // 3단계: 역순으로 제목 매칭 + F열(블로그초안) 비어있는 행 찾기
     let newRowIdx = -1;
     for (let i = rows.length - 1; i >= 1; i--) {
-      if ((rows[i][2]||'').trim() === title.trim() && !(rows[i][5]||'').trim()) {
-        newRowIdx = i + 1; // 1-indexed
+      const rowTitle = (rows[i][2]||'').trim();
+      const rowBlog = (rows[i][5]||'').trim(); // F열
+      if (rowTitle === title.trim() && !rowBlog) {
+        newRowIdx = i + 1;
         break;
       }
     }
-    if (newRowIdx === -1) newRowIdx = rows.length; // 못 찾으면 마지막 행
+    // 못 찾으면 마지막 행
+    if (newRowIdx === -1) { newRowIdx = rows.length; }
+    console.log('저장할 행:', newRowIdx, '/ 전체 행수:', rows.length);
 
-    console.log('autoSave rowIdx:', newRowIdx, 'title:', title);
+    // 4단계: 블로그 초안 F열 저장
+    const blogTrim = (blog||'').trim();
+    if (blogTrim) {
+      console.log('블로그 저장 시도 - F열, 길이:', blogTrim.length);
+      const blogOk = await sheetUpdate(newRowIdx, 'F', blogTrim);
+      console.log('블로그 저장 결과:', blogOk);
+      if (!blogOk) console.error('블로그 초안 저장 실패!');
+    } else {
+      console.warn('블로그 초안이 비어있음');
+    }
 
-    // 블로그 초안 저장 (F열)
-    if (blog && blog.trim()) {
-      const blogOk = await sheetUpdate(newRowIdx, 'F', blog.trim());
-      console.log('blog save:', blogOk, 'length:', blog.trim().length);
+    // 5단계: 인스타 초안 H열 저장
+    const instaTrim = (insta||'').trim();
+    if (instaTrim) {
+      console.log('인스타 저장 시도 - H열, 길이:', instaTrim.length);
+      const instaOk = await sheetUpdate(newRowIdx, 'H', instaTrim);
+      console.log('인스타 저장 결과:', instaOk);
     }
-    // 인스타 초안 저장 (H열)
-    if (insta && insta.trim()) {
-      const instaOk = await sheetUpdate(newRowIdx, 'H', insta.trim());
-      console.log('insta save:', instaOk, 'length:', insta.trim().length);
-    }
+
     sheetCache = null; sheetCacheTime = 0;
     toast('✅ 시트에 저장됐어요');
   } catch(e) {
-    console.error('autoSave error:', e);
+    console.error('autoSave 오류:', e);
     toast('⚠️ 저장 오류: ' + e.message);
   }
 }
@@ -1372,25 +1376,39 @@ async function useRec(i) {
   const formArea = document.getElementById('recFormArea');
   const formTitle = document.getElementById('recFormTitle');
   formArea.style.display='block';
-  formTitle.textContent = item.category||'';
-  // 카테고리에 맞는 폼 렌더
-  buildRecForm(item.category);
+  formTitle.textContent = `${item.category||''} — ${item.title||''}`;
+  // 카테고리에 맞는 폼 렌더 (추천 내용 포함)
+  buildRecForm(item.category, item);
   // SEO 키워드/제목 자동 입력
   document.getElementById('recSeoKw').value = item.keyword||'';
   document.getElementById('recSelTitleTxt').textContent = item.title;
   document.getElementById('recSelTitleBox').classList.add('show');
-  // 추천 목록 위로 스크롤
+  // 추천 근거 표시
+  const hintBox = document.getElementById('recHintBox');
+  if (hintBox) {
+    hintBox.style.display='block';
+    hintBox.innerHTML = `<div style="font-size:12px;color:var(--sub);margin-bottom:4px;font-weight:600;">💡 추천 이유</div>
+      <div style="font-size:12px;color:var(--sub);line-height:1.6;">${item.desc||''}</div>
+      <div style="font-size:12px;color:var(--ac);margin-top:6px;font-style:italic;">"${item.hook||''}"</div>`;
+  }
   formArea.scrollIntoView({behavior:'smooth',block:'start'});
   toast('✏️ 내용을 입력하고 초안을 생성해주세요');
 }
 
-function buildRecForm(catName) {
+function buildRecForm(catName, item) {
   const fields = FORMS[catName]?.fields || [];
   document.getElementById('recDynForm').innerHTML = fields.map(f => {
     if (f.sel) return `<div class="fr"><label class="fl">${f.lb}</label><select class="fsel" id="rf_${f.id}">${f.sel.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
     if (f.ta) return `<div class="fr"><label class="fl">${f.lb}</label><textarea class="fta" id="rf_${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
     return `<div class="fr"><label class="fl">${f.lb}</label><input class="fi" id="rf_${f.id}" placeholder="${f.ph||''}"></div>`;
   }).join('');
+  // 추천 정보 자동 채우기 (주제/토픽 필드)
+  if (item) {
+    const topicEl = document.getElementById('rf_topic');
+    if (topicEl && !topicEl.value) topicEl.value = item.keyword||item.title||'';
+    const sumEl = document.getElementById('rf_sum');
+    if (sumEl && !sumEl.value) sumEl.value = item.desc||'';
+  }
 }
 
 function closeRecForm() {
@@ -1438,7 +1456,8 @@ async function generateFromRec() {
   const info = fields.map(f=>{const v=gvr(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const titlePart = recSelTitle?`\n선택된 SEO 제목: ${recSelTitle}`:'';
   const kwPart = document.getElementById('recSeoKw').value.trim()?`\nSEO 키워드: ${document.getElementById('recSeoKw').value.trim()}`:'';
-  const personaPart = `\n\n[말랑파파 현재 상황]\n${recPersona.preg?'임신/출산: '+recPersona.preg:''}\n${recPersona.daily?'요즘 일상: '+recPersona.daily:''}`;
+  const recContext = recSelItem ? `\n\n[추천 콘텐츠 맥락]\n주제: ${recSelItem.title||''}\n방향: ${recSelItem.desc||''}\n도입문장 참고: "${recSelItem.hook||''}"\n키워드: ${recSelItem.keyword||''}` : '';
+  const personaPart = `\n\n[말랑파파 현재 상황]\n${recPersona.preg?'임신/출산: '+recPersona.preg:''}\n${recPersona.daily?'요즘 일상: '+recPersona.daily:''}${recContext}`;
   const prompt = `카테고리: ${catName}${titlePart}${kwPart}\n${info}${personaPart}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그`;
   // 글작성 탭으로 이동 후 생성
   selCatName = catName;
@@ -1526,7 +1545,8 @@ function renderArchive() {
 }
 
 function useArchive(i) {
-  window._recItems = recArchive;
+  // 아카이브 아이템을 _recItems에 복사
+  window._recItems = [...recArchive];
   useRec(i);
 }
 
