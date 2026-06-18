@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1781752321">말랑데이즈</title>
+<meta name="version" content="1781752548">말랑데이즈</title>
 <style>
 :root{
   --bg:#FAFAF8;--surface:#FFF;--border:#E8E6E0;--text:#1A1916;--sub:#6B6860;--hint:#A8A49E;
@@ -295,30 +295,23 @@ input[type="file"]{display:none;}
         <div class="sc2"><div class="sn" id="sDraft">0</div><div class="sl2">저장 초안</div></div>
       </div>
       <!-- 탭 전환 -->
-      <div style="display:flex;gap:6px;margin-bottom:12px;">
-        <button class="status-tab active" id="lt-draft" onclick="swLog('draft')">💾 저장된 초안 <span id="draftCount" style="background:#FAF0EB;color:#B86A42;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
-        <button class="status-tab" id="lt-sheet" onclick="swLog('sheet')">📋 콘텐츠 기록 <span id="sheetCount" style="background:#EDF4EE;color:#3A6B3E;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="status-tab active" id="lt-draft" onclick="swLog('draft')">💾 초안 <span id="draftCount" style="background:#FAF0EB;color:#B86A42;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
+          <button class="status-tab" id="lt-pend" onclick="swLog('pend')">⏳ 대기 <span id="pendCount" style="background:#FFE0CC;color:#B86A42;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
+          <button class="status-tab" id="lt-done" onclick="swLog('done')">✅ 완료 <span id="doneCount" style="background:#EDF4EE;color:#3A6B3E;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
+        </div>
+        <button class="badge badge-sheet" onclick="refreshSheet()" style="cursor:pointer;border:none;font-family:inherit;">🔄</button>
       </div>
       <div class="card" style="padding-top:12px;">
         <div id="draftList"><div class="em"><div class="emi">📝</div>초안 생성 시 자동 저장돼요</div></div>
-        <div id="logList" style="display:none;"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
+        <div id="pendList" style="display:none;"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
+        <div id="doneList" style="display:none;"><div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div></div>
+        <div id="logList" style="display:none;"></div>
       </div>
     </div>
 
-    <!-- 현황 -->
-    <div class="pg" id="pg-status">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <div style="display:flex;gap:6px;">
-          <button class="status-tab active" id="st-pend" onclick="swStatus('pend')">⏳ 대기 <span id="pendCount" style="background:#FFE0CC;color:#B86A42;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
-          <button class="status-tab" id="st-done" onclick="swStatus('done')">✅ 완료 <span id="doneCount" style="background:#EDF4EE;color:#3A6B3E;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">0</span></button>
-        </div>
-        <button class="badge badge-sheet" onclick="refreshSheet()" style="cursor:pointer;border:none;font-family:inherit;">🔄 새로고침</button>
-      </div>
-      <div class="card" style="padding-top:12px;">
-        <div id="pendList"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
-        <div id="doneList" style="display:none;"><div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div></div>
-      </div>
-    </div>
+
     <!-- 추천 -->
     <div class="pg" id="pg-rec">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -347,10 +340,9 @@ input[type="file"]{display:none;}
   </div>
 
   <div class="tabs">
+    <button class="ti" id="t-rec" onclick="showPg('rec')"><span class="tic">✨</span><span class="til">추천</span><div class="tid"></div></button>
     <button class="ti active" id="t-write" onclick="showPg('write')"><span class="tic">✏️</span><span class="til">글 작성</span><div class="tid"></div></button>
     <button class="ti" id="t-log" onclick="showPg('log')"><span class="tic">📋</span><span class="til">기록</span><div class="tid"></div></button>
-    <button class="ti" id="t-status" onclick="showPg('status')"><span class="tic">📊</span><span class="til">현황</span><div class="tid"></div></button>
-    <button class="ti" id="t-rec" onclick="showPg('rec')"><span class="tic">✨</span><span class="til">추천</span><div class="tid"></div></button>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -437,9 +429,8 @@ async function sheetUpdate(rowIdx, col, value) {
 async function refreshSheet() {
   sheetCache = null; sheetCacheTime = 0;
   toast('🔄 새로고침 중...');
-  const activePg = document.querySelector('.pg.active')?.id;
-  if (activePg === 'pg-log') await renderLog();
-  if (activePg === 'pg-status') await renderStatus();
+  await renderLog();
+  renderDrafts();
 }
 
 // ===== 시트 행 파싱 =====
@@ -610,29 +601,36 @@ function swLog(tab) {
   document.querySelectorAll('.status-tab[id^="lt-"]').forEach(t=>t.classList.remove('active'));
   document.getElementById(`lt-${tab}`).classList.add('active');
   document.getElementById('draftList').style.display = tab==='draft' ? 'block' : 'none';
-  document.getElementById('logList').style.display = tab==='sheet' ? 'block' : 'none';
+  document.getElementById('pendList').style.display = tab==='pend' ? 'block' : 'none';
+  document.getElementById('doneList').style.display = tab==='done' ? 'block' : 'none';
+  document.getElementById('logList').style.display = 'none';
 }
 
 async function renderLog() {
-  const ll = document.getElementById('logList');
-  ll.innerHTML = '<div class="em"><div class="emi">🔄</div>불러오는 중...</div>';
+  // 로딩 표시
+  document.getElementById('pendList').innerHTML = '<div class="em"><div class="emi">🔄</div>불러오는 중...</div>';
   const rows = await sheetRead();
   if (!rows) {
-    ll.innerHTML = '<div class="em"><div class="emi">❌</div>불러오기 실패<br><small>새로고침해주세요</small></div>';
+    document.getElementById('pendList').innerHTML = '<div class="em"><div class="emi">❌</div>불러오기 실패<br><small>새로고침해주세요</small></div>';
     return;
   }
   const items = parseRows(rows);
-  const tot = items.length;
-  const bl = items.filter(({row})=>(row[4]||'')==='작성완료').length;
-  const ins = items.filter(({row})=>(row[6]||'')==='작성완료').length;
-  document.getElementById('sTot').textContent = tot;
-  document.getElementById('sBl').textContent = bl;
-  document.getElementById('sIn').textContent = ins;
-  document.getElementById('sheetCount').textContent = tot;
-  const recent = [...items].reverse().slice(0,50);
-  ll.innerHTML = recent.length
-    ? recent.map(rowHtml).join('')
-    : '<div class="em"><div class="emi">📭</div>저장된 콘텐츠가 없어요</div>';
+  const isDone = (v) => (v||'')==='작성완료';
+  const pend = [...items].filter(({row})=>!isDone(row[4])||!isDone(row[6])).reverse().slice(0,50);
+  const done = [...items].filter(({row})=>isDone(row[4])&&isDone(row[6])).reverse().slice(0,50);
+  // 통계 업데이트
+  document.getElementById('sTot').textContent = items.length;
+  document.getElementById('sBl').textContent = items.filter(({row})=>isDone(row[4])).length;
+  document.getElementById('sIn').textContent = items.filter(({row})=>isDone(row[6])).length;
+  document.getElementById('pendCount').textContent = pend.length;
+  document.getElementById('doneCount').textContent = done.length;
+  // 대기/완료 렌더링
+  document.getElementById('pendList').innerHTML = pend.length
+    ? pend.map(rowHtml).join('')
+    : '<div class="em"><div class="emi">✨</div>대기 중인 콘텐츠 없음</div>';
+  document.getElementById('doneList').innerHTML = done.length
+    ? done.map(rowHtml).join('')
+    : '<div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div>';
 }
 
 // ===== 현황 탭 렌더 =====
@@ -1163,11 +1161,10 @@ function showPg(id){
   document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));
   document.getElementById(`pg-${id}`).classList.add('active');
   document.getElementById(`t-${id}`).classList.add('active');
-  const labels={write:'글 작성',log:'기록',status:'현황',rec:'✨ 추천'};
+  const labels={write:'글 작성',log:'기록',rec:'✨ 추천'};
   document.getElementById('pgBadge').textContent=labels[id]||id;
   document.querySelector('.wrap').scrollTop=0;
   if(id==='log'){ renderDrafts(); renderLog(); swLog('draft'); }
-  if(id==='status') renderStatus();
   if(id==='rec') initRec();
 }
 
