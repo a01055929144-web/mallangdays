@@ -986,17 +986,20 @@ function pickRecTitle(el,t){document.querySelectorAll('#recOpts .seo-opt').forEa
 async function generateFromRec(){
   if(!recSelItem)return;
   const cat=recSelItem.category;
+  // 전역 상태 설정
+  catName=cat;
+  catType='정보형';
+  selTitle=recSelTitle||recSelItem.title||'';
+  const kw=document.getElementById('recKw').value.trim();
   const fields=FORMS[cat]?.fields||[];
   const info=fields.map(f=>{const v=gv(f.id,'r');return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
-  const ctx=recSelItem?`\n\n[추천 맥락]\n주제: ${recSelItem.title}\n방향: ${recSelItem.desc}\n도입문: "${recSelItem.hook}"\n키워드: ${recSelItem.keyword}`:'';
-  const pCtx=persona.preg||persona.daily?`\n[말랑파파 상황]\n${persona.preg?'임신/출산: '+persona.preg:''}\n${persona.daily?'일상: '+persona.daily:''}`:'';
-  const kw=document.getElementById('recKw').value.trim();
-  const prompt=`카테고리: ${cat}\n${recSelTitle?'선택된 제목: '+recSelTitle:''}\n${kw?'SEO 키워드: '+kw:''}\n${info}${ctx}${pCtx}\n\n[BLOG]\n블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그`;
-  catName=cat; catType=FORMS[cat]?'정보형':'정보형'; selTitle=recSelTitle;
+  const ctx=`\n\n[추천 맥락]\n주제: ${recSelItem.title}\n방향: ${recSelItem.desc||''}\n도입문: "${recSelItem.hook||''}"\n키워드: ${recSelItem.keyword||''}`;
+  const pCtx=(persona.preg||persona.daily)?`\n\n[말랑파파 현재 상황]\n${persona.preg?'임신/출산: '+persona.preg+'\n':''}${persona.daily?'요즘 일상: '+persona.daily:''}`:'' ;
+  const prompt=`카테고리: ${cat}\n${selTitle?'선택된 SEO 제목: '+selTitle:''}\n${kw?'SEO 키워드: '+kw:''}\n${info}${ctx}${pCtx}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그`;
   showPg('write');
   document.getElementById('fmCard').style.display='none';
-  document.getElementById('ldEl').classList.add('on');
   document.getElementById('oaEl').classList.remove('on');
+  document.getElementById('ldEl').classList.add('on');
   const steps=['분석 중','SEO 최적화 중','초안 작성 중','마무리 중'];
   let si=0;const iv=setInterval(()=>{si=(si+1)%steps.length;document.getElementById('ldStep').textContent=steps[si];},1600);
   try{
@@ -1004,8 +1007,12 @@ async function generateFromRec(){
     const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'';
     if(!txt)throw new Error('응답이 비어있어요');
     parseNormal(txt);
-  }catch(e){toast('오류: '+(e.message||'다시 시도'));document.getElementById('ldEl').classList.remove('on');}
-  finally{clearInterval(iv);document.getElementById('ldEl').classList.remove('on');}
+  }catch(e){
+    toast('오류: '+(e.message||'다시 시도해주세요'));
+  }finally{
+    clearInterval(iv);
+    document.getElementById('ldEl').classList.remove('on');
+  }
 }
 
 // ======= API 상태 =======
