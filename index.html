@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1781755359">말랑데이즈</title>
+<meta name="version" content="1781758141">말랑데이즈</title>
 <style>
 :root{
   --bg:#FAFAF8;--surface:#FFF;--border:#E8E6E0;--text:#1A1916;--sub:#6B6860;--hint:#A8A49E;
@@ -416,7 +416,7 @@ input[type="file"]{display:none;}
 })();
 
 // ===== 설정 =====
-const AS_URL = 'https://script.google.com/macros/s/AKfycbwfYmCKWm6LBfmFm68xi5flkXJYXrtzZItoKlOvHFT-7NJyQsVzHF3SufoLMME_7Ip6/exec';
+const AS_URL = 'https://script.google.com/macros/s/AKfycbxT0sj8h65tODjXt2GA7jqTyD2RPckfNwWSKZmo9z-V5X3NzmgXgRSIpwyRjYEFM0uc/exec';
 const API_KEY = ['sk-ant-api03-Y69uFXH','oaejl07l30pWxpaSUrs-','lYJCVbgzYmvUBZUb3Ya68_CSd4Bh94raaXBTe0Q8ZKfsU7Ie22U8iA_kMRg-1seErQAA'].join('');
 const SHEET_ID = '17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE';
 
@@ -446,9 +446,11 @@ async function sheetRead() {
 async function sheetAppend(row) {
   try {
     const res = await fetch(AS_URL + '?action=append&row=' + encodeURIComponent(JSON.stringify(row)));
-    const d = await res.json();
-    return d.ok;
-  } catch(e) { return false; }
+    const text = await res.text();
+    const d = JSON.parse(text);
+    if (d.ok) return d.rowIdx || true; // rowIdx 반환 (없으면 true)
+    return false;
+  } catch(e) { console.error('sheetAppend error:', e); return false; }
 }
 
 async function sheetUpdate(rowIdx, col, value) {
@@ -816,49 +818,44 @@ function delDraft(i) {
 // ===== 시트 자동 저장 =====
 async function autoSave(catName, title, blog, insta, date) {
   try {
-    console.log('autoSave 시작:', {catName, title, blogLen: blog?.length, instaLen: insta?.length});
-    // 1단계: 기본 행 추가
-    const baseRow = ['', `[${catName}]`, title, date, '', '', '', '', '', ''];
-    const ok = await sheetAppend(baseRow);
-    if (!ok) { toast('⚠️ 시트 행 추가 실패'); return; }
-
-    // 2단계: 1초 대기 (시트 반영 시간 확보)
-    await new Promise(r => setTimeout(r, 1000));
-    sheetCache = null; sheetCacheTime = 0;
-    const rows = await sheetRead();
-    if (!rows) { toast('⚠️ 시트 읽기 실패'); return; }
-
-    // 3단계: 역순으로 제목 매칭 + F열(블로그초안) 비어있는 행 찾기
-    let newRowIdx = -1;
-    for (let i = rows.length - 1; i >= 1; i--) {
-      const rowTitle = (rows[i][2]||'').trim();
-      const rowBlog = (rows[i][5]||'').trim(); // F열
-      if (rowTitle === title.trim() && !rowBlog) {
-        newRowIdx = i + 1;
-        break;
-      }
-    }
-    // 못 찾으면 마지막 행
-    if (newRowIdx === -1) { newRowIdx = rows.length; }
-    console.log('저장할 행:', newRowIdx, '/ 전체 행수:', rows.length);
-
-    // 4단계: 블로그 초안 F열 저장
     const blogTrim = (blog||'').trim();
-    if (blogTrim) {
-      console.log('블로그 저장 시도 - F열, 길이:', blogTrim.length);
-      const blogOk = await sheetUpdate(newRowIdx, 'F', blogTrim);
-      console.log('블로그 저장 결과:', blogOk);
-      if (!blogOk) console.error('블로그 초안 저장 실패!');
-    } else {
-      console.warn('블로그 초안이 비어있음');
-    }
-
-    // 5단계: 인스타 초안 H열 저장
     const instaTrim = (insta||'').trim();
-    if (instaTrim) {
-      console.log('인스타 저장 시도 - H열, 길이:', instaTrim.length);
-      const instaOk = await sheetUpdate(newRowIdx, 'H', instaTrim);
-      console.log('인스타 저장 결과:', instaOk);
+    console.log('autoSave:', {catName, title, blogLen: blogTrim.length, instaLen: instaTrim.length});
+
+    // 1단계: 기본 행 추가 → Apps Script가 새 행 번호 반환
+    const baseRow = ['', `[${catName}]`, title, date, '', '', '', '', '', ''];
+    const appendResult = await sheetAppend(baseRow);
+    if (!appendResult) { toast('⚠️ 시트 행 추가 실패'); return; }
+
+    // Apps Script에서 rowIdx 직접 받아옴 (타이밍 문제 완전 해결)
+    const newRowIdx = typeof appendResult === 'number' ? appendResult : null;
+    console.log('append 결과 rowIdx:', newRowIdx);
+
+    if (!newRowIdx) {
+      // rowIdx 못 받은 경우 폴백: 500ms 대기 후 역순 탐색
+      await new Promise(r => setTimeout(r, 500));
+      sheetCache = null; sheetCacheTime = 0;
+      const rows = await sheetRead();
+      if (!rows) { toast('⚠️ 시트 읽기 실패'); return; }
+      let foundIdx = rows.length; // 기본값: 마지막 행
+      for (let i = rows.length - 1; i >= 1; i--) {
+        if ((rows[i][2]||'').trim() === title.trim() && !(rows[i][5]||'').trim()) {
+          foundIdx = i + 1; break;
+        }
+      }
+      console.log('폴백 rowIdx:', foundIdx);
+      if (blogTrim) await sheetUpdate(foundIdx, 'F', blogTrim);
+      if (instaTrim) await sheetUpdate(foundIdx, 'H', instaTrim);
+    } else {
+      // rowIdx 받은 경우 바로 저장 (정확하고 빠름)
+      if (blogTrim) {
+        const ok = await sheetUpdate(newRowIdx, 'F', blogTrim);
+        console.log('블로그 F열 저장:', ok, '길이:', blogTrim.length);
+      }
+      if (instaTrim) {
+        const ok = await sheetUpdate(newRowIdx, 'H', instaTrim);
+        console.log('인스타 H열 저장:', ok, '길이:', instaTrim.length);
+      }
     }
 
     sheetCache = null; sheetCacheTime = 0;
