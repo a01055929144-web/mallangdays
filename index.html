@@ -346,6 +346,36 @@ async function sheetAppend(row) {
   } catch(e) { return false; }
 }
 
+async function sheetAppendFull(row) {
+  // 블로그 초안 등 긴 텍스트 포함 행을 POST로 전송
+  try {
+    const formData = new FormData();
+    formData.append('action', 'appendFull');
+    formData.append('row', JSON.stringify(row));
+    const r = await fetch(AS, { method: 'POST', body: formData });
+    const text = await r.text();
+    const d = JSON.parse(text);
+    return d.ok;
+  } catch(e) {
+    console.error('sheetAppendFull error:', e);
+    // 폴백: GET으로 시도 (초안 앞 2000자만)
+    try {
+      const safeRow = row.map((v, i) => {
+        if ((i===5||i===7) && typeof v==='string' && v.length > 2000) return v.slice(0,2000);
+        return v;
+      });
+      const r2 = await fetch(AS + '?action=append&row=' + encodeURIComponent(JSON.stringify(safeRow)));
+      const d2 = await r2.json();
+      if (d2.ok && d2.rowIdx) {
+        // 전체 초안은 update로 보완
+        if (row[5] && row[5].length > 2000) await sheetUpdate(d2.rowIdx, 'F', row[5]);
+        if (row[7] && row[7].length > 2000) await sheetUpdate(d2.rowIdx, 'H', row[7]);
+      }
+      return d2.ok;
+    } catch(e2) { return false; }
+  }
+}
+
 async function sheetUpdate(rowIdx, col, value) {
   try {
     const str = String(value||'').slice(0, 8000);
@@ -358,29 +388,22 @@ async function sheetUpdate(rowIdx, col, value) {
 
 async function autoSave(cat, title, blog, insta, date) {
   try {
-    const base = ['', `[${cat}]`, title, date, '', '', '', '', '', ''];
-    const res = await sheetAppend(base);
-    if (!res) { toast('⚠️ 시트 저장 실패'); return; }
-    const rowIdx = typeof res === 'number' ? res : null;
-    if (rowIdx) {
-      if (blog?.trim()) await sheetUpdate(rowIdx, 'F', blog.trim());
-      if (insta?.trim()) await sheetUpdate(rowIdx, 'H', insta.trim());
+    const blogVal = (blog||'').trim();
+    const instaVal = (insta||'').trim();
+    // 초안을 row에 직접 포함해서 한번에 저장 (update 불필요)
+    // A=No, B=카테고리, C=제목, D=날짜, E=블로그상태, F=블로그초안, G=인스타상태, H=인스타초안, I=예정일, J=유튜브
+    const row = ['', `[${cat}]`, title, date, '', blogVal, '', instaVal, '', ''];
+    const res = await sheetAppendFull(row);
+    cache = null;
+    if (res) {
+      toast('✅ 시트에 저장됐어요');
     } else {
-      // 폴백: 500ms 후 역순 탐색
-      await new Promise(r => setTimeout(r, 500));
-      const rows = await sheetRead(true);
-      if (rows) {
-        let idx = rows.length;
-        for (let i = rows.length-1; i >= 1; i--) {
-          if ((rows[i][2]||'').trim()===title.trim() && !(rows[i][5]||'').trim()) { idx=i+1; break; }
-        }
-        if (blog?.trim()) await sheetUpdate(idx, 'F', blog.trim());
-        if (insta?.trim()) await sheetUpdate(idx, 'H', insta.trim());
-      }
+      toast('⚠️ 시트 저장 실패');
     }
-    cache = null; // 다음 읽기 시 갱신
-    toast('✅ 시트에 저장됐어요');
-  } catch(e) { toast('⚠️ 저장 오류: ' + e.message); }
+  } catch(e) {
+    console.error('autoSave error:', e);
+    toast('⚠️ 저장 오류: ' + e.message);
+  }
 }
 
 async function refreshSheet() {
