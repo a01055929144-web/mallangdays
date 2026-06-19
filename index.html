@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1781856668">
+<meta name="version" content="1781856903">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -359,8 +359,8 @@ async function sheetUpdate(rowIdx, col, value) {
 
 async function autoSave(cat, title, blog, insta, date) {
   try {
-    const blogVal = (blog||'').trim();
-    const instaVal = (insta||'').trim();
+    const blogVal = cleanDraft((blog||'').trim());
+    const instaVal = cleanInsta((insta||'').trim());
     // encodeURIComponent로 정확히 인코딩 (공백→%20, + 문제 없음)
     const url = AS
       + '?action=appendWithDraft'
@@ -610,6 +610,9 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 예) "34주" 입력 → "34주"로 씀. "배가 많이 나왔다" 입력 → 그 표현 그대로 녹여서 씀.
 같은 카테고리라도 입력이 다르면 완전히 다른 글이 나와야 한다.
 절대로 템플릿처럼 비슷한 구조의 글을 반복하지 말 것.
+입력값이 부족하거나 "test"처럼 의미없는 값이어도 안내 메시지나 설명을 절대 추가하지 말 것.
+부족한 입력값은 말랑파파의 일반적인 상황으로 자연스럽게 채워서 완성형 글을 작성할 것.
+[BLOG], [INSTA] 섹션 안에는 오직 실제 콘텐츠만 포함. 절대 "---", 안내문, 예시, 피드백 포함 금지.
 
 === 문체/톤 ===
 - 친근한 대화체(해요체): ~해요, ~이에요, ~거든요, ~더라고요
@@ -813,6 +816,24 @@ async function generate() {
 }
 
 // ======= 텍스트 파싱 =======
+function cleanDraft(txt) {
+  if (!txt) return '';
+  const lines = txt.split('\n');
+  const bad = ['---','입력값이','실제 에피소드','아래처럼 입력','채울 수가 없','제대로 된 글로'];
+  let cut = lines.length;
+  for (let i=0;i<lines.length;i++) {
+    if (bad.some(b=>lines[i].includes(b)) || /^-{3,}$/.test(lines[i].trim())) { cut=i; break; }
+  }
+  return lines.slice(0,cut).join('\n').trim();
+}
+
+function cleanInsta(txt) {
+  if (!txt) return '';
+  const sep = txt.indexOf('\n---');
+  if (sep>-1) return txt.slice(0,sep).trim();
+  return cleanDraft(txt);
+}
+
 function secTxt(txt,from,to){const si=txt.indexOf(`[${from}]`);if(si===-1)return '';const st=si+from.length+2;if(!to)return txt.slice(st).trim();const ei=txt.indexOf(`[${to}]`,st);return(ei===-1?txt.slice(st):txt.slice(st,ei)).trim();}
 
 function parseNormal(txt) {
@@ -821,8 +842,12 @@ function parseNormal(txt) {
   const photo=secTxt(txt,'PHOTO',null);
   // [INSTA] 이후 내용이 blog에 포함된 경우 제거
   const ii=blog.indexOf('[INSTA]'); if(ii>-1) blog=blog.slice(0,ii);
-  document.getElementById('blogTxt').textContent=blog;
-  document.getElementById('instaTxt').textContent=insta;
+  // 블로그에서 [네이버태그] 이후 Claude 안내메시지 제거
+  const blogClean = cleanDraft(blog);
+  // 인스타에서 --- 이후 Claude 안내메시지 제거
+  const instaClean = cleanInsta(insta);
+  document.getElementById('blogTxt').textContent=blogClean;
+  document.getElementById('instaTxt').textContent=instaClean;
   if(photo&&files.length>0){
     document.getElementById('photoG').innerHTML=`<div style="background:#F2F0FA;border:.5px solid #C4BEE0;border-radius:var(--rs);padding:12px;"><div style="font-size:12px;font-weight:600;color:#7A6DB0;margin-bottom:8px;">📷 사진 배치 가이드</div>${photo.split('\n').filter(l=>l.trim()).map((l,i)=>`<div style="display:flex;gap:7px;padding:5px 0;border-bottom:.5px solid #D8D4EE;"><span style="width:20px;height:20px;border-radius:50%;background:#7A6DB0;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span><span style="font-size:12px;color:var(--sb);">${l}</span></div>`).join('')}</div>`;
   } else {
