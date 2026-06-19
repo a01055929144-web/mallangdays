@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1781856088">
+<meta name="version" content="1781856596">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -361,28 +361,21 @@ async function autoSave(cat, title, blog, insta, date) {
   try {
     const blogVal = (blog||'').trim();
     const instaVal = (insta||'').trim();
-    const baseRow = ['', `[${cat}]`, title, date, '', '', '', '', '', ''];
-    // POST로 전송 - URL 길이 제한 없음
-    const body = new URLSearchParams({
-      action: 'appendWithDraft',
-      row: JSON.stringify(baseRow),
-      blog: blogVal,
-      insta: instaVal
-    });
-    const r = await fetch(AS, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: body.toString()
-    });
+    // encodeURIComponent로 정확히 인코딩 (공백→%20, + 문제 없음)
+    const url = AS
+      + '?action=appendWithDraft'
+      + '&row=' + encodeURIComponent(JSON.stringify(['', `[${cat}]`, title, date, '', '', '', '', '', '']))
+      + '&blog=' + encodeURIComponent(blogVal)
+      + '&insta=' + encodeURIComponent(instaVal);
+    const r = await fetch(url);
     const text = await r.text();
     let d;
     try { d = JSON.parse(text); } catch(e) { d = {ok: false, error: text.slice(0,100)}; }
     cache = null;
-    console.log('autoSave result:', d);
     if (d.ok) {
       toast('✅ 시트에 저장됐어요');
     } else {
-      console.error('autoSave failed:', d.error);
+      console.error('autoSave failed:', d);
       toast('⚠️ 시트 저장 실패');
     }
   } catch(e) {
