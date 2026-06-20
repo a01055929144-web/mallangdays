@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1781856903">
+<meta name="version" content="1781947903">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -276,7 +276,19 @@ input[type="file"]{display:none;}
             <button class="ot" onclick="swOut('insta',this)">📸 인스타</button>
             <button class="ot" onclick="swOut('photo',this)">📷 사진배치</button>
           </div>
-          <div class="oc on" id="o-blog"><div class="ob" id="blogTxt"></div><div class="oas"><button class="oab p" onclick="cpEl('blogTxt')">복사</button><a href="https://docs.google.com/spreadsheets/d/17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE/edit" target="_blank" class="oab">📊 시트 보기</a></div></div>
+          <div class="oc on" id="o-blog">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div style="font-size:12px;font-weight:600;color:var(--sb);">📌 제목</div>
+              <button class="oab p" onclick="cpTitle()" style="flex:none;padding:5px 12px;font-size:12px;">제목 복사</button>
+            </div>
+            <div class="ob" id="titleTxt" style="min-height:auto;padding:10px 14px;font-size:14px;font-weight:500;margin-bottom:10px;"></div>
+            <div style="font-size:12px;font-weight:600;color:var(--sb);margin-bottom:8px;">📝 본문</div>
+            <div class="ob" id="blogTxt"></div>
+            <div class="oas">
+              <button class="oab p" onclick="cpEl('blogTxt')">본문 복사</button>
+              <a href="https://docs.google.com/spreadsheets/d/17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE/edit" target="_blank" class="oab">📊 시트</a>
+            </div>
+          </div>
           <div class="oc" id="o-insta"><div class="ob" id="instaTxt"></div><div class="oas"><button class="oab p" onclick="cpEl('instaTxt')">복사</button></div></div>
           <div class="oc" id="o-photo"><div id="photoG"><div class="em"><div class="emi">📷</div>사진 첨부 시 배치 가이드가 나와요</div></div></div>
         </div>
@@ -361,23 +373,40 @@ async function autoSave(cat, title, blog, insta, date) {
   try {
     const blogVal = cleanDraft((blog||'').trim());
     const instaVal = cleanInsta((insta||'').trim());
-    // encodeURIComponent로 정확히 인코딩 (공백→%20, + 문제 없음)
-    const url = AS
-      + '?action=appendWithDraft'
-      + '&row=' + encodeURIComponent(JSON.stringify(['', `[${cat}]`, title, date, '', '', '', '', '', '']))
-      + '&blog=' + encodeURIComponent(blogVal)
-      + '&insta=' + encodeURIComponent(instaVal);
-    const r = await fetch(url);
-    const text = await r.text();
-    let d;
-    try { d = JSON.parse(text); } catch(e) { d = {ok: false, error: text.slice(0,100)}; }
-    cache = null;
-    if (d.ok) {
-      toast('✅ 시트에 저장됐어요');
-    } else {
-      console.error('autoSave failed:', d);
-      toast('⚠️ 시트 저장 실패');
+
+    // 1단계: 기본 행 추가 (URL 짧게 - 제목/날짜만)
+    const baseRow = ['', `[${cat}]`, title, date, '', '', '', '', '', ''];
+    const r1 = await fetch(AS + '?action=append&row=' + encodeURIComponent(JSON.stringify(baseRow)));
+    const t1 = await r1.text();
+    let d1;
+    try { d1 = JSON.parse(t1); } catch(e) { d1 = {ok:false}; }
+    if (!d1.ok) { toast('⚠️ 시트 저장 실패'); return; }
+
+    // rowIdx 확인
+    const rowIdx = d1.rowIdx;
+    if (!rowIdx) { toast('⚠️ 행 번호 확인 실패'); return; }
+
+    // 2단계: 블로그 초안 F열 저장 (1500자씩 나눠서)
+    if (blogVal) {
+      const CHUNK = 1500;
+      if (blogVal.length <= CHUNK) {
+        await sheetUpdate(rowIdx, 'F', blogVal);
+      } else {
+        // 첫 청크
+        await sheetUpdate(rowIdx, 'F', blogVal.slice(0, CHUNK));
+        // 나머지 청크 - Apps Script에서 이어붙이기
+        for (let i = CHUNK; i < blogVal.length; i += CHUNK) {
+          const chunk = blogVal.slice(i, i + CHUNK);
+          await fetch(AS + '?action=updateAppend&rowIdx=' + rowIdx + '&col=F&value=' + encodeURIComponent(chunk));
+        }
+      }
     }
+
+    // 3단계: 인스타 초안 H열 저장
+    if (instaVal) await sheetUpdate(rowIdx, 'H', instaVal);
+
+    cache = null;
+    toast('✅ 시트에 저장됐어요');
   } catch(e) {
     console.error('autoSave error:', e);
     toast('⚠️ 저장 오류: ' + e.message);
@@ -848,6 +877,12 @@ function parseNormal(txt) {
   const instaClean = cleanInsta(insta);
   document.getElementById('blogTxt').textContent=blogClean;
   document.getElementById('instaTxt').textContent=instaClean;
+  // 제목 표시
+  const titleEl = document.getElementById('titleTxt');
+  if (titleEl) {
+    const curTitle = selTitle || (FORMS[catName]?.fields[0] ? gv(FORMS[catName].fields[0].id) ? `${catName} - ${gv(FORMS[catName].fields[0].id)}` : catName : catName);
+    titleEl.textContent = curTitle;
+  }
   if(photo&&files.length>0){
     document.getElementById('photoG').innerHTML=`<div style="background:#F2F0FA;border:.5px solid #C4BEE0;border-radius:var(--rs);padding:12px;"><div style="font-size:12px;font-weight:600;color:#7A6DB0;margin-bottom:8px;">📷 사진 배치 가이드</div>${photo.split('\n').filter(l=>l.trim()).map((l,i)=>`<div style="display:flex;gap:7px;padding:5px 0;border-bottom:.5px solid #D8D4EE;"><span style="width:20px;height:20px;border-radius:50%;background:#7A6DB0;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span><span style="font-size:12px;color:var(--sb);">${l}</span></div>`).join('')}</div>`;
   } else {
@@ -900,6 +935,11 @@ function togWSt(ch){wSt[ch]=!wSt[ch];const on=wSt[ch],today=new Date().toLocaleD
 // ======= 유틸 =======
 function swOut(id,btn){document.querySelectorAll('.ot').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.oc').forEach(c=>c.classList.remove('on'));if(btn)btn.classList.add('on');document.getElementById(`o-${id}`)?.classList.add('on');}
 function cpEl(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('📋 복사됐어요'));}
+function cpTitle(){
+  const el=document.getElementById('titleTxt');
+  if(el&&el.textContent) navigator.clipboard.writeText(el.textContent).then(()=>toast('📌 제목 복사됐어요'));
+  else toast('제목이 없어요');
+}
 let toastT; function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2500);}
 
 // ======= 페이지 전환 =======
