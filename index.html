@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1782042749">
+<meta name="version" content="1782043416">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -234,6 +234,7 @@ input[type="file"]{display:none;}
           <button class="cb" data-cat="육아정보" data-type="정보형" onclick="selCat(this)">육아정보<span>정보형 · 정보 85%</span></button>
           <button class="cb" data-cat="육아용품" data-type="정보형" onclick="selCat(this)">육아용품<span>정보형 · 정보 90%</span></button>
           <button class="cb" data-cat="먹고기록" data-type="정보형" onclick="selCat(this)">먹고 기록하기<span>정보형 · 정보 80%</span></button>
+          <button class="cb" data-cat="놀고기록" data-type="정보형" onclick="selCat(this)">놀고 기록하기<span>정보형 · 감성 70%</span></button>
           <button class="cb" data-cat="살림재테크" data-type="정보형" onclick="selCat(this)">살림·재테크<span>정보형 · 정보 90%</span></button>
         </div>
       </div>
@@ -685,6 +686,13 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 핵심: 제품명, 가격, 구체적 장단점을 입력값 그대로 활용. 광고 같으면 안 됨.
 금지: "강추드려요!" 남발. 모호한 칭찬. 단점 숨기기.
 
+[놀고기록하기] - 말랑파파 & 말랑맘 데이트/체험/나들이 기록
+톤: 친구한테 "거기 진짜 가봐" 하는 느낌 + 둘만의 감성 기록
+시작: 장소 기본정보 박스 (위치/운영시간/입장료/주차) + "말랑맘이랑 다녀왔어요!" 도입
+구조: 기본정보 → 방문 계기/코스 → 하이라이트 에피소드(입력값 그대로) → 분위기/특징 → 말랑맘 반응 → 재방문 총평
+핵심: 입력한 에피소드와 말랑맘 반응을 생생하게. "둘이서만 즐기는 특별한 시간"의 감성.
+절대 금지: "커플이라면 필수" 같은 광고 말투. 데이트 감성 빼먹지 말기.
+
 [먹고기록하기] - 맛집 탐방 후기
 톤: 친구한테 "거기 진짜 가봐" 하고 추천하는 느낌
 시작: 매장 기본정보를 깔끔하게 정리 후 방문 스토리 시작
@@ -707,6 +715,7 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 연애회상: #연애회상 #신혼일상 #부부일상 #커플일상 #연애일기 #부부기록 #결혼기록 #신혼부부 #데이트기록 #추억소환
 육아정보: #육아정보 #신생아 #초보아빠 #육아꿀팁 #육아일상 #신생아케어 #육아스타그램 #초보부모 #아기키우기
 육아용품: #육아용품 #신생아용품 #아기용품 #육아필수템 #육아템 #육아리뷰 #내돈내산 #신생아템 #아기용품추천
+놀고기록: #데이트 #부부데이트 #신혼데이트 #커플데이트 #나들이 #주말나들이 #데이트코스 #부부일상 #신혼일상 + 장소명/지역명태그
 먹고기록: #맛집 #맛집추천 #먹스타그램 #맛집탐방 #음식스타그램 #먹방 #데이트코스 + 지역명태그
 살림재테크: #재테크 #신혼재테크 #정부지원금 #육아지원 #출산지원 #신혼부부혜택 #재테크공부 #절약 #청약
 
@@ -731,6 +740,7 @@ const FORMS = {
   육아정보:{fields:[{id:'topic',lb:'주제',ph:'예) 신생아 수면교육'},{id:'sum',lb:'핵심 내용',ta:1,ph:''},{id:'exp',lb:'말랑이 경험 (선택)',ta:1,ph:''},{id:'warn',lb:'주의사항 (선택)',ta:1,ph:''}]},
   육아용품:{fields:[{id:'product',lb:'제품명',ph:'예) 범보 멀티시트'},{id:'price',lb:'가격/구매처',ph:'예) 89,000원 / 쿠팡'},{id:'reason',lb:'구매 이유',ta:1,ph:''},{id:'pros',lb:'좋았던 점',ta:1,ph:''},{id:'cons',lb:'아쉬운 점',ta:1,ph:''},{id:'rec',lb:'추천 대상',ph:'예) 3개월 이상'},{id:'sp',lb:'구매 유형',sel:['내돈내산','협찬·제공']}]},
   먹고기록:{fields:[{id:'menu',lb:'주문한 메뉴 & 가격',ta:1,ph:'예) 연어사시미 35,000원'},{id:'taste',lb:'솔직한 맛 평가',ta:1,ph:''},{id:'ctx',lb:'방문 계기 (선택)',ph:'예) 만삭여행 중'}]},
+  놀고기록:{fields:[{id:'place',lb:'장소 / 코스',ph:'예) 가평 쁘띠프랑스, 홍대 방탈출, 제주 카멜리아힐'},{id:'date_info',lb:'언제 / 날씨',ph:'예) 2026년 6월 어느 주말, 날씨 맑음'},{id:'highlight',lb:'가장 기억에 남는 순간',ta:1,ph:'예) 말랑맘이 미로에서 길을 잃어서 한참 웃었어요'},{id:'vibe',lb:'분위기 / 특징',ta:1,ph:'예) 한적하고 아기자기한 분위기, 사진 잘 나오는 포인트 많음'},{id:'mom_reaction',lb:'말랑맘 반응',ph:'예) 여기 진짜 좋다, 또 오자!'},{id:'again',lb:'재방문 의사',sel:['또 오고 싶어요 ⭐⭐⭐⭐⭐','괜찮았어요 ⭐⭐⭐⭐','글쎄요 ⭐⭐⭐']}]},
   살림재테크:{fields:[{id:'topic',lb:'주제',ph:'예) 2026년 육아휴직, 신생아특례대출'},{id:'series',lb:'시리즈 구성',sel:['1편 (단독글)','2편 시리즈','3편 시리즈']},{id:'my_situation',lb:'나의 상황/계획/경험',ta:1,ph:'예) 말랑이 출생 후 육아휴직 6개월 신청 예정'},{id:'extra',lb:'추가 내용 (선택)',ta:1,ph:''}]},
 };
 
@@ -748,7 +758,7 @@ function selCat(btn) {
   document.getElementById('seoKw').value='';
   document.getElementById('seoOpts').style.display='none'; document.getElementById('seoOpts').innerHTML='';
   document.getElementById('selBox').classList.remove('on');
-  document.getElementById('placeBox').style.display=catName==='먹고기록'?'block':'none';
+  document.getElementById('placeBox').style.display=(catName==='먹고기록'||catName==='놀고기록')?'block':'none';
   document.getElementById('placeResult').innerHTML=''; document.getElementById('placeOk').classList.remove('on');
   setTimeout(()=>document.getElementById('fmCard').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
