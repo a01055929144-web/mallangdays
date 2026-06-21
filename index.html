@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1781959346">
+<meta name="version" content="1782042749">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -436,6 +436,7 @@ function toDateInput(s) {
   return '';
 }
 function toKo(v) { if(!v)return ''; const[y,m,d]=v.split('-'); return `${y}. ${parseInt(m)}. ${parseInt(d)}`; }
+function nowDate() { const d=new Date(); return `${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}`; }
 
 // ======= 로그 행 HTML =======
 function rowHtml({r, ri}) {
@@ -483,7 +484,7 @@ async function togSt(ri, col, isDn, btn) {
     btn.textContent = col==='E' ? `📝 ${newDn?'블로그완료':'블로그 미업로드'}` : `📸 ${newDn?'인스타완료':'인스타 미업로드'}`;
     btn.setAttribute('onclick', `togSt(${ri},'${col}',${newDn},this)`);
     if (newDn) {
-      const today = new Date().toLocaleDateString('ko-KR');
+      const today = nowDate();
       await sheetUpdate(ri, 'D', today);
       const di = btn.closest('.li')?.querySelector('.date-inp');
       if (di) di.value = toDateInput(today);
@@ -615,7 +616,7 @@ async function saveLD(i) {
     }
   }
   // 시트에 없으면 새 행 추가
-  const now=new Date().toLocaleDateString('ko-KR');
+  const now=nowDate();
   const res=await sheetAppend(['',`[${d.cat||''}]`,d.title||'',now,'','','','','','']);
   if (res) {
     const ri=typeof res==='number'?res:null;
@@ -699,10 +700,20 @@ const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니
 2026년 기준 명시. 출처 표기(정부24/고용노동부).
 금지: 오래된 정보. 확인 안 된 수치. 딱딱한 공문서 말투.
 
+=== 네이버 블로그 해시태그 원칙 ===
+네이버 블로그 정책: 태그 20~30개 권장 (검색 노출 최적화)
+필수: #말랑데이즈 #말랑파파 항상 포함
+임신기록: #임신기록 #임신일기 #예비아빠 #태교 #임산부 #만삭 #출산준비 #임신중기 #임신후기 #임신육아 + 주차태그(예:#임신34주)
+연애회상: #연애회상 #신혼일상 #부부일상 #커플일상 #연애일기 #부부기록 #결혼기록 #신혼부부 #데이트기록 #추억소환
+육아정보: #육아정보 #신생아 #초보아빠 #육아꿀팁 #육아일상 #신생아케어 #육아스타그램 #초보부모 #아기키우기
+육아용품: #육아용품 #신생아용품 #아기용품 #육아필수템 #육아템 #육아리뷰 #내돈내산 #신생아템 #아기용품추천
+먹고기록: #맛집 #맛집추천 #먹스타그램 #맛집탐방 #음식스타그램 #먹방 #데이트코스 + 지역명태그
+살림재테크: #재테크 #신혼재테크 #정부지원금 #육아지원 #출산지원 #신혼부부혜택 #재테크공부 #절약 #청약
+
 === 출력 형식 (반드시 준수) ===
 [BLOG]
 (완성형 블로그 글 - 마크다운 없이, 바로 네이버에 붙여넣기 가능)
-네이버태그: #태그1 #태그2 #태그3 #태그4 #태그5 #태그6 #태그7 #태그8
+네이버태그: (카테고리 관련 검색 키워드 20~30개. #말랑데이즈 #말랑파파 필수 포함)
 
 [INSTA]
 (훅 1~2줄 + 본문 3~5줄 + "자세한 내용은 블로그에서 확인하세요 🔗")
@@ -893,7 +904,7 @@ function parseNormal(txt) {
   document.getElementById('instaSt').className='stbtn stn'; document.getElementById('instaSt').textContent='미업로드'; document.getElementById('instaD').textContent='-';
   const fv=FORMS[catName]?.fields[0]?gv(FORMS[catName].fields[0].id):'';
   const title=selTitle||(fv?`${catName} - ${fv}`:catName);
-  const now=new Date().toLocaleDateString('ko-KR');
+  const now=nowDate();
   drafts.unshift({id:'d'+Date.now(),cat:catName,type:catType,title,date:now,blog,insta});
   if(drafts.length>50)drafts=drafts.slice(0,50);
   localStorage.setItem('ml_drafts',JSON.stringify(drafts));
@@ -918,7 +929,7 @@ async function parseSeriesOut(txt) {
     oaCard.innerHTML=h;
   }
   const fv=gv('topic'); const baseTitle=selTitle||(fv?`${catName} - ${fv}`:catName);
-  const now=new Date().toLocaleDateString('ko-KR');
+  const now=nowDate();
   for(let i=0;i<count;i++){
     drafts.unshift({id:'d'+Date.now()+'_'+i,cat:catName,type:catType,title:`${baseTitle} ${i+1}편`,date:now,blog:blogs[i],insta:instas[i]});
     await autoSave(catName,`${baseTitle} ${i+1}편`,blogs[i],instas[i],now);
@@ -930,7 +941,7 @@ async function parseSeriesOut(txt) {
 }
 
 // ======= 업로드 체크 =======
-function togWSt(ch){wSt[ch]=!wSt[ch];const on=wSt[ch],today=new Date().toLocaleDateString('ko-KR');if(ch==='blog'){document.getElementById('blogSt').className=`stbtn ${on?'std':'stn'}`;document.getElementById('blogSt').textContent=on?'업로드 완료':'미업로드';document.getElementById('blogD').textContent=on?today:'-';}else{document.getElementById('instaSt').className=`stbtn ${on?'std':'stn'}`;document.getElementById('instaSt').textContent=on?'업로드 완료':'미업로드';document.getElementById('instaD').textContent=on?today:'-';}}
+function togWSt(ch){wSt[ch]=!wSt[ch];const on=wSt[ch],today=nowDate();if(ch==='blog'){document.getElementById('blogSt').className=`stbtn ${on?'std':'stn'}`;document.getElementById('blogSt').textContent=on?'업로드 완료':'미업로드';document.getElementById('blogD').textContent=on?today:'-';}else{document.getElementById('instaSt').className=`stbtn ${on?'std':'stn'}`;document.getElementById('instaSt').textContent=on?'업로드 완료':'미업로드';document.getElementById('instaD').textContent=on?today:'-';}}
 
 // ======= 유틸 =======
 function swOut(id,btn){document.querySelectorAll('.ot').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.oc').forEach(c=>c.classList.remove('on'));if(btn)btn.classList.add('on');document.getElementById(`o-${id}`)?.classList.add('on');}
@@ -1045,7 +1056,7 @@ async function useRec(i, fromArch){
 async function saveRec(i){
   const item=(recItems||[])[i]; if(!item)return;
   if(recArchive.some(r=>r.title===item.title)){toast('이미 저장된 추천이에요');return;}
-  const today=new Date().toLocaleDateString('ko-KR');
+  const today=nowDate();
   recArchive.unshift({...item,savedAt:today});
   if(recArchive.length>30) recArchive=recArchive.slice(0,30);
   localStorage.setItem('rec_archive',JSON.stringify(recArchive));
