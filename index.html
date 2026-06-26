@@ -334,7 +334,7 @@ input[type="file"]{display:none;}
 <script>
 // ======= 설정 =======
 const AS = 'https://script.google.com/macros/s/AKfycbzylUlNmBoxLvTpp24X658XgJSozbSdLcBC0SJ1ZekNPsGaNNoYJXKaRXIzT_CUMvEq/exec';
-const AK = ['sk-ant-api03-AZfMCcz71AK5r5E8rTjUUP4b1gcj5K1wwkTKImdbcnqrKIL35eVmitvmOzGbI-76leaJ4ALgqFhlCxM__S3gPA-HUuNCAAA'].join('');
+const CLAUDE_MODEL = 'claude-sonnet-4-6';
 // 시트 컬럼: A=0 B=1(카테고리) C=2(제목) D=3(업로드일) E=4(블로그상태) F=5(블로그초안) G=6(인스타상태) H=7(인스타초안) I=8(예정일) J=9(유튜브)
 
 // ======= 시트 API =======
@@ -845,12 +845,17 @@ function buildPrompt() {
 
 // ======= Claude 호출 =======
 async function callClaude(system, user, maxTokens=4000, webSearch=false) {
-  const body={model:'claude-sonnet-4-6',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]};
+  const body={model:CLAUDE_MODEL,max_tokens:maxTokens,system,messages:[{role:'user',content:user}]};
   if(webSearch) body.tools=[{"type":"web_search_20250305","name":"web_search"}];
-  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':AK,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
-  const d=await r.json();
-  if(d.error) throw new Error(d.error.message||JSON.stringify(d.error));
-  return d;
+  const fd = new FormData();
+  fd.append('action','claude');
+  fd.append('payload',JSON.stringify(body));
+  const r=await fetch(AS,{method:'POST',body:fd});
+  const d=await r.json().catch(()=>({ok:false,error:'Apps Script 응답을 읽을 수 없어요'}));
+  if(!r.ok||d.ok===false||d.error){
+    throw new Error(d.error||d.message||`Claude 프록시 오류 ${r.status}`);
+  }
+  return d.data||d;
 }
 
 // ======= 초안 생성 =======
@@ -1151,10 +1156,13 @@ async function generateFromRec(){
 // ======= API 상태 =======
 async function checkApi(){
   try{
-    const r=await fetch('https://api.anthropic.com/v1/models',{headers:{'x-api-key':AK,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
+    const fd = new FormData();
+    fd.append('action','claudeStatus');
+    const r=await fetch(AS,{method:'POST',body:fd});
+    const d=await r.json().catch(()=>({ok:false}));
     const el=document.getElementById('apiBg');
-    if(r.ok){el.textContent='💳 API 활성';el.style.background='#EDF4EE';el.style.color='#2E7D32';}
-    else{el.textContent='💳 크레딧 부족';el.style.background='#FEECEC';el.style.color='#C62828';}
+    if(r.ok&&d.ok!==false){el.textContent='💳 API 활성';el.style.background='#EDF4EE';el.style.color='#2E7D32';}
+    else{el.textContent='💳 API 오류';el.style.background='#FEECEC';el.style.color='#C62828';}
   }catch(e){document.getElementById('apiBg').textContent='💳 확인불가';}
 }
 
