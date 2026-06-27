@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1782579202">
+<meta name="version" content="1782580206">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -193,7 +193,10 @@ input[type="file"]{display:none;}
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
         <div><div style="font-size:15px;font-weight:600;">✨ 오늘의 콘텐츠 추천</div><div style="font-size:12px;color:var(--ht);margin-top:2px;" id="recDate"></div></div>
+        <div style="display:flex;gap:6px;align-items:center;">
         <button class="gen" onclick="genRec()" style="width:auto;padding:10px 16px;font-size:13px;margin:0;" id="recBtn">🔍 추천 받기</button>
+        <button onclick="genRecForce()" style="padding:10px 12px;background:none;border:1px solid var(--bd);border-radius:var(--rs);font-size:13px;color:var(--ht);cursor:pointer;touch-action:manipulation;" title="새로 검색">🔄</button>
+      </div>
       </div>
       <div id="recLoading" style="display:none;text-align:center;padding:36px;">
         <div class="sp"></div><div style="font-size:14px;color:var(--sb);">콘텐츠 아이디어 찾는 중...</div>
@@ -678,6 +681,23 @@ const SP = `말랑데이즈 블로그 전담 작가. 운영자: 말랑파파(아
 [PHOTO]
 사진배치가이드(사진첨부시만)`;
 
+// ======= SP 카테고리별 (입력 토큰 절감) =======
+const SP_CATS = {
+  '임신기록': '감성 육아일기. "안녕하세요, 말랑파파에요! 😊"로 시작.\n구조: 오프닝→말랑이근황(태동·크기·초음파)→말랑맘이야기→우리부부→요즘생각→말랑이에게한마디.\n핵심: 주차·수치 구체적. 감정 솔직하게. 에피소드 영화장면처럼.\n해시태그추가: #임신기록 #임신일기 #예비아빠 #태교 #임산부 #출산준비 +주차태그',
+  '연애회상': '추억 에세이. 말랑이 등장 절대금지.\n구조: 그날배경→에피소드(구체적)→그때느낀것→지금돌아보면.\n핵심: 장면묘사 생생하게. 교훈식 마무리 금지.\n해시태그추가: #연애회상 #부부일상 #신혼일상 #커플일상 #부부기록 #추억소환',
+  '육아정보': '"저도 처음엔 몰랐는데요~"로 시작.\n구조: 공감→결론먼저→방법→말랑이경험→주의사항.\n핵심: 말랑이 경험 중간에 꼭 포함. 수치·월령 구체적.\n해시태그추가: #육아정보 #신생아 #초보아빠 #육아꿀팁 #신생아케어 #초보부모',
+  '육아용품': '솔직 사용후기. "솔직히 살까 말까 고민했어요 😅"로 시작.\n구조: 한줄결론→구매계기→장점→단점(솔직히)→가격·구매처→추천대상.\n핵심: 광고말투·단점숨기기 금지.\n해시태그추가: #육아용품 #신생아용품 #내돈내산 #육아필수템 #아기용품추천',
+  '먹고기록하기': '맛집 후기. 기본정보박스(주소·시간·주차·가격) 먼저.\n구조: 기본정보→계기→메뉴맛(구체적)→분위기→총평.\n핵심: "맛있었어요" 금지. 가격 반드시 포함.\n해시태그추가: #맛집 #맛집추천 #먹스타그램 #맛집탐방 +지역명',
+  '놀고기록하기': '데이트·체험 기록. 기본정보(위치·시간·입장료·주차) 먼저.\n구조: 기본정보→계기→하이라이트에피소드→분위기→말랑맘반응→총평.\n핵심: 둘만의 감성 살리기. 광고말투 금지.\n해시태그추가: #데이트 #부부데이트 #신혼데이트 #나들이 +장소명',
+  '살림재테크': '실용 정보. 웹검색필수·2026년기준명시·출처표기.\n구조: 결론(숫자)→자격→방법→계산→주의사항.\n해시태그추가: #재테크 #신혼재테크 #정부지원금 #육아지원 #출산지원',
+};
+
+function getSP(catName) {
+  const base = SP;
+  const extra = SP_CATS[catName];
+  return extra ? base + '\n\n[' + catName + ' 전용]\n' + extra : base;
+}
+
 const SP_T = `네이버 블로그 SEO 제목 3개. 20자 내외. 번호없이 제목만 3줄 출력.`;
 
 const FORMS = {
@@ -861,7 +881,7 @@ async function generate() {
   const steps=isFin?['정부 공식 사이트 검색 중','법령 최신 기준 확인 중','정책 분석 중','초안 작성 중','마무리 중']:['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','마무리 중'];
   let si=0; const iv=setInterval(()=>{si=(si+1)%steps.length;document.getElementById('ldStep').textContent=steps[si];},1600);
   try {
-    const d=await callClaude(SP,buildPrompt(),isFin?6000:4000,isFin);
+    const d=await callClaude(getSP(catName),buildPrompt(),isFin?6000:4000,isFin);
     const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'';
     if(!txt) throw new Error('응답이 비어있어요');
     if(txt.includes('[BLOG_1]')) await parseSeriesOut(txt);
@@ -1029,10 +1049,26 @@ function initRec(){
 function togPersona(){const f=document.getElementById('pgForm'),ic=document.getElementById('pgIcon'),h=f.style.display==='none';f.style.display=h?'block':'none';ic.textContent=h?'▲':'▼';if(!h)savePersona();}
 function savePersona(){persona={preg:document.getElementById('p_preg')?.value||'',daily:document.getElementById('p_daily')?.value||'',interest:document.getElementById('p_interest')?.value||'',recent:document.getElementById('p_recent')?.value||''};localStorage.setItem('rec_persona',JSON.stringify(persona));}
 
+function genRecForce(){
+  localStorage.removeItem('rec_cache_'+new Date().toDateString());
+  genRec();
+}
+
 async function genRec(){
   savePersona();
   const btn=document.getElementById('recBtn'),ld=document.getElementById('recLoading'),list=document.getElementById('recList');
   document.getElementById('recFormArea').style.display='none';
+  // 당일 캐시 확인
+  const todayKey='rec_cache_'+new Date().toDateString();
+  const pKey=JSON.stringify(persona);
+  try {
+    const cached=JSON.parse(localStorage.getItem(todayKey)||'null');
+    if(cached&&cached.pKey===pKey&&cached.items?.length){
+      recItems=cached.items; renderRec(recItems);
+      toast('✨ 오늘 추천 (저장됨) — 🔄로 새로 검색');
+      return;
+    }
+  } catch(e){}
   btn.disabled=true;btn.textContent='분석 중...';ld.style.display='block';list.innerHTML='';
   const steps=['트렌드 수집 중','검색량 분석 중','카테고리 매칭 중','추천 구성 중'];
   let si=0;const iv=setInterval(()=>{si=(si+1)%steps.length;document.getElementById('recStep').textContent=steps[si];},1500);
@@ -1054,6 +1090,10 @@ ${persona.recent?'최근 작성글: '+persona.recent:''}
     if(!m) throw new Error('추천 결과 파싱 실패');
     const result=JSON.parse(m[0]);
     recItems=result.items||[];
+    // 당일 캐시 저장
+    const todayKey2='rec_cache_'+new Date().toDateString();
+    localStorage.setItem(todayKey2,JSON.stringify({items:recItems,pKey:JSON.stringify(persona)}));
+    Object.keys(localStorage).filter(k=>k.startsWith('rec_cache_')&&k!==todayKey2).forEach(k=>localStorage.removeItem(k));
     renderRec(recItems);
   }catch(e){list.innerHTML=`<div class="em"><div class="emi">❌</div>${e.message||'오류'}<br><small>다시 시도해주세요</small></div>`;}
   finally{clearInterval(iv);ld.style.display='none';btn.disabled=false;btn.textContent='🔍 다시 추천';}
@@ -1165,7 +1205,7 @@ async function generateFromRec(){
   const steps=['분석 중','SEO 최적화 중','초안 작성 중','마무리 중'];
   let si=0;const iv=setInterval(()=>{si=(si+1)%steps.length;document.getElementById('ldStep').textContent=steps[si];},1600);
   try{
-    const d=await callClaude(SP,prompt,4000);
+    const d=await callClaude(getSP(recSelItem?.category||catName),prompt,4000);
     const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'';
     if(!txt)throw new Error('응답이 비어있어요');
     parseNormal(txt);
