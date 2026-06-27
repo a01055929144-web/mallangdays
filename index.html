@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1782452576">
+<meta name="version" content="1782565273">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -333,8 +333,8 @@ input[type="file"]{display:none;}
 
 <script>
 // ======= 설정 =======
-const AS = 'https://script.google.com/macros/s/AKfycbznVFirvixQnnHh9DuMmOvqKflM2TzEmdCWvhgcrTp2M21y79YKu4kP5cCJRzIxmX06/exec';
-const CLAUDE_MODEL = 'claude-sonnet-4-6';
+const AS = 'https://script.google.com/macros/s/AKfycbzylUlNmBoxLvTpp24X658XgJSozbSdLcBC0SJ1ZekNPsGaNNoYJXKaRXIzT_CUMvEq/exec';
+const AK = ['sk-ant-api03-AZfMCcz71AK5r5E8rTjUUP4b1gcj5K1wwkTKImdbcnqrKIL35eVmitvmOzGbI-76leaJ4ALgqFhlCxM__S3gPA-HUuNCAAA'].join('');
 // 시트 컬럼: A=0 B=1(카테고리) C=2(제목) D=3(업로드일) E=4(블로그상태) F=5(블로그초안) G=6(인스타상태) H=7(인스타초안) I=8(예정일) J=9(유튜브)
 
 // ======= 시트 API =======
@@ -638,108 +638,47 @@ function closeLD(i) { const b=document.getElementById(`ld_${i}`); if(b)b.classLi
 function delDraft(i) { if(!confirm('삭제할까요?'))return; drafts.splice(i,1); localStorage.setItem('ml_drafts',JSON.stringify(drafts)); renderDrafts(); toast('삭제됐어요'); }
 
 // ======= Claude API =======
-const SP = `당신은 말랑데이즈 블로그 전담 글쓰기 파트너입니다.
-브랜드: 말랑데이즈(mallangdayz) | 운영자: 말랑파파(남편·아빠 시점) | 등장인물: 말랑파파, 말랑맘, 말랑이(딸)
-미션: 남편에서 아빠가 되어가는 과정을 기록하고 가족의 성장을 아카이브로 남긴다.
+const SP = `말랑데이즈 블로그 전담 작가. 운영자: 말랑파파(아빠시점). 등장인물: 말랑파파·말랑맘·말랑이(딸).
 
-=== 가장 중요한 원칙: 입력값을 그대로 글에 살려라 ===
-사용자가 입력한 내용(주차, 에피소드, 감정, 제품명, 맛 평가 등)이 글의 핵심이다.
-입력값을 일반화하거나 추상화하지 말 것. 구체적 단어, 표현, 숫자를 그대로 사용할 것.
-예) "34주" 입력 → "34주"로 씀. "배가 많이 나왔다" 입력 → 그 표현 그대로 녹여서 씀.
-같은 카테고리라도 입력이 다르면 완전히 다른 글이 나와야 한다.
-절대로 템플릿처럼 비슷한 구조의 글을 반복하지 말 것.
-입력값이 부족하거나 "test"처럼 의미없는 값이어도 안내 메시지나 설명을 절대 추가하지 말 것.
-부족한 입력값은 말랑파파의 일반적인 상황으로 자연스럽게 채워서 완성형 글을 작성할 것.
-[BLOG], [INSTA] 섹션 안에는 오직 실제 콘텐츠만 포함. 절대 "---", 안내문, 예시, 피드백 포함 금지.
+[절대원칙]
+1. 입력값을 그대로 살릴 것. 일반화·추상화 금지.
+2. ## ### 마크다운 헤딩 금지. 볼드(**)·이탤릭(*) 금지.
+3. 안내메시지·설명·예시 절대 포함 금지. 콘텐츠만 출력.
+4. 친근한 해요체. AI 느낌 금지. 문단 2~3문장, 빈줄 구분.
+5. 네이버 블로그 바로 복붙 가능한 완성형.
 
-=== 문체/톤 ===
-- 친근한 대화체(해요체): ~해요, ~이에요, ~거든요, ~더라고요
-- AI 느낌 절대 금지. 실제 사람이 쓴 것처럼.
-- 문단 사이 빈 줄. 한 문단 2~3문장.
-- ## ### 마크다운 헤딩 절대 금지. 볼드(**) 이탤릭(*) 금지.
-- 네이버 블로그에 바로 복붙 가능한 완성형 원고.
+[카테고리별]
+임신기록: 감성일기. "안녕하세요, 말랑파파에요! 😊"시작. 오프닝→말랑이→말랑맘→부부→생각→말랑이에게. 주차·수치 구체적으로. 감정 솔직하게.
+연애회상: 추억에세이. 말랑이 등장금지. 그날배경→에피소드→느낀것→지금돌아보면. 장면묘사 구체적으로.
+육아정보: 경험기반. "저도 처음엔 몰랐는데요~"시작. 결론먼저→방법→말랑이경험→주의사항.
+육아용품: 솔직리뷰. 한줄결론→구매계기→장점→단점(솔직히)→가격·구매처→추천대상. 광고말투 금지.
+먹고기록하기: 맛집후기. 기본정보박스(주소·시간·주차·가격)먼저→계기→메뉴맛(구체적)→분위기→총평.
+놀고기록하기: 데이트기록. 기본정보먼저→방문계기→하이라이트에피소드→분위기→말랑맘반응→총평.
+살림재테크: 실용정보. 웹검색필수·2026년기준명시. 결론(숫자)→자격→방법→계산→주의사항.
 
-=== SEO ===
-제목에 핵심 키워드 포함 | 첫 문단에 키워드 자연스럽게 2~3회 | 구체적 수치 사용
+[해시태그 원칙]
+블로그: 20~30개. #말랑데이즈 #말랑파파 필수.
+임신→#임신기록 #임신일기 #예비아빠 #태교 #임산부 #출산준비 +주차태그
+연애→#연애회상 #부부일상 #신혼일상 #커플일상 #부부기록 #데이트기록
+육아정보→#육아정보 #신생아 #초보아빠 #육아꿀팁 #육아일상 #신생아케어
+육아용품→#육아용품 #신생아용품 #내돈내산 #육아필수템 #아기용품추천
+먹고기록→#맛집 #맛집추천 #먹스타그램 #맛집탐방 +지역명
+놀고기록→#데이트 #부부데이트 #신혼데이트 #나들이 #주말나들이 +장소명
+살림재테크→#재테크 #신혼재테크 #정부지원금 #육아지원 #출산지원
 
-=== 카테고리별 글쓰기 방식 ===
-
-[임신기록] - 감성 육아 일기
-톤: 설레고 뭉클한 예비아빠의 솔직한 감정일기
-시작문장: "안녕하세요, 말랑파파에요! 😊" 로 시작 후 이번 주 핵심 감정 한 줄
-구조: 오프닝 → 말랑이 근황(태동/크기/초음파 - 입력값 그대로) → 말랑맘 이야기(입력값 그대로) → 우리 부부(입력값 그대로) → 요즘 드는 생각 → 말랑이에게 한마디
-핵심: 입력한 에피소드를 영화 장면처럼 묘사. "말랑이가 발로 찼어요" 가 아니라 "새벽 2시에 갑자기 배를 세게 차는 바람에 깜짝 놀라서 일어났어요 😂"
-주차/수치는 반드시 포함. 감정 형용사 다양하게 (설레는, 뭉클한, 신기한, 걱정되는).
-
-[연애회상] - 추억 에세이
-톤: 그때를 그리워하는 따뜻한 회고
-말랑이 등장 절대 금지 (아직 태어나기 전 이야기)
-시작: 그날의 배경(날씨/계절/장소)으로 시작. "그날은 유독 더웠던 여름이었어요." 같은 식.
-구조: 그날의 배경 → 있었던 일(입력한 에피소드 구체적으로) → 그때 말랑맘이 한 말/표정 → 지금 돌아봤을 때 느낌
-핵심: 입력한 장소명, 날짜, 에피소드를 날것 그대로 묘사. 독자가 그 장면에 있는 것처럼.
-금지: "이처럼 사랑은~" 교훈식 마무리. "돌아보면 행복했습니다." 식의 뻔한 결론.
-
-[육아정보] - 경험 기반 정보글
-톤: "나도 고민했는데 이렇게 해결했어요" 스타일
-시작: "저도 처음엔 몰랐는데요~" "말랑이 키우면서 진짜 많이 찾아봤어요" 같은 공감 도입
-구조: 공감 도입 → 결론 먼저(핵심 한 줄) → 구체적 방법/정보 → 말랑이 실제 케이스(입력값) → 주의사항 → 마무리
-핵심: 입력한 구체적 경험을 중간에 꼭 넣기. "말랑이는 생후 3개월부터 시도했는데 처음엔 거부했어요"처럼.
-금지: "의학적으로는~", "전문가에 따르면~" 식의 딱딱한 표현.
-
-[육아용품] - 솔직 사용 후기
-톤: 실제로 써본 사람만 아는 디테일
-시작: "솔직히 처음엔 살까 말까 고민 많이 했어요 😅" 같은 구매 고민 공감으로 시작
-구조: 한 줄 결론(추천/비추천 명확히) → 구매 계기(어떤 문제 해결) → 좋은 점(구체적, 입력값 활용) → 아쉬운 점(솔직하게) → 가격/구매처(입력값) → 이런 분께 추천
-핵심: 제품명, 가격, 구체적 장단점을 입력값 그대로 활용. 광고 같으면 안 됨.
-금지: "강추드려요!" 남발. 모호한 칭찬. 단점 숨기기.
-
-[놀고기록하기] - 말랑파파 & 말랑맘 데이트/체험/나들이 기록
-톤: 친구한테 "거기 진짜 가봐" 하는 느낌 + 둘만의 감성 기록
-시작: 장소 기본정보 박스 (위치/운영시간/입장료/주차) + "말랑맘이랑 다녀왔어요!" 도입
-구조: 기본정보 → 방문 계기/코스 → 하이라이트 에피소드(입력값 그대로) → 분위기/특징 → 말랑맘 반응 → 재방문 총평
-핵심: 입력한 에피소드와 말랑맘 반응을 생생하게. "둘이서만 즐기는 특별한 시간"의 감성.
-절대 금지: "커플이라면 필수" 같은 광고 말투. 데이트 감성 빼먹지 말기.
-
-[먹고기록하기] - 맛집 탐방 후기
-톤: 친구한테 "거기 진짜 가봐" 하고 추천하는 느낌
-시작: 매장 기본정보를 깔끔하게 정리 후 방문 스토리 시작
-구조: 매장정보(주소/영업시간/주차/가격대/전화) → 방문 계기 → 주문 메뉴별 맛 평가(입력값 그대로, 구체적으로) → 분위기/서비스 → 총평
-핵심: 입력한 메뉴명, 가격, 맛 표현을 그대로. "맛있었어요" 금지. "간장 베이스에 달달한 양념이 배어든 전복이 입에서 살살 녹았어요" 같은 구체적 묘사.
-금지: "맛있었어요" 반복. 가격 생략.
-
-[살림재테크] - 실용 정보 정리
-톤: "나도 찾아봤는데 이런 거 있더라" 친구가 알려주는 느낌
-시작: "말랑파파도 [주제] 처음 알았을 때 진짜 놀랐어요! 이거 모르면 손해예요 👀"
-구조: 핵심 결론(숫자/조건 먼저) → 신청 자격 → 신청 방법(단계별로, 쉽게) → 실수령액/혜택 계산 → 주의사항 → 말랑파파 경험(있으면)
-핵심: 입력한 상황과 연결. "저도 육아휴직 6개월 신청하면서 직접 계산해봤는데요"처럼.
-2026년 기준 명시. 출처 표기(정부24/고용노동부).
-금지: 오래된 정보. 확인 안 된 수치. 딱딱한 공문서 말투.
-
-=== 네이버 블로그 해시태그 원칙 ===
-네이버 블로그 정책: 태그 20~30개 권장 (검색 노출 최적화)
-필수: #말랑데이즈 #말랑파파 항상 포함
-임신기록: #임신기록 #임신일기 #예비아빠 #태교 #임산부 #만삭 #출산준비 #임신중기 #임신후기 #임신육아 + 주차태그(예:#임신34주)
-연애회상: #연애회상 #신혼일상 #부부일상 #커플일상 #연애일기 #부부기록 #결혼기록 #신혼부부 #데이트기록 #추억소환
-육아정보: #육아정보 #신생아 #초보아빠 #육아꿀팁 #육아일상 #신생아케어 #육아스타그램 #초보부모 #아기키우기
-육아용품: #육아용품 #신생아용품 #아기용품 #육아필수템 #육아템 #육아리뷰 #내돈내산 #신생아템 #아기용품추천
-놀고기록: #데이트 #부부데이트 #신혼데이트 #커플데이트 #나들이 #주말나들이 #데이트코스 #부부일상 #신혼일상 + 장소명/지역명태그
-먹고기록: #맛집 #맛집추천 #먹스타그램 #맛집탐방 #음식스타그램 #먹방 #데이트코스 + 지역명태그
-살림재테크: #재테크 #신혼재테크 #정부지원금 #육아지원 #출산지원 #신혼부부혜택 #재테크공부 #절약 #청약
-
-=== 출력 형식 (반드시 준수) ===
+[출력형식]
 [BLOG]
-(완성형 블로그 글 - 마크다운 없이, 바로 네이버에 붙여넣기 가능)
-네이버태그: (카테고리 관련 검색 키워드 20~30개. #말랑데이즈 #말랑파파 필수 포함)
+(완성형 블로그글)
+네이버태그: #태그들 (20~30개)
 
 [INSTA]
-(훅 1~2줄 + 본문 3~5줄 + "자세한 내용은 블로그에서 확인하세요 🔗")
-
-#해시태그 13~15개 (임신→#임신기록 #임신일기 #예비아빠 #말랑데이즈, 연애→#커플일상 #연애일기 #신혼일상 #말랑데이즈, 육아정보/용품→#육아 #신생아 #초보아빠 #말랑데이즈, 먹고기록→#맛집추천 #먹스타그램 #말랑데이즈, 살림재테크→#신혼재테크 #재테크 #말랑데이즈)
+(훅1~2줄+본문3~5줄+"자세한 내용은 블로그에서 확인하세요 🔗")
+#해시태그 13~15개
 
 [PHOTO]
-사진 배치 가이드 (사진첨부시만)`;
+사진배치가이드(사진첨부시만)`;
 
-const SP_T = `네이버 블로그 SEO 전문가. 카테고리와 키워드로 검색 최적화 제목 3개 추천. 20자 내외. 번호 없이 제목만 3개 출력.`;
+const SP_T = `네이버 블로그 SEO 제목 3개. 20자 내외. 번호없이 제목만 3줄 출력.`;
 
 const FORMS = {
   임신기록:{fields:[{id:'week',lb:'임신 주차',ph:'예) 34주'},{id:'baby',lb:'이번 주 말랑이',ta:1,ph:'태동, 태아 변화'},{id:'mom',lb:'이번 주 말랑맘',ta:1,ph:'몸 변화, 감정'},{id:'couple',lb:'이번 주 우리 부부',ta:1,ph:'준비한 것, 나눈 대화'},{id:'letter',lb:'말랑이에게 한마디',ph:'예) 곧 만나자'}]},
@@ -790,7 +729,7 @@ async function genTitles() {
   const btn=document.querySelector('.seo-b'); btn.disabled=true; btn.textContent='생성 중...';
   const opts=document.getElementById('seoOpts'); opts.style.display='flex'; opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
   try {
-    const d=await callClaude(SP_T,`카테고리: ${catName}\n키워드: ${kw}\n제목 3개만.`,300);
+    const d=await callClaude(SP_T,`카테고리: ${catName}\n키워드: ${kw}\n제목 3개만.`,150);
     const titles=(d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
     opts.innerHTML=titles.map(t=>`<button class="seo-opt" onclick="pickTitle(this,'${t.replace(/'/g,"&#39;")}')">${t}</button>`).join('');
   } catch(e){opts.innerHTML=`<div style="color:#C62828;font-size:12px;padding:6px;">❌ ${e.message}</div>`;}
@@ -802,22 +741,78 @@ function pickTitle(el,t){document.querySelectorAll('.seo-opt').forEach(b=>b.clas
 async function searchPlace() {
   const q=document.getElementById('placeKw').value.trim();
   if(!q){toast('매장명을 입력해주세요');return;}
-  const pr=document.getElementById('placeResult'); pr.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">🔍 검색 중...</div>';
+  const pr=document.getElementById('placeResult');
+  pr.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">🔍 검색 중...</div>';
   try {
-    const d=await callClaude('매장 정보를 검색해서 JSON만 답해줘: {"name":"","address":"","hours":"","parking":"","phone":"","price":"","category":""}',`"${q}" 매장 정보 검색`,500,true);
+    const d=await callClaude(
+      '매장/장소 정보 웹검색. 후보 최대 3개를 JSON 배열로만 출력. 형식: [{"name":"","address":"","hours":"","parking":"","phone":"","price":""}]',
+      `"${q}" 장소 정보 검색. 여러 후보가 있으면 모두 포함.`,
+      400, true
+    );
     const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('')||'';
-    const m=txt.match(/\{[\s\S]*\}/);
-    if(!m) throw new Error('정보를 찾을 수 없어요');
-    lastPlace=JSON.parse(m[0]);
-    pr.innerHTML=`<div style="padding:10px;border:1px solid var(--bd);border-radius:var(--rs);cursor:pointer;" onclick="selectPlace()">
-      <div style="font-size:13px;font-weight:600;">🏪 ${lastPlace.name||q}</div>
-      <div style="font-size:11px;color:var(--sb);margin-top:3px;">📍 ${lastPlace.address||'-'} | 🕐 ${lastPlace.hours||'-'}</div>
-      <div style="font-size:11px;color:var(--sb);">🅿️ ${lastPlace.parking||'-'} | 📞 ${lastPlace.phone||'-'}</div>
-      <div style="font-size:11px;color:var(--ac);font-weight:600;margin-top:5px;">탭해서 선택 →</div>
-    </div>`;
-  } catch(e){pr.innerHTML=`<div style="color:#C62828;font-size:12px;padding:6px;">❌ ${e.message}</div>`;}
+    // 배열 또는 단일 객체 모두 처리
+    const arrMatch=txt.match(/\[[\s\S]*\]/);
+    const objMatch=txt.match(/\{[\s\S]*\}/);
+    let places=[];
+    if(arrMatch) { try{places=JSON.parse(arrMatch[0]);}catch(e){} }
+    if(!places.length&&objMatch) { try{places=[JSON.parse(objMatch[0])];}catch(e){} }
+    if(!places.length) throw new Error('검색 결과가 없어요');
+
+    pr.innerHTML = places.map((p,i)=>`
+      <div style="padding:10px;border:1px solid var(--bd);border-radius:var(--rs);cursor:pointer;margin-bottom:6px;touch-action:manipulation;" onclick="selectPlace(${i})" id="place_${i}">
+        <div style="font-size:13px;font-weight:600;">🏪 ${p.name||q}</div>
+        <div style="font-size:11px;color:var(--sb);margin-top:3px;">📍 ${p.address||'-'}</div>
+        <div style="font-size:11px;color:var(--sb);">🕐 ${p.hours||'-'} | 🅿️ ${p.parking||'-'}</div>
+        ${p.phone?`<div style="font-size:11px;color:var(--sb);">📞 ${p.phone}</div>`:''}
+        ${p.price?`<div style="font-size:11px;color:var(--sb);">💰 ${p.price}</div>`:''}
+        <div style="font-size:11px;color:var(--ac);font-weight:600;margin-top:4px;">탭해서 선택 →</div>
+      </div>`).join('') +
+      `<div style="padding:8px;border:1px dashed var(--bd);border-radius:var(--rs);cursor:pointer;text-align:center;font-size:12px;color:var(--ht);" onclick="manualPlace()">✏️ 직접 입력하기</div>`;
+    window._places = places;
+  } catch(e){
+    pr.innerHTML=`<div style="color:#C62828;font-size:12px;padding:6px;">❌ ${e.message}</div>
+      <div style="padding:8px;border:1px dashed var(--bd);border-radius:var(--rs);cursor:pointer;text-align:center;font-size:12px;color:var(--ht);margin-top:6px;" onclick="manualPlace()">✏️ 직접 입력하기</div>`;
+  }
 }
-function selectPlace(){if(!lastPlace)return;placeInfo=`매장명: ${lastPlace.name}\n주소: ${lastPlace.address}\n영업시간: ${lastPlace.hours}\n주차: ${lastPlace.parking}\n전화: ${lastPlace.phone}\n가격대: ${lastPlace.price}`;document.getElementById('placeResult').innerHTML='';const ok=document.getElementById('placeOk');ok.textContent=`✅ ${lastPlace.name} 선택됨`;ok.classList.add('on');toast(`${lastPlace.name} 선택됐어요`);}
+
+function manualPlace() {
+  const q = document.getElementById('placeKw').value.trim();
+  lastPlace = {name:q, address:'', hours:'', parking:'', phone:'', price:''};
+  const pr = document.getElementById('placeResult');
+  pr.innerHTML = `
+    <div style="background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rs);padding:12px;">
+      <div style="font-size:12px;font-weight:600;color:var(--sb);margin-bottom:8px;">✏️ 직접 입력</div>
+      <input class="fi" placeholder="주소" id="mp_addr" style="margin-bottom:6px;">
+      <input class="fi" placeholder="영업시간 (예: 11:00~21:00)" id="mp_hours" style="margin-bottom:6px;">
+      <input class="fi" placeholder="주차" id="mp_park" style="margin-bottom:6px;">
+      <input class="fi" placeholder="전화번호" id="mp_phone" style="margin-bottom:6px;">
+      <input class="fi" placeholder="가격대" id="mp_price" style="margin-bottom:10px;">
+      <button class="gen" onclick="confirmManualPlace()" style="padding:10px;">✓ 이 정보로 사용</button>
+    </div>`;
+}
+
+function confirmManualPlace() {
+  const q = document.getElementById('placeKw').value.trim();
+  lastPlace = {
+    name: q,
+    address: document.getElementById('mp_addr')?.value||'',
+    hours: document.getElementById('mp_hours')?.value||'',
+    parking: document.getElementById('mp_park')?.value||'',
+    phone: document.getElementById('mp_phone')?.value||'',
+    price: document.getElementById('mp_price')?.value||''
+  };
+  selectPlace(-1);
+}
+function selectPlace(idx) {
+  if (idx >= 0 && window._places?.[idx]) lastPlace = window._places[idx];
+  if (!lastPlace) return;
+  placeInfo = `매장명: ${lastPlace.name}\n주소: ${lastPlace.address}\n영업시간: ${lastPlace.hours}\n주차: ${lastPlace.parking}\n전화: ${lastPlace.phone}\n가격대: ${lastPlace.price}`;
+  document.getElementById('placeResult').innerHTML='';
+  const ok=document.getElementById('placeOk');
+  ok.textContent=`✅ ${lastPlace.name} 선택됨`;
+  ok.classList.add('on');
+  toast(`${lastPlace.name} 선택됐어요`);
+}
 
 // ======= 파일 =======
 function addFiles(inp){Array.from(inp.files).forEach(f=>{files.push(f);const c=document.createElement('div');c.className='pc';c.innerHTML=`📎 ${f.name} <span style="cursor:pointer;color:var(--ht);" onclick="rmFile('${f.name}',this)">×</span>`;document.getElementById('pcs').appendChild(c);});}
@@ -840,22 +835,20 @@ function buildPrompt() {
       Array.from({length:sn},(_,i)=>`[BLOG_${i+1}]\n${i+1}편 블로그 초안`).join('\n\n')+'\n\n'+Array.from({length:sn},(_,i)=>`[INSTA_${i+1}]\n${i+1}편 인스타`).join('\n\n');
     return `오늘: ${today}\n주제: ${topic}\n시리즈: ${series}\n상황: ${sit||'없음'}\n추가: ${ext||'없음'}\n구성: ${guides.slice(0,sn).join(' / ')}\n웹검색으로 최신 정부정책(정부24·고용노동부·법제처) 확인 후 기준연도 명시.\n\n${fmt}`;
   }
-  return `카테고리: ${catName} (${catType})${tp}${kp}\n${info}${pp}${fp}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그${files.length?'\n\n[PHOTO]\n사진 배치 안내':''}`;
+  // 먹고기록/놀고기록은 블로그 초안 상단에 SEO 제목 후보 포함 요청
+  const needTitle = (catName==='먹고기록'||catName==='놀고기록') && !selTitle;
+  const titleReq = needTitle ? '\n\n블로그 제목 후보 3개를 [TITLE] 섹션에 먼저 작성해줘. 형식:\n[TITLE]\n1. 제목1\n2. 제목2\n3. 제목3' : '';
+  return `카테고리: ${catName} (${catType})${tp}${kp}\n${info}${pp}${fp}${titleReq}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그${files.length?'\n\n[PHOTO]\n사진 배치 안내':''}`;
 }
 
 // ======= Claude 호출 =======
 async function callClaude(system, user, maxTokens=4000, webSearch=false) {
-  const body={model:CLAUDE_MODEL,max_tokens:maxTokens,system,messages:[{role:'user',content:user}]};
+  const body={model:'claude-sonnet-4-6',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]};
   if(webSearch) body.tools=[{"type":"web_search_20250305","name":"web_search"}];
-  const fd = new FormData();
-  fd.append('action','claude');
-  fd.append('payload',JSON.stringify(body));
-  const r=await fetch(AS,{method:'POST',body:fd});
-  const d=await r.json().catch(()=>({ok:false,error:'Apps Script 응답을 읽을 수 없어요'}));
-  if(!r.ok||d.ok===false||d.error){
-    throw new Error(d.error||d.message||`Claude 프록시 오류 ${r.status}`);
-  }
-  return d.data||d;
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':AK,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
+  const d=await r.json();
+  if(d.error) throw new Error(d.error.message||JSON.stringify(d.error));
+  return d;
 }
 
 // ======= 초안 생성 =======
@@ -908,13 +901,26 @@ function parseNormal(txt) {
   const blogClean = cleanDraft(blog);
   // 인스타에서 --- 이후 Claude 안내메시지 제거
   const instaClean = cleanInsta(insta);
+  // [TITLE] 섹션에서 제목 후보 추출
+  let titleCandidates = [];
+  if (txt.includes('[TITLE]')) {
+    const titleSec = secTxt(txt,'TITLE','BLOG');
+    titleCandidates = titleSec.split('\n').map(l=>l.replace(/^\d+\.\s*/,'').trim()).filter(t=>t.length>2);
+  }
   document.getElementById('blogTxt').textContent=blogClean;
   document.getElementById('instaTxt').textContent=instaClean;
   // 제목 표시
   const titleEl = document.getElementById('titleTxt');
   if (titleEl) {
-    const curTitle = selTitle || (FORMS[catName]?.fields[0] ? gv(FORMS[catName].fields[0].id) ? `${catName} - ${gv(FORMS[catName].fields[0].id)}` : catName : catName);
-    titleEl.textContent = curTitle;
+    if (titleCandidates.length > 0) {
+      // 제목 후보 선택 UI
+      titleEl.innerHTML = titleCandidates.map((t,i)=>
+        `<div onclick="pickBlogTitle(this,'${t.replace(/'/g,"&#39;")}')" style="padding:8px 12px;margin-bottom:5px;border:1.5px solid var(--bd);border-radius:var(--rs);cursor:pointer;font-size:13px;touch-action:manipulation;" class="title-opt">${i+1}. ${t}</div>`
+      ).join('') + '<div style="font-size:11px;color:var(--ht);margin-top:4px;">제목을 탭해서 선택하세요</div>';
+    } else {
+      const curTitle = selTitle || (FORMS[catName]?.fields[0] ? gv(FORMS[catName].fields[0].id) ? `${catName} - ${gv(FORMS[catName].fields[0].id)}` : catName : catName);
+      titleEl.textContent = curTitle;
+    }
   }
   if(photo&&files.length>0){
     document.getElementById('photoG').innerHTML=`<div style="background:#F2F0FA;border:.5px solid #C4BEE0;border-radius:var(--rs);padding:12px;"><div style="font-size:12px;font-weight:600;color:#7A6DB0;margin-bottom:8px;">📷 사진 배치 가이드</div>${photo.split('\n').filter(l=>l.trim()).map((l,i)=>`<div style="display:flex;gap:7px;padding:5px 0;border-bottom:.5px solid #D8D4EE;"><span style="width:20px;height:20px;border-radius:50%;background:#7A6DB0;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span><span style="font-size:12px;color:var(--sb);">${l}</span></div>`).join('')}</div>`;
@@ -970,8 +976,26 @@ function swOut(id,btn){document.querySelectorAll('.ot').forEach(t=>t.classList.r
 function cpEl(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('📋 복사됐어요'));}
 function cpTitle(){
   const el=document.getElementById('titleTxt');
-  if(el&&el.textContent) navigator.clipboard.writeText(el.textContent).then(()=>toast('📌 제목 복사됐어요'));
-  else toast('제목이 없어요');
+  const txt=el?.querySelector('.selected-title')?.textContent || el?.textContent;
+  if(txt&&txt.trim()) navigator.clipboard.writeText(txt.trim()).then(()=>toast('📌 제목 복사됐어요'));
+  else toast('제목을 먼저 선택해주세요');
+}
+function pickBlogTitle(el, title) {
+  document.querySelectorAll('.title-opt').forEach(t=>{
+    t.style.borderColor='var(--bd)'; t.style.background='';
+  });
+  el.style.borderColor='var(--ac)'; el.style.background='var(--al)';
+  selTitle = title;
+  // 복사 버튼 위에 선택된 제목 표시
+  const box = document.getElementById('titleTxt');
+  if (!box.querySelector('.selected-title')) {
+    const sel = document.createElement('div');
+    sel.className='selected-title';
+    sel.style.cssText='font-size:12px;color:var(--ac);font-weight:600;margin-top:8px;padding:6px 10px;background:var(--al);border-radius:var(--rs);';
+    box.appendChild(sel);
+  }
+  box.querySelector('.selected-title').textContent = '✓ ' + title;
+  toast('📌 제목 선택됐어요');
 }
 let toastT; function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2500);}
 
@@ -1024,7 +1048,7 @@ ${persona.recent?'최근 작성글: '+persona.recent:''}
 
 말랑파파 실제 상황과 오늘 트렌드를 결합해 콘텐츠 5개 추천. JSON만 답해줘:
 {"items":[{"type":"hot|trend|season","category":"임신기록|연애회상|육아정보|육아용품|먹고기록|살림재테크","title":"SEO 최적화 제목","desc":"추천 이유 한 줄","keyword":"핵심 키워드","hook":"말랑파파 도입 문장"}]}`;
-    const d=await callClaude('당신은 블로그 콘텐츠 전략가입니다.',prompt,1500,true);
+    const d=await callClaude('당신은 블로그 콘텐츠 전략가입니다.',prompt,800,true);
     const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('')||'';
     const m=txt.match(/\{[\s\S]*\}/);
     if(!m) throw new Error('추천 결과 파싱 실패');
@@ -1156,13 +1180,10 @@ async function generateFromRec(){
 // ======= API 상태 =======
 async function checkApi(){
   try{
-    const fd = new FormData();
-    fd.append('action','claudeStatus');
-    const r=await fetch(AS,{method:'POST',body:fd});
-    const d=await r.json().catch(()=>({ok:false}));
+    const r=await fetch('https://api.anthropic.com/v1/models',{headers:{'x-api-key':AK,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
     const el=document.getElementById('apiBg');
-    if(r.ok&&d.ok!==false){el.textContent='💳 API 활성';el.style.background='#EDF4EE';el.style.color='#2E7D32';}
-    else{el.textContent='💳 API 오류';el.style.background='#FEECEC';el.style.color='#C62828';}
+    if(r.ok){el.textContent='💳 API 활성';el.style.background='#EDF4EE';el.style.color='#2E7D32';}
+    else{el.textContent='💳 크레딧 부족';el.style.background='#FEECEC';el.style.color='#C62828';}
   }catch(e){document.getElementById('apiBg').textContent='💳 확인불가';}
 }
 
