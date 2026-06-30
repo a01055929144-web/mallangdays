@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1782580206">
+<meta name="version" content="1782796607">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -1082,13 +1082,19 @@ ${persona.daily?'요즘 일상: '+persona.daily:''}
 ${persona.interest?'관심사: '+persona.interest:''}
 ${persona.recent?'최근 작성글: '+persona.recent:''}
 
-말랑파파 실제 상황과 오늘 트렌드를 결합해 콘텐츠 5개 추천. JSON만 답해줘:
-{"items":[{"type":"hot|trend|season","category":"임신기록|연애회상|육아정보|육아용품|먹고기록|살림재테크","title":"SEO 최적화 제목","desc":"추천 이유 한 줄","keyword":"핵심 키워드","hook":"말랑파파 도입 문장"}]}`;
-    const d=await callClaude('당신은 블로그 콘텐츠 전략가입니다.',prompt,800,true);
+말랑파파 실제 상황과 오늘 트렌드를 결합해 콘텐츠 5개 추천.
+분석 과정이나 요약 없이 아래 JSON 형식만 정확히 출력해줘:
+{"items":[{"type":"hot|trend|season","category":"임신기록|연애회상|육아정보|육아용품|먹고기록|놀고기록하기|살림재테크","title":"SEO 최적화 제목","desc":"추천 이유 한 줄","keyword":"핵심 키워드","hook":"말랑파파 도입 문장"}]}`;
+    const d=await callClaude('당신은 블로그 콘텐츠 전략가입니다. 분석 과정 설명 없이 JSON만 출력.',prompt,1500,true);
     const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('')||'';
-    const m=txt.match(/\{[\s\S]*\}/);
-    if(!m) throw new Error('추천 결과 파싱 실패');
-    const result=JSON.parse(m[0]);
+    // ```json 코드블록 우선 추출, 없으면 일반 JSON 패턴
+    const codeBlockMatch = txt.match(/```json\s*([\s\S]*?)```/);
+    const jsonText = codeBlockMatch ? codeBlockMatch[1] : txt;
+    const m = jsonText.match(/\{[\s\S]*\}/);
+    if(!m) throw new Error('추천 결과를 받지 못했어요. 다시 시도해주세요.');
+    let result;
+    try { result = JSON.parse(m[0]); }
+    catch(e) { throw new Error('응답 형식 오류. 다시 시도해주세요.'); }
     recItems=result.items||[];
     // 당일 캐시 저장
     const todayKey2='rec_cache_'+new Date().toDateString();
