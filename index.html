@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1782876766">
+<meta name="version" content="1782902255">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -365,18 +365,22 @@ async function sheetAppend(row) {
 
 async function sheetUpdate(rowIdx, col, value) {
   try {
-    const str = String(value||'').slice(0, 8000);
-    // POST 방식 - URL 길이 제한 없음 (모바일 포함)
-    const fd = new FormData();
-    fd.append('action', 'update');
-    fd.append('rowIdx', String(rowIdx));
-    fd.append('col', col);
-    fd.append('value', str);
-    const r = await fetch(AS, {method:'POST', body: fd});
-    const t = await r.text();
-    const d = JSON.parse(t);
-    if (d.ok && cache?.[rowIdx-1]) cache[rowIdx-1][col.charCodeAt(0)-65] = str;
-    return d.ok;
+    const str = String(value||'');
+    const CHUNK = 500; // 모바일 URL 안전 길이
+    // 첫 청크: update (덮어쓰기)
+    const first = str.slice(0, CHUNK);
+    const url1 = `${AS}?action=update&rowIdx=${rowIdx}&col=${encodeURIComponent(col)}&value=${encodeURIComponent(first)}`;
+    const r1 = await fetch(url1);
+    const d1 = await r1.json();
+    if (!d1.ok) return false;
+    // 나머지 청크: updateAppend (이어붙이기)
+    for (let i = CHUNK; i < str.length; i += CHUNK) {
+      const chunk = str.slice(i, i + CHUNK);
+      const url2 = `${AS}?action=updateAppend&rowIdx=${rowIdx}&col=${encodeURIComponent(col)}&value=${encodeURIComponent(chunk)}`;
+      await fetch(url2);
+    }
+    if (cache?.[rowIdx-1]) cache[rowIdx-1][col.charCodeAt(0)-65] = str;
+    return true;
   } catch(e) { console.error('sheetUpdate error:', e); return false; }
 }
 
