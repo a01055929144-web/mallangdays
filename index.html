@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1782797527">
+<meta name="version" content="1782875605">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -139,7 +139,7 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;b
 .deb-s{background:var(--gl);color:var(--gr);}
 .deb-c{background:var(--bll);color:#1565C0;}
 .deb-x{background:#F5F5F5;color:#666;}
-.de-ta{width:100%;min-height:280px;max-height:65vh;font-size:13px;line-height:1.7;border:1px solid var(--bd);border-radius:var(--rs);padding:12px;font-family:inherit;color:var(--tx);background:var(--bg);resize:vertical;}
+.de-ta{width:100%;min-height:400px;max-height:80vh;font-size:13px;line-height:1.7;border:1px solid var(--bd);border-radius:var(--rs);padding:12px;font-family:inherit;color:var(--tx);background:var(--bg);resize:vertical;}
 /* 날짜 */
 .date-inp{font-size:11px;color:var(--ht);border:none;background:transparent;outline:none;cursor:pointer;max-width:115px;}
 /* 추천 */
@@ -522,7 +522,13 @@ async function togDE(ri, col) {
   ta.value='불러오는 중...';
   const rows = await sheetRead();
   ta.value = rows?.[ri-1]?.[col==='F'?5:7]||'';
-  ta.focus(); box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  ta.focus();
+  // 내용 길이에 맞게 높이 자동 조절
+  setTimeout(()=>{
+    ta.style.height='auto';
+    ta.style.height=Math.min(Math.max(ta.scrollHeight, 400), window.innerHeight*0.75)+'px';
+  },50);
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 async function saveDE(ri) {
   const ta=document.getElementById(`deta_${ri}`); if(!ta)return;
@@ -610,7 +616,13 @@ function togLD(i, ch) {
   ldState[i]=ch; box.classList.add('on');
   lb.textContent=ch==='blog'?'📝 블로그 초안':'📸 인스타 초안';
   ta.setAttribute('data-ch',ch); ta.value=(ch==='blog'?drafts[i]?.blog:drafts[i]?.insta)||'';
-  ta.focus(); box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  ta.focus();
+  // 내용 길이에 맞게 높이 자동 조절
+  setTimeout(()=>{
+    ta.style.height='auto';
+    ta.style.height=Math.min(Math.max(ta.scrollHeight, 400), window.innerHeight*0.75)+'px';
+  },50);
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 async function saveLD(i) {
   const ta=document.getElementById(`ldta_${i}`); if(!ta)return;
@@ -1033,8 +1045,10 @@ function showPg(id){
 }
 
 // ======= 추천 탭 =======
-let recArchive=JSON.parse(localStorage.getItem('rec_archive')||'[]');
-let persona=JSON.parse(localStorage.getItem('rec_persona')||'{}');
+let recArchive=[];
+try { recArchive=JSON.parse(localStorage.getItem('rec_archive')||'[]'); } catch(e){ recArchive=[]; }
+let persona={};
+try { persona=JSON.parse(localStorage.getItem('rec_persona')||'{}'); } catch(e){ persona={}; }
 let recItems=null, recSelItem=null, recSelTitle='';
 
 function initRec(){
@@ -1124,10 +1138,11 @@ function renderRec(items){
 }
 
 async function useRec(i, fromArch){
-  const src=fromArch?recArchive:recItems;
+  const src=fromArch?recArchive:(recItems||[]);
   const item=src?.[i]; if(!item)return;
   recSelItem=item; recSelTitle=item.title||'';
-  if(!fromArch && !recArchive.some(r=>r.title===item.title)) await saveRec(i);
+  // 저장 안 된 경우만 저장 (recItems가 있을 때만)
+  if(!fromArch && recItems?.length && !recArchive.some(r=>r.title===item.title)) await saveRec(i);
   // 폼 표시
   const fa=document.getElementById('recFormArea'); fa.style.display='block';
   document.getElementById('recFmTitle').textContent=`${item.category} — ${item.title}`;
