@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1782902255">
+<meta name="version" content="1783059724">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -386,8 +386,9 @@ async function sheetUpdate(rowIdx, col, value) {
 
 async function autoSave(cat, title, blog, insta, date) {
   try {
-    const blogVal = cleanDraft((blog||'').trim());
-    const instaVal = cleanInsta((insta||'').trim());
+    // 이미 clean된 값이 들어오지만 혹시 모르니 한번 더 처리
+    const blogVal = (blog||'').trim();
+    const instaVal = (insta||'').trim();
 
     // 1단계: 기본 행 추가 (URL 짧게 - 제목/날짜만)
     const baseRow = ['', `[${cat}]`, title, date, '', '', '', '', '', ''];
@@ -967,12 +968,16 @@ function parseNormal(txt) {
   document.getElementById('blogSt').className='stbtn stn'; document.getElementById('blogSt').textContent='미업로드'; document.getElementById('blogD').textContent='-';
   document.getElementById('instaSt').className='stbtn stn'; document.getElementById('instaSt').textContent='미업로드'; document.getElementById('instaD').textContent='-';
   const fv=FORMS[catName]?.fields[0]?gv(FORMS[catName].fields[0].id):'';
-  const title=selTitle||(fv?`${catName} - ${fv}`:catName);
+  // 제목: SEO 선택 제목 → 첫번째 입력값 → 카테고리명 순서
+  // 제목 확정: SEO선택 > 첫번째필드값 > 카테고리명+시간
+  const rawTitle = selTitle || (fv ? `${catName} - ${fv}` : '');
+  const title = rawTitle.trim() || `${catName} ${nowDate()}`;
   const now=nowDate();
-  drafts.unshift({id:'d'+Date.now(),cat:catName,type:catType,title,date:now,blog,insta});
+  // blogClean/instaClean으로 저장 (안내메시지 제거된 버전)
+  drafts.unshift({id:'d'+Date.now(),cat:catName,type:catType,title,date:now,blog:blogClean,insta:instaClean});
   if(drafts.length>50)drafts=drafts.slice(0,50);
   localStorage.setItem('ml_drafts',JSON.stringify(drafts));
-  autoSave(catName,title,blog,insta,now);
+  autoSave(catName,title,blogClean,instaClean,now);
   document.getElementById('oaEl').classList.add('on');
   swOut('blog',document.querySelector('.ot'));
   setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
