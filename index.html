@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1783059724">
+<meta name="version" content="1783127702">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -911,18 +911,33 @@ async function generate() {
 function cleanDraft(txt) {
   if (!txt) return '';
   const lines = txt.split('\n');
-  const bad = ['---','입력값이','실제 에피소드','아래처럼 입력','채울 수가 없','제대로 된 글로'];
+  const bad = ['입력값이','실제 에피소드','아래처럼 입력','채울 수가 없','제대로 된 글로'];
   let cut = lines.length;
   for (let i=0;i<lines.length;i++) {
-    if (bad.some(b=>lines[i].includes(b)) || /^-{3,}$/.test(lines[i].trim())) { cut=i; break; }
+    const line = lines[i].trim();
+    // 해시태그 포함 줄은 보호 (네이버태그: 또는 # 포함)
+    if (line.startsWith('#') || line.startsWith('네이버태그')) continue;
+    // Claude 안내 메시지 패턴만 제거 (--- 단독줄 + 안내문구)
+    if (bad.some(b=>lines[i].includes(b))) { cut=i; break; }
+    // --- 단독줄이고 다음 줄이 안내 메시지일 때만 제거
+    if (/^-{3,}$/.test(line)) {
+      const nextLine = (lines[i+1]||'').trim();
+      const isGuide = bad.some(b=>nextLine.includes(b)) || nextLine.startsWith('실제') || nextLine.startsWith('예)');
+      if (isGuide) { cut=i; break; }
+    }
   }
   return lines.slice(0,cut).join('\n').trim();
 }
 
 function cleanInsta(txt) {
   if (!txt) return '';
-  const sep = txt.indexOf('\n---');
-  if (sep>-1) return txt.slice(0,sep).trim();
+  // --- 이후에 해시태그가 있으면 자르지 않음
+  const sepIdx = txt.indexOf('\n---');
+  if (sepIdx > -1) {
+    const after = txt.slice(sepIdx);
+    const hasTag = after.includes('#');
+    if (!hasTag) return txt.slice(0, sepIdx).trim();
+  }
   return cleanDraft(txt);
 }
 
