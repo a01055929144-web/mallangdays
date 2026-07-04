@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1783127702">
+<meta name="version" content="1783127779">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -664,6 +664,7 @@ const SP = `말랑데이즈 블로그 전담 작가. 운영자: 말랑파파(아
 1. 입력값을 그대로 살릴 것. 일반화·추상화 금지.
 2. ## ### 마크다운 헤딩 금지. 볼드(**)·이탤릭(*) 금지.
 3. 안내메시지·설명·예시 절대 포함 금지. 콘텐츠만 출력.
+4. 본문과 해시태그 사이에 --- 구분선 절대 사용 금지.
 4. 친근한 해요체. AI 느낌 금지. 문단 2~3문장, 빈줄 구분.
 5. 네이버 블로그 바로 복붙 가능한 완성형.
 
@@ -915,12 +916,11 @@ function cleanDraft(txt) {
   let cut = lines.length;
   for (let i=0;i<lines.length;i++) {
     const line = lines[i].trim();
-    // 해시태그 포함 줄은 보호 (네이버태그: 또는 # 포함)
     if (line.startsWith('#') || line.startsWith('네이버태그')) continue;
-    // Claude 안내 메시지 패턴만 제거 (--- 단독줄 + 안내문구)
     if (bad.some(b=>lines[i].includes(b))) { cut=i; break; }
-    // --- 단독줄이고 다음 줄이 안내 메시지일 때만 제거
     if (/^-{3,}$/.test(line)) {
+      const restHasTag = lines.slice(i+1).some(l=>l.trim().startsWith('#')||l.trim().startsWith('네이버태그'));
+      if (restHasTag) continue;
       const nextLine = (lines[i+1]||'').trim();
       const isGuide = bad.some(b=>nextLine.includes(b)) || nextLine.startsWith('실제') || nextLine.startsWith('예)');
       if (isGuide) { cut=i; break; }
@@ -931,12 +931,11 @@ function cleanDraft(txt) {
 
 function cleanInsta(txt) {
   if (!txt) return '';
-  // --- 이후에 해시태그가 있으면 자르지 않음
   const sepIdx = txt.indexOf('\n---');
   if (sepIdx > -1) {
     const after = txt.slice(sepIdx);
-    const hasTag = after.includes('#');
-    if (!hasTag) return txt.slice(0, sepIdx).trim();
+    if (after.includes('#')) return txt;
+    return txt.slice(0, sepIdx).trim();
   }
   return cleanDraft(txt);
 }
