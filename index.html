@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1783307807">
+<meta name="version" content="1783307827">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -1238,7 +1238,7 @@ async function useRec(i, fromArch){
   hb.style.display='block';
   hb.innerHTML=`<div style="font-size:11px;font-weight:600;color:var(--ad);margin-bottom:4px;">💡 추천 이유</div><div style="font-size:12px;color:var(--sb);line-height:1.5;">${item.desc}</div><div style="font-size:12px;color:var(--ac);margin-top:5px;font-style:italic;">"${item.hook}"</div>`;
   buildForm('r', item.category);
-  document.getElementById('recKw').value=item.keyword||'';
+  // recKw 제거됨 - 내용 기반 제목 추천
   document.getElementById('recSelTxt').textContent=item.title;
   document.getElementById('recSelBox').classList.add('on');
   // 폼 필드 자동 입력
@@ -1283,7 +1283,7 @@ function closeRecForm(){document.getElementById('recFormArea').style.display='no
 
 async function genRecTitles(){
   if (!recSelItem) return;
-  const kw = document.getElementById('recKw').value.trim();
+  const kw = '';
   const fields = FORMS[recSelItem.category]?.fields || [];
   const inputSummary = fields.map(f => {
     const v = gv(f.id, 'r');
@@ -1748,7 +1748,7 @@ async function useRec(i, fromArch){
   hb.style.display='block';
   hb.innerHTML=`<div style="font-size:11px;font-weight:600;color:var(--ad);margin-bottom:4px;">💡 추천 이유</div><div style="font-size:12px;color:var(--sb);line-height:1.5;">${item.desc}</div><div style="font-size:12px;color:var(--ac);margin-top:5px;font-style:italic;">"${item.hook}"</div>`;
   buildForm('r', item.category);
-  document.getElementById('recKw').value=item.keyword||'';
+  // recKw 제거됨 - 내용 기반 제목 추천
   document.getElementById('recSelTxt').textContent=item.title;
   document.getElementById('recSelBox').classList.add('on');
   // 폼 필드 자동 입력
@@ -1793,7 +1793,7 @@ function closeRecForm(){document.getElementById('recFormArea').style.display='no
 
 async function genRecTitles(){
   if (!recSelItem) return;
-  const kw = document.getElementById('recKw').value.trim();
+  const kw = '';
   const fields = FORMS[recSelItem.category]?.fields || [];
   const inputSummary = fields.map(f => {
     const v = gv(f.id, 'r');
