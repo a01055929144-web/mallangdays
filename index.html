@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1783327088">
+<meta name="version" content="1783327191">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -889,7 +889,19 @@ function buildPrompt() {
   // 먹고기록/놀고기록은 블로그 초안 상단에 SEO 제목 후보 포함 요청
   const needTitle = (catName==='먹고기록'||catName==='놀고기록') && !selTitle;
   const titleReq = needTitle ? '\n\n블로그 제목 후보 3개를 [TITLE] 섹션에 먼저 작성해줘. 형식:\n[TITLE]\n1. 제목1\n2. 제목2\n3. 제목3' : '';
-  return `카테고리: ${catName} (${catType})${tp}${kp}\n${info}${pp}${fp}${titleReq}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그${files.length?'\n\n[PHOTO]\n사진 배치 안내':''}`;
+  // 육아용품: 구매유형 별도 강조
+  let purchaseNote = '';
+  if (catName === '육아용품') {
+    const spVal = gv('sp');
+    const spGuide = {
+      '내돈내산': '직접 구매한 제품. 도입: "솔직히 살까 말까 고민 많이 했어요 😅"',
+      '협찬·제공': '제공받은 제품. 도입: "제품을 제공받아 솔직하게 후기를 적어볼게요." 투명하게 밝힐 것.',
+      '선물받음': '선물받은 제품. 도입: "지인분이 선물해줘서 써봤는데요." 절대 "살까 말까 고민" 표현 사용 금지.',
+      '당근마켓': '중고로 구매한 제품. 도입: "당근에서 득템했어요 😄" 중고구매 장점·상태 확인 포인트 포함.',
+    };
+    purchaseNote = spVal && spGuide[spVal] ? `\n\n[구매 유형 필수 반영] ${spGuide[spVal]}` : '';
+  }
+  return `카테고리: ${catName} (${catType})${tp}${kp}\n${info}${pp}${fp}${purchaseNote}${titleReq}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그${files.length?'\n\n[PHOTO]\n사진 배치 안내':''}`;
 }
 
 // ======= Claude 호출 =======
