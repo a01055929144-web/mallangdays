@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1783307678">
+<meta name="version" content="1783307807">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -212,8 +212,9 @@ input[type="file"]{display:none;}
           </div>
           <div id="recHintBox" class="hint-box" style="display:none;"></div>
           <div class="seo">
-            <div class="seot">🔍 SEO 제목</div>
-            <div class="seo-r"><input class="fi" id="recKw" placeholder="키워드"><button class="seo-b" onclick="genRecTitles()">추천</button></div>
+            <div class="seot">🔍 SEO 제목 추천 <span style="font-size:10px;font-weight:400;color:#5A8AD4;">내용 입력 후 자동 분석</span></div>
+            <button class="seo-b" onclick="genRecTitles()" style="width:100%;margin-bottom:5px;">✨ 제목 추천받기</button>
+            <div class="seo-h">내용 입력 후 탭하면 SEO+CTR 최적화 제목 3개를 추천해드려요</div>
             <div class="seo-opts" id="recOpts" style="display:none;"></div>
             <div class="sel-box" id="recSelBox">선택: <span id="recSelTxt"></span></div>
           </div>
@@ -768,8 +769,8 @@ function selCat(btn) {
   document.getElementById('oaEl').classList.remove('on');
   document.getElementById('ldEl').classList.remove('on');
   document.getElementById('fmTitle').textContent=catName;
-  document.getElementById('seoKw').value='';
-  document.getElementById('seoOpts').style.display='none'; document.getElementById('seoOpts').innerHTML='';
+  document.getElementById('seoOpts').style.display='none';
+  document.getElementById('seoOpts').innerHTML='';
   document.getElementById('selBox').classList.remove('on');
   document.getElementById('placeBox').style.display=(catName==='먹고기록'||catName==='놀고기록')?'block':'none';
   document.getElementById('placeResult').innerHTML=''; document.getElementById('placeOk').classList.remove('on');
@@ -1332,7 +1333,7 @@ async function generateFromRec(){
   catName=cat;
   catType='정보형';
   selTitle=recSelTitle||recSelItem.title||'';
-  const kw=document.getElementById('recKw').value.trim();
+  const kw='';
   const fields=FORMS[cat]?.fields||[];
   const info=fields.map(f=>{const v=gv(f.id,'r');return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const ctx=`\n\n[추천 맥락]\n주제: ${recSelItem.title}\n방향: ${recSelItem.desc||''}\n도입문: "${recSelItem.hook||''}"\n키워드: ${recSelItem.keyword||''}`;
@@ -1842,7 +1843,7 @@ async function generateFromRec(){
   catName=cat;
   catType='정보형';
   selTitle=recSelTitle||recSelItem.title||'';
-  const kw=document.getElementById('recKw').value.trim();
+  const kw='';
   const fields=FORMS[cat]?.fields||[];
   const info=fields.map(f=>{const v=gv(f.id,'r');return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const ctx=`\n\n[추천 맥락]\n주제: ${recSelItem.title}\n방향: ${recSelItem.desc||''}\n도입문: "${recSelItem.hook||''}"\n키워드: ${recSelItem.keyword||''}`;
