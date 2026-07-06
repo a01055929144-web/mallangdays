@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1783307827">
+<meta name="version" content="1783307982">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -245,11 +245,8 @@ input[type="file"]{display:none;}
       <div class="card" id="fmCard" style="display:none;">
         <div class="ct">✏️ <span id="fmTitle">내용 입력</span></div>
         <div class="seo">
-          <div class="seot">🔍 SEO 제목 추천 <span style="font-size:10px;font-weight:400;color:#5A8AD4;">내용 입력 후 자동 분석</span></div>
-          <div style="display:flex;gap:6px;margin-bottom:5px;">
-            <button class="seo-b" onclick="genTitles()" style="flex:1;">✨ 제목 추천받기</button>
-          </div>
-          <div class="seo-h">내용을 입력한 뒤 탭하면 SEO+CTR 최적화 제목 3개를 추천해드려요</div>
+          <div class="seot">🔍 SEO 제목</div>
+          <div class="seo-h">초안 생성 시 자동으로 제목 3개가 추천돼요. 탭해서 선택하면 돼요!</div>
           <div class="seo-opts" id="seoOpts" style="display:none;"></div>
           <div class="sel-box" id="selBox">선택된 제목: <span id="selTxt"></span></div>
         </div>
@@ -705,6 +702,11 @@ const SP = `말랑데이즈 블로그 전담 작가. 운영자: 말랑파파(아
 인스타 고정 해시태그 (항상 포함): #말랑데이즈 #말랑파파
 
 [출력형식]
+[TITLE]
+1. [SEO 최적화 제목] - SEO 높음
+2. [CTR 최적화 제목] - CTR 높음
+3. [균형잡힌 제목] ⭐추천
+
 [BLOG]
 (완성형 블로그글)
 네이버태그: #말랑데이즈 #말랑파파 #말랑맘 #말랑이 #카테고리태그들 (합계 20~30개)
@@ -1017,25 +1019,48 @@ function parseNormal(txt) {
   const blogClean = cleanDraft(blog);
   // 인스타에서 --- 이후 Claude 안내메시지 제거
   const instaClean = cleanInsta(insta);
-  // [TITLE] 섹션에서 제목 후보 추출
+  // [TITLE] 섹션 파싱
   let titleCandidates = [];
   if (txt.includes('[TITLE]')) {
     const titleSec = secTxt(txt,'TITLE','BLOG');
-    titleCandidates = titleSec.split('\n').map(l=>l.replace(/^\d+\.\s*/,'').trim()).filter(t=>t.length>2);
+    titleCandidates = titleSec.split('\n')
+      .filter(l=>l.trim())
+      .map(line => {
+        const clean = line.replace(/^\d+\.\s*/,'').trim();
+        const bracketMatch = clean.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
+        const dashMatch = clean.match(/^(.+?)\s*[-–]\s*(.+)$/);
+        const isRec = clean.includes('⭐') || clean.includes('추천');
+        if (bracketMatch) return {title: bracketMatch[1].trim(), label: bracketMatch[2].trim(), rec: isRec};
+        if (dashMatch) return {title: dashMatch[1].trim(), label: dashMatch[2].trim(), rec: isRec};
+        return {title: clean.replace('⭐','').trim(), label:'', rec: isRec};
+      })
+      .filter(p => p.title && p.title.length > 2)
+      .slice(0, 3);
   }
+
   document.getElementById('blogTxt').textContent=blogClean;
   document.getElementById('instaTxt').textContent=instaClean;
-  // 제목 표시
+
+  // 제목 카드 UI 표시
   const titleEl = document.getElementById('titleTxt');
   if (titleEl) {
     if (titleCandidates.length > 0) {
-      // 제목 후보 선택 UI
-      titleEl.innerHTML = titleCandidates.map((t,i)=>
-        `<div onclick="pickBlogTitle(this,'${t.replace(/'/g,"&#39;")}')" style="padding:8px 12px;margin-bottom:5px;border:1.5px solid var(--bd);border-radius:var(--rs);cursor:pointer;font-size:13px;touch-action:manipulation;" class="title-opt">${i+1}. ${t}</div>`
-      ).join('') + '<div style="font-size:11px;color:var(--ht);margin-top:4px;">제목을 탭해서 선택하세요</div>';
+      titleEl.innerHTML = titleCandidates.map(p => `
+        <div onclick="pickBlogTitle(this,'${p.title.replace(/'/g,"&#39;")}')"
+          class="title-opt"
+          style="padding:10px 12px;margin-bottom:6px;border:1.5px solid ${p.rec?'var(--ac)':'var(--bd)'};border-radius:var(--rs);cursor:pointer;touch-action:manipulation;background:${p.rec?'var(--al)':'var(--sf)'};">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <span style="font-size:13px;font-weight:${p.rec?'600':'400'};color:var(--tx);text-align:left;line-height:1.4;">${p.title}</span>
+            ${p.rec
+              ? '<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 8px;border-radius:10px;flex-shrink:0;white-space:nowrap;">⭐ 추천</span>'
+              : p.label ? `<span style="font-size:10px;color:var(--ht);flex-shrink:0;white-space:nowrap;">${p.label}</span>` : ''}
+          </div>
+        </div>`).join('') +
+        '<div style="font-size:11px;color:var(--ht);margin-top:2px;">제목을 탭해서 선택하세요</div>';
     } else {
-      const curTitle = selTitle || (FORMS[catName]?.fields[0] ? gv(FORMS[catName].fields[0].id) ? `${catName} - ${gv(FORMS[catName].fields[0].id)}` : catName : catName);
-      titleEl.textContent = curTitle;
+      // TITLE 없으면 기존 방식
+      const rawTitle = selTitle || (FORMS[catName]?.fields[0] ? gv(FORMS[catName].fields[0].id) ? `${catName} - ${gv(FORMS[catName].fields[0].id)}` : catName : catName);
+      titleEl.textContent = rawTitle.trim() || catName;
     }
   }
   if(photo&&files.length>0){
@@ -1527,25 +1552,48 @@ function parseNormal(txt) {
   const blogClean = cleanDraft(blog);
   // 인스타에서 --- 이후 Claude 안내메시지 제거
   const instaClean = cleanInsta(insta);
-  // [TITLE] 섹션에서 제목 후보 추출
+  // [TITLE] 섹션 파싱
   let titleCandidates = [];
   if (txt.includes('[TITLE]')) {
     const titleSec = secTxt(txt,'TITLE','BLOG');
-    titleCandidates = titleSec.split('\n').map(l=>l.replace(/^\d+\.\s*/,'').trim()).filter(t=>t.length>2);
+    titleCandidates = titleSec.split('\n')
+      .filter(l=>l.trim())
+      .map(line => {
+        const clean = line.replace(/^\d+\.\s*/,'').trim();
+        const bracketMatch = clean.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
+        const dashMatch = clean.match(/^(.+?)\s*[-–]\s*(.+)$/);
+        const isRec = clean.includes('⭐') || clean.includes('추천');
+        if (bracketMatch) return {title: bracketMatch[1].trim(), label: bracketMatch[2].trim(), rec: isRec};
+        if (dashMatch) return {title: dashMatch[1].trim(), label: dashMatch[2].trim(), rec: isRec};
+        return {title: clean.replace('⭐','').trim(), label:'', rec: isRec};
+      })
+      .filter(p => p.title && p.title.length > 2)
+      .slice(0, 3);
   }
+
   document.getElementById('blogTxt').textContent=blogClean;
   document.getElementById('instaTxt').textContent=instaClean;
-  // 제목 표시
+
+  // 제목 카드 UI 표시
   const titleEl = document.getElementById('titleTxt');
   if (titleEl) {
     if (titleCandidates.length > 0) {
-      // 제목 후보 선택 UI
-      titleEl.innerHTML = titleCandidates.map((t,i)=>
-        `<div onclick="pickBlogTitle(this,'${t.replace(/'/g,"&#39;")}')" style="padding:8px 12px;margin-bottom:5px;border:1.5px solid var(--bd);border-radius:var(--rs);cursor:pointer;font-size:13px;touch-action:manipulation;" class="title-opt">${i+1}. ${t}</div>`
-      ).join('') + '<div style="font-size:11px;color:var(--ht);margin-top:4px;">제목을 탭해서 선택하세요</div>';
+      titleEl.innerHTML = titleCandidates.map(p => `
+        <div onclick="pickBlogTitle(this,'${p.title.replace(/'/g,"&#39;")}')"
+          class="title-opt"
+          style="padding:10px 12px;margin-bottom:6px;border:1.5px solid ${p.rec?'var(--ac)':'var(--bd)'};border-radius:var(--rs);cursor:pointer;touch-action:manipulation;background:${p.rec?'var(--al)':'var(--sf)'};">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <span style="font-size:13px;font-weight:${p.rec?'600':'400'};color:var(--tx);text-align:left;line-height:1.4;">${p.title}</span>
+            ${p.rec
+              ? '<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 8px;border-radius:10px;flex-shrink:0;white-space:nowrap;">⭐ 추천</span>'
+              : p.label ? `<span style="font-size:10px;color:var(--ht);flex-shrink:0;white-space:nowrap;">${p.label}</span>` : ''}
+          </div>
+        </div>`).join('') +
+        '<div style="font-size:11px;color:var(--ht);margin-top:2px;">제목을 탭해서 선택하세요</div>';
     } else {
-      const curTitle = selTitle || (FORMS[catName]?.fields[0] ? gv(FORMS[catName].fields[0].id) ? `${catName} - ${gv(FORMS[catName].fields[0].id)}` : catName : catName);
-      titleEl.textContent = curTitle;
+      // TITLE 없으면 기존 방식
+      const rawTitle = selTitle || (FORMS[catName]?.fields[0] ? gv(FORMS[catName].fields[0].id) ? `${catName} - ${gv(FORMS[catName].fields[0].id)}` : catName : catName);
+      titleEl.textContent = rawTitle.trim() || catName;
     }
   }
   if(photo&&files.length>0){
