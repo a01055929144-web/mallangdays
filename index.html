@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1783307982">
+<meta name="version" content="1783325586">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -212,9 +212,8 @@ input[type="file"]{display:none;}
           </div>
           <div id="recHintBox" class="hint-box" style="display:none;"></div>
           <div class="seo">
-            <div class="seot">🔍 SEO 제목 추천 <span style="font-size:10px;font-weight:400;color:#5A8AD4;">내용 입력 후 자동 분석</span></div>
-            <button class="seo-b" onclick="genRecTitles()" style="width:100%;margin-bottom:5px;">✨ 제목 추천받기</button>
-            <div class="seo-h">내용 입력 후 탭하면 SEO+CTR 최적화 제목 3개를 추천해드려요</div>
+            <div class="seot">🔍 SEO 제목</div>
+            <div class="seo-r"><input class="fi" id="recKw" placeholder="키워드"><button class="seo-b" onclick="genRecTitles()">추천</button></div>
             <div class="seo-opts" id="recOpts" style="display:none;"></div>
             <div class="sel-box" id="recSelBox">선택: <span id="recSelTxt"></span></div>
           </div>
@@ -245,8 +244,8 @@ input[type="file"]{display:none;}
       <div class="card" id="fmCard" style="display:none;">
         <div class="ct">✏️ <span id="fmTitle">내용 입력</span></div>
         <div class="seo">
-          <div class="seot">🔍 SEO 제목</div>
-          <div class="seo-h">초안 생성 시 자동으로 제목 3개가 추천돼요. 탭해서 선택하면 돼요!</div>
+          <div class="seot">🔍 SEO 제목 <span style="font-size:10px;font-weight:400;color:#5A8AD4;">초안 생성 시 자동 추천</span></div>
+          <div class="seo-h">✨ 초안 생성하면 SEO+CTR 최적화 제목 3개가 자동으로 나와요!</div>
           <div class="seo-opts" id="seoOpts" style="display:none;"></div>
           <div class="sel-box" id="selBox">선택된 제목: <span id="selTxt"></span></div>
         </div>
@@ -735,20 +734,7 @@ function getSP(catName) {
   return extra ? base + '\n\n[' + catName + ' 전용]\n' + extra : base;
 }
 
-const SP_T = `네이버 블로그 SEO+CTR 전문가. 입력된 글 내용을 분석해서 검색 최적화 제목 3개 추천.
-
-제목 작성 원칙:
-- 실제 검색자가 검색할 키워드 포함 (검색량 높은 단어 우선)
-- 클릭률(CTR) 높이는 표현: 숫자, 후기, 솔직, 총정리, 실제, 추천 등
-- 20자 내외 (너무 길면 검색 결과에서 잘림)
-- 말랑파파 브랜드 느낌 유지
-
-출력 형식 (정확히 준수):
-1. [제목1] - SEO점수 높음
-2. [제목2] - CTR점수 높음  
-3. [제목3] ⭐추천 - SEO+CTR 균형
-
-번호와 레이블 포함해서 3줄만 출력.`;
+const SP_T = `네이버 블로그 SEO 제목 3개. 20자 내외. 번호없이 제목만 3줄 출력.`;
 
 const FORMS = {
   임신기록:{fields:[{id:'week',lb:'임신 주차',ph:'예) 34주'},{id:'baby',lb:'이번 주 말랑이',ta:1,ph:'태동, 태아 변화'},{id:'mom',lb:'이번 주 말랑맘',ta:1,ph:'몸 변화, 감정'},{id:'couple',lb:'이번 주 우리 부부',ta:1,ph:'준비한 것, 나눈 대화'},{id:'letter',lb:'말랑이에게 한마디',ph:'예) 곧 만나자'}]},
@@ -771,8 +757,8 @@ function selCat(btn) {
   document.getElementById('oaEl').classList.remove('on');
   document.getElementById('ldEl').classList.remove('on');
   document.getElementById('fmTitle').textContent=catName;
-  document.getElementById('seoOpts').style.display='none';
-  document.getElementById('seoOpts').innerHTML='';
+  document.getElementById('seoKw').value='';
+  document.getElementById('seoOpts').style.display='none'; document.getElementById('seoOpts').innerHTML='';
   document.getElementById('selBox').classList.remove('on');
   document.getElementById('placeBox').style.display=(catName==='먹고기록'||catName==='놀고기록')?'block':'none';
   document.getElementById('placeResult').innerHTML=''; document.getElementById('placeOk').classList.remove('on');
@@ -794,120 +780,82 @@ function gv(id, prefix='f') { const el=document.getElementById(`${prefix}_${id}`
 
 // ======= SEO 제목 =======
 async function genTitles() {
-  if (!catName) { toast('카테고리를 먼저 선택해주세요'); return; }
-  // 입력 내용 수집
-  const fields = FORMS[catName]?.fields || [];
-  const inputSummary = fields.map(f => {
-    const v = gv(f.id);
-    return v ? `${f.lb}: ${v}` : null;
-  }).filter(Boolean).join('\n');
-  if (!inputSummary.trim()) { toast('내용을 먼저 입력해주세요'); return; }
-
-  const btn = document.querySelector('.seo-b');
-  btn.disabled = true; btn.textContent = '분석 중...';
-  const opts = document.getElementById('seoOpts');
-  opts.style.display = 'flex'; opts.innerHTML = '<div style="color:var(--ht);font-size:12px;padding:8px;">⏳ 입력 내용 분석 중...</div>';
-
+  const kw=document.getElementById('seoKw').value.trim();
+  if(!kw||!catName){toast(kw?'카테고리를 먼저 선택해주세요':'키워드를 입력해주세요');return;}
+  const btn=document.querySelector('.seo-b'); btn.disabled=true; btn.textContent='생성 중...';
+  const opts=document.getElementById('seoOpts'); opts.style.display='flex'; opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
   try {
-    const prompt = `카테고리: ${catName}\n\n[입력 내용]\n${inputSummary}\n\n위 내용을 기반으로 네이버 블로그 SEO+CTR 최적화 제목 3개 추천.`;
-    const d = await callClaude(SP_T, prompt, 200);
-    const raw = d.content?.[0]?.text || '';
-
-    // "1. 제목 - 레이블" 형식 파싱
-    const lines = raw.split('\n').filter(l => l.trim());
-    const parsed = lines.map(line => {
-      const clean = line.replace(/^\d+\.\s*/, '').trim();
-      // [제목] - 레이블 또는 제목 - 레이블 형식
-      const bracketMatch = clean.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
-      const dashMatch = clean.match(/^(.+?)\s*[-–]\s*(.+)$/);
-      const isRec = clean.includes('⭐') || clean.includes('추천') || clean.includes('균형');
-      if (bracketMatch) return { title: bracketMatch[1].trim(), label: bracketMatch[2].trim(), rec: isRec };
-      if (dashMatch) return { title: dashMatch[1].trim(), label: dashMatch[2].trim(), rec: isRec };
-      return { title: clean.replace('⭐','').trim(), label: '', rec: isRec };
-    }).filter(p => p.title && p.title.length > 2).slice(0, 3);
-
-    if (!parsed.length) throw new Error('제목을 파싱할 수 없어요');
-
-    opts.innerHTML = parsed.map(p => `
-      <button class="seo-opt${p.rec?' rec-star':''}" onclick="pickTitle(this,'${p.title.replace(/'/g,"&#39;")}')"
-        style="${p.rec ? 'border-color:var(--ac);background:var(--al);' : ''}">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span style="font-size:13px;font-weight:${p.rec?'600':'400'};text-align:left;">${p.title}</span>
-          ${p.rec ? '<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 7px;border-radius:10px;flex-shrink:0;">⭐ 추천</span>' :
-            p.label ? `<span style="font-size:10px;color:var(--ht);flex-shrink:0;">${p.label}</span>` : ''}
-        </div>
-      </button>`).join('');
-  } catch(e) {
-    opts.innerHTML = `<div style="color:#C62828;font-size:12px;padding:6px;">❌ ${e.message}</div>`;
-  } finally {
-    btn.disabled = false; btn.textContent = '✨ 제목 추천받기';
-  }
+    const d=await callClaude(SP_T,`카테고리: ${catName}\n키워드: ${kw}\n제목 3개만.`,150);
+    const titles=(d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
+    opts.innerHTML=titles.map(t=>`<button class="seo-opt" onclick="pickTitle(this,'${t.replace(/'/g,"&#39;")}')">${t}</button>`).join('');
+  } catch(e){opts.innerHTML=`<div style="color:#C62828;font-size:12px;padding:6px;">❌ ${e.message}</div>`;}
+  finally{btn.disabled=false;btn.textContent='제목 추천';}
 }
 function pickTitle(el,t){document.querySelectorAll('.seo-opt').forEach(b=>b.classList.remove('on'));el.classList.add('on');selTitle=t;document.getElementById('selTxt').textContent=t;document.getElementById('selBox').classList.add('on');toast('제목 선택됐어요 ✓');}
 
 // ======= 매장검색 =======
 async function searchPlace() {
-  const q = document.getElementById('placeKw').value.trim();
-  if (!q) { toast('매장명을 입력해주세요'); return; }
-  const pr = document.getElementById('placeResult');
-  pr.innerHTML = '<div style="color:var(--ht);font-size:12px;padding:8px;">🔍 1단계: 자동 검색 중...</div>';
-
-  // ============ 1단계: Claude 웹검색 ============
+  const q=document.getElementById('placeKw').value.trim();
+  if(!q){toast('매장명을 입력해주세요');return;}
+  const pr=document.getElementById('placeResult');
+  pr.innerHTML='<div style="color:var(--ht);font-size:12px;padding:8px;">🔍 1단계: 자동 검색 중...</div>';
   try {
-    const d = await callClaude(
-      '매장/장소 정보 웹검색. 후보 최대 3개를 JSON 배열로만 출력. 다른 설명 없이 JSON만. 형식: [{"name":"","address":"","hours":"","parking":"","phone":"","price":""}]',
-      `"${q}" 장소 정보 검색. 정확한 정보만. 확실하지 않은 정보는 빈값으로.`,
-      400, true
-    );
-    const txt = d.content?.filter(b=>b.type==='text').map(b=>b.text).join('') || '';
-    const arrMatch = txt.match(/\[[\s\S]*\]/);
-    const objMatch = txt.match(/\{[\s\S]*\}/);
-    let places = [];
-    if (arrMatch) { try { places = JSON.parse(arrMatch[0]); } catch(e) {} }
-    if (!places.length && objMatch) { try { places = [JSON.parse(objMatch[0])]; } catch(e) {} }
-    // 이름이 있는 결과만
-    places = places.filter(p => p.name && p.name.trim());
-
-    if (places.length > 0) {
-      window._places = places;
-      pr.innerHTML = `
-        <div style="font-size:11px;color:var(--ht);margin-bottom:6px;">✅ 자동 검색 결과 — 틀리면 2단계·3단계 이용</div>
-        ${places.map((p,i) => `
-          <div onclick="selectPlace(${i})" style="padding:10px;border:1px solid var(--bd);border-radius:var(--rs);cursor:pointer;margin-bottom:6px;touch-action:manipulation;" id="place_${i}">
-            <div style="font-size:13px;font-weight:600;">🏪 ${p.name}</div>
-            <div style="font-size:11px;color:var(--sb);margin-top:2px;">📍 ${p.address||'주소 미확인'}</div>
-            <div style="font-size:11px;color:var(--sb);">🕐 ${p.hours||'-'} | 🅿️ ${p.parking||'-'}</div>
-            ${p.phone ? `<div style="font-size:11px;color:var(--sb);">📞 ${p.phone}</div>` : ''}
-            ${p.price ? `<div style="font-size:11px;color:var(--sb);">💰 ${p.price}</div>` : ''}
-            <div style="font-size:11px;color:var(--ac);font-weight:600;margin-top:4px;">탭해서 선택 →</div>
-          </div>`).join('')}
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <button onclick="naverMapSearch()" style="flex:1;padding:8px;background:var(--gl);color:var(--gr);border:none;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation;">🗺️ 2단계: 네이버 지도로 확인</button>
-          <button onclick="manualPlace()" style="flex:1;padding:8px;background:var(--bg);color:var(--ht);border:1px solid var(--bd);border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation;">✏️ 3단계: 직접 입력</button>
-        </div>`;
+    const d=await callClaude('매장/장소 정보 웹검색. 후보 최대 3개를 JSON 배열로만 출력. 형식: [{"name":"","address":"","hours":"","parking":"","phone":"","price":""}]',`"${q}" 정보. 확실하지 않으면 빈값.`,400,true);
+    const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('')||'';
+    let places=[];
+    const am=txt.match(/\[[\s\S]*\]/); const om=txt.match(/\{[\s\S]*\}/);
+    if(am){try{places=JSON.parse(am[0]);}catch(e){}}
+    if(!places.length&&om){try{places=[JSON.parse(om[0])];}catch(e){}}
+    places=places.filter(p=>p.name&&p.name.trim());
+    if(places.length>0){
+      window._places=places;
+      pr.innerHTML='<div style="font-size:11px;color:var(--ht);margin-bottom:6px;">✅ 자동 검색 — 틀리면 아래 이용</div>'+
+        places.map((p,i)=>`<div onclick="selectPlace(${i})" style="padding:10px;border:1px solid var(--bd);border-radius:var(--rs);cursor:pointer;margin-bottom:6px;touch-action:manipulation;"><div style="font-size:13px;font-weight:600;">🏪 ${p.name}</div><div style="font-size:11px;color:var(--sb);">📍 ${p.address||'미확인'} | 🕐 ${p.hours||'-'}</div>${p.phone?`<div style="font-size:11px;color:var(--sb);">📞 ${p.phone}</div>`:''}<div style="font-size:11px;color:var(--ac);font-weight:600;margin-top:3px;">탭해서 선택 →</div></div>`).join('')+
+        '<div style="display:flex;gap:6px;margin-top:4px;"><button onclick="naverMapSearch()" style="flex:1;padding:8px;background:var(--gl);color:var(--gr);border:none;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;">🗺️ 네이버 지도</button><button onclick="manualPlace()" style="flex:1;padding:8px;background:var(--bg);color:var(--ht);border:1px solid var(--bd);border-radius:var(--rs);font-size:12px;cursor:pointer;">✏️ 직접 입력</button></div>';
       return;
     }
-  } catch(e) { console.log('1단계 실패:', e.message); }
-
-  // ============ 2단계: 자동검색 실패 시 ============
-  pr.innerHTML = `
-    <div style="font-size:12px;color:var(--sb);margin-bottom:8px;">⚠️ 자동 검색 결과가 없어요. 아래 방법을 이용해주세요.</div>
-    <button onclick="naverMapSearch()" style="width:100%;padding:12px;background:var(--gl);color:var(--gr);border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation;margin-bottom:6px;">🗺️ 2단계: 네이버 지도에서 검색하기</button>
-    <button onclick="manualPlace()" style="width:100%;padding:12px;background:var(--bg);color:var(--ht);border:1px solid var(--bd);border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation;">✏️ 3단계: 정보 직접 입력하기</button>`;
+  }catch(e){console.log('검색실패:',e.message);}
+  pr.innerHTML='<div style="font-size:12px;color:var(--sb);margin-bottom:8px;">⚠️ 자동 검색 결과 없음</div><button onclick="naverMapSearch()" style="width:100%;padding:11px;background:var(--gl);color:var(--gr);border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;">🗺️ 2단계: 네이버 지도 검색</button><button onclick="manualPlace()" style="width:100%;padding:11px;background:var(--bg);color:var(--ht);border:1px solid var(--bd);border-radius:var(--rs);font-size:13px;cursor:pointer;">✏️ 3단계: 직접 입력</button>';
 }
 
-function naverMapSearch() {
+function naverMapSearch(){
+  const q=document.getElementById('placeKw').value.trim();
+  window.open(`https://map.naver.com/v5/search/${encodeURIComponent(q)}`,'_blank');
+  setTimeout(()=>manualPlace(),300);
+}
+
+function manualPlace(){
+  const q=document.getElementById('placeKw').value.trim();
+  const pr=document.getElementById('placeResult');
+  const ex=pr.querySelector('.manual-form');
+  if(ex){ex.style.display='block';return;}
+  const div=document.createElement('div');
+  div.className='manual-form';
+  div.style.cssText='margin-top:8px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rs);padding:12px;';
+  div.innerHTML=`<div style="font-size:12px;font-weight:600;color:var(--sb);margin-bottom:8px;">✏️ 직접 입력 (네이버 지도에서 복붙)</div>
+    <input class="fi" placeholder="매장명" id="mp_name" value="${q}" style="margin-bottom:5px;">
+    <input class="fi" placeholder="주소" id="mp_addr" style="margin-bottom:5px;">
+    <input class="fi" placeholder="영업시간" id="mp_hours" style="margin-bottom:5px;">
+    <input class="fi" placeholder="주차" id="mp_park" style="margin-bottom:5px;">
+    <input class="fi" placeholder="전화번호" id="mp_phone" style="margin-bottom:5px;">
+    <input class="fi" placeholder="가격대" id="mp_price" style="margin-bottom:10px;">
+    <button class="gen" onclick="confirmManualPlace()" style="padding:11px;">✓ 이 정보로 사용</button>`;
+  pr.appendChild(div);
+  div.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function confirmManualPlace() {
   const q = document.getElementById('placeKw').value.trim();
-  const url = `https://map.naver.com/v5/search/${encodeURIComponent(q)}`;
-  window.open(url, '_blank');
-  // 직접입력 폼도 바로 표시
-  const pr = document.getElementById('placeResult');
-  pr.innerHTML += `
-    <div style="margin-top:8px;font-size:11px;color:var(--ht);text-align:center;">네이버 지도에서 확인 후 아래에 직접 입력해주세요</div>`;
-  setTimeout(() => manualPlace(), 300);
+  lastPlace = {
+    name: q,
+    address: document.getElementById('mp_addr')?.value||'',
+    hours: document.getElementById('mp_hours')?.value||'',
+    parking: document.getElementById('mp_park')?.value||'',
+    phone: document.getElementById('mp_phone')?.value||'',
+    price: document.getElementById('mp_price')?.value||''
+  };
+  selectPlace(-1);
 }
-
-
 function selectPlace(idx) {
   if (idx >= 0 && window._places?.[idx]) lastPlace = window._places[idx];
   if (!lastPlace) return;
@@ -928,7 +876,7 @@ function buildPrompt() {
   const fields=FORMS[catName]?.fields||[];
   const info=fields.map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const tp=selTitle?`\n선택된 SEO 제목: ${selTitle}`:'';
-  const kp=''; // 제목은 선택된 경우만 사용
+  const kp=document.getElementById('seoKw').value.trim()?`\nSEO 키워드: ${document.getElementById('seoKw').value.trim()}`:'';
   const pp=placeInfo?`\n\n[매장 기본정보 - 블로그 상단 포함]\n${placeInfo}`:'';
   const fp=files.length?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
   if(catName==='살림재테크'){
@@ -1019,48 +967,42 @@ function parseNormal(txt) {
   const blogClean = cleanDraft(blog);
   // 인스타에서 --- 이후 Claude 안내메시지 제거
   const instaClean = cleanInsta(insta);
-  // [TITLE] 섹션 파싱
+  // [TITLE] 섹션에서 제목 후보 추출
   let titleCandidates = [];
   if (txt.includes('[TITLE]')) {
     const titleSec = secTxt(txt,'TITLE','BLOG');
-    titleCandidates = titleSec.split('\n')
-      .filter(l=>l.trim())
-      .map(line => {
-        const clean = line.replace(/^\d+\.\s*/,'').trim();
-        const bracketMatch = clean.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
-        const dashMatch = clean.match(/^(.+?)\s*[-–]\s*(.+)$/);
-        const isRec = clean.includes('⭐') || clean.includes('추천');
-        if (bracketMatch) return {title: bracketMatch[1].trim(), label: bracketMatch[2].trim(), rec: isRec};
-        if (dashMatch) return {title: dashMatch[1].trim(), label: dashMatch[2].trim(), rec: isRec};
-        return {title: clean.replace('⭐','').trim(), label:'', rec: isRec};
-      })
-      .filter(p => p.title && p.title.length > 2)
-      .slice(0, 3);
+    titleCandidates = titleSec.split('\n').map(l=>l.replace(/^\d+\.\s*/,'').trim()).filter(t=>t.length>2);
   }
-
   document.getElementById('blogTxt').textContent=blogClean;
   document.getElementById('instaTxt').textContent=instaClean;
-
-  // 제목 카드 UI 표시
+  // [TITLE] 섹션 파싱 → 제목 카드
   const titleEl = document.getElementById('titleTxt');
   if (titleEl) {
-    if (titleCandidates.length > 0) {
-      titleEl.innerHTML = titleCandidates.map(p => `
-        <div onclick="pickBlogTitle(this,'${p.title.replace(/'/g,"&#39;")}')"
-          class="title-opt"
+    let titleCards = [];
+    if (txt.includes('[TITLE]')) {
+      const tsec = secTxt(txt,'TITLE','BLOG');
+      titleCards = tsec.split('\n').filter(l=>l.trim()).map(line=>{
+        const cl=line.replace(/^\d+\.\s*/,'').trim();
+        const bm=cl.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
+        const dm=cl.match(/^(.+?)\s*[-–]\s*(.+)$/);
+        const rc=cl.includes('⭐')||cl.includes('추천');
+        if(bm)return{title:bm[1].trim(),label:bm[2].trim(),rec:rc};
+        if(dm)return{title:dm[1].trim(),label:dm[2].trim(),rec:rc};
+        return{title:cl.replace('⭐','').trim(),label:'',rec:rc};
+      }).filter(p=>p.title&&p.title.length>2).slice(0,3);
+    }
+    if(titleCards.length>0){
+      titleEl.innerHTML=titleCards.map(p=>`
+        <div onclick="pickBlogTitle(this,'${p.title.replace(/'/g,"&#39;")}')" class="title-opt"
           style="padding:10px 12px;margin-bottom:6px;border:1.5px solid ${p.rec?'var(--ac)':'var(--bd)'};border-radius:var(--rs);cursor:pointer;touch-action:manipulation;background:${p.rec?'var(--al)':'var(--sf)'};">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <span style="font-size:13px;font-weight:${p.rec?'600':'400'};color:var(--tx);text-align:left;line-height:1.4;">${p.title}</span>
-            ${p.rec
-              ? '<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 8px;border-radius:10px;flex-shrink:0;white-space:nowrap;">⭐ 추천</span>'
-              : p.label ? `<span style="font-size:10px;color:var(--ht);flex-shrink:0;white-space:nowrap;">${p.label}</span>` : ''}
+            <span style="font-size:13px;font-weight:${p.rec?'600':'400'};text-align:left;line-height:1.4;">${p.title}</span>
+            ${p.rec?'<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 8px;border-radius:10px;flex-shrink:0;white-space:nowrap;">⭐ 추천</span>':p.label?`<span style="font-size:10px;color:var(--ht);flex-shrink:0;">${p.label}</span>`:''}
           </div>
-        </div>`).join('') +
-        '<div style="font-size:11px;color:var(--ht);margin-top:2px;">제목을 탭해서 선택하세요</div>';
+        </div>`).join('')+'<div style="font-size:11px;color:var(--ht);margin-top:2px;">탭해서 선택하세요</div>';
     } else {
-      // TITLE 없으면 기존 방식
-      const rawTitle = selTitle || (FORMS[catName]?.fields[0] ? gv(FORMS[catName].fields[0].id) ? `${catName} - ${gv(FORMS[catName].fields[0].id)}` : catName : catName);
-      titleEl.textContent = rawTitle.trim() || catName;
+      const rawTitle=selTitle||(FORMS[catName]?.fields[0]?gv(FORMS[catName].fields[0].id)?`${catName} - ${gv(FORMS[catName].fields[0].id)}`:catName:catName);
+      titleEl.textContent=rawTitle.trim()||catName;
     }
   }
   if(photo&&files.length>0){
@@ -1263,7 +1205,7 @@ async function useRec(i, fromArch){
   hb.style.display='block';
   hb.innerHTML=`<div style="font-size:11px;font-weight:600;color:var(--ad);margin-bottom:4px;">💡 추천 이유</div><div style="font-size:12px;color:var(--sb);line-height:1.5;">${item.desc}</div><div style="font-size:12px;color:var(--ac);margin-top:5px;font-style:italic;">"${item.hook}"</div>`;
   buildForm('r', item.category);
-  // recKw 제거됨 - 내용 기반 제목 추천
+  document.getElementById('recKw').value=item.keyword||'';
   document.getElementById('recSelTxt').textContent=item.title;
   document.getElementById('recSelBox').classList.add('on');
   // 폼 필드 자동 입력
@@ -1307,47 +1249,15 @@ function delArch(i){recArchive.splice(i,1);localStorage.setItem('rec_archive',JS
 function closeRecForm(){document.getElementById('recFormArea').style.display='none';recSelItem=null;recSelTitle='';}
 
 async function genRecTitles(){
-  if (!recSelItem) return;
-  const kw = '';
-  const fields = FORMS[recSelItem.category]?.fields || [];
-  const inputSummary = fields.map(f => {
-    const v = gv(f.id, 'r');
-    return v ? `${f.lb}: ${v}` : null;
-  }).filter(Boolean).join('\n');
-  const context = inputSummary || (kw ? `키워드: ${kw}` : `카테고리: ${recSelItem.category}, 주제: ${recSelItem.title}`);
-
-  const btn=document.querySelector('#recFormArea .seo-b');
-  btn.disabled=true; btn.textContent='분석 중...';
-  const opts=document.getElementById('recOpts');
-  opts.style.display='flex'; opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
-  try {
-    const d=await callClaude(SP_T,`카테고리: ${recSelItem.category}\n\n[내용]\n${context}\n\nSEO+CTR 최적화 제목 3개 추천.`,200);
-    const raw = d.content?.[0]?.text || '';
-    const lines = raw.split('\n').filter(l=>l.trim());
-    const parsed = lines.map(line => {
-      const clean = line.replace(/^\d+\.\s*/,'').trim();
-      const bracketMatch = clean.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
-      const dashMatch = clean.match(/^(.+?)\s*[-–]\s*(.+)$/);
-      const isRec = clean.includes('⭐') || clean.includes('추천') || clean.includes('균형');
-      if (bracketMatch) return {title:bracketMatch[1].trim(), label:bracketMatch[2].trim(), rec:isRec};
-      if (dashMatch) return {title:dashMatch[1].trim(), label:dashMatch[2].trim(), rec:isRec};
-      return {title:clean.replace('⭐','').trim(), label:'', rec:isRec};
-    }).filter(p=>p.title&&p.title.length>2).slice(0,3);
-
-    opts.innerHTML = parsed.map(p=>`
-      <button class="seo-opt" onclick="pickRecTitle(this,'${p.title.replace(/'/g,"&#39;")}')"
-        style="${p.rec?'border-color:var(--ac);background:var(--al);':''}">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span style="font-size:13px;font-weight:${p.rec?'600':'400'};text-align:left;">${p.title}</span>
-          ${p.rec?'<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 7px;border-radius:10px;flex-shrink:0;">⭐ 추천</span>':
-            p.label?`<span style="font-size:10px;color:var(--ht);flex-shrink:0;">${p.label}</span>`:''}
-        </div>
-      </button>`).join('');
-  } catch(e) {
-    opts.innerHTML=`<div style="color:#C62828;font-size:12px;">❌ ${e.message}</div>`;
-  } finally {
-    btn.disabled=false; btn.textContent='추천';
-  }
+  const kw=document.getElementById('recKw').value.trim(); if(!kw||!recSelItem)return;
+  const btn=document.querySelector('#recFormArea .seo-b'); btn.disabled=true;btn.textContent='생성 중...';
+  const opts=document.getElementById('recOpts'); opts.style.display='flex';opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
+  try{
+    const d=await callClaude(SP_T,`카테고리: ${recSelItem.category}\n키워드: ${kw}\n제목 3개만.`,300);
+    const titles=(d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
+    opts.innerHTML=titles.map(t=>`<button class="seo-opt" onclick="pickRecTitle(this,'${t.replace(/'/g,"&#39;")}')">${t}</button>`).join('');
+  }catch(e){opts.innerHTML=`<div style="color:#C62828;font-size:12px;">❌</div>`;}
+  finally{btn.disabled=false;btn.textContent='추천';}
 }
 function pickRecTitle(el,t){document.querySelectorAll('#recOpts .seo-opt').forEach(b=>b.classList.remove('on'));el.classList.add('on');recSelTitle=t;document.getElementById('recSelTxt').textContent=t;document.getElementById('recSelBox').classList.add('on');toast('제목 선택됐어요 ✓');}
 
@@ -1358,540 +1268,7 @@ async function generateFromRec(){
   catName=cat;
   catType='정보형';
   selTitle=recSelTitle||recSelItem.title||'';
-  const kw='';
-  const fields=FORMS[cat]?.fields||[];
-  const info=fields.map(f=>{const v=gv(f.id,'r');return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
-  const ctx=`\n\n[추천 맥락]\n주제: ${recSelItem.title}\n방향: ${recSelItem.desc||''}\n도입문: "${recSelItem.hook||''}"\n키워드: ${recSelItem.keyword||''}`;
-  const pCtx=(persona.preg||persona.daily)?`\n\n[말랑파파 현재 상황]\n${persona.preg?'임신/출산: '+persona.preg+'\n':''}${persona.daily?'요즘 일상: '+persona.daily:''}`:'' ;
-  const prompt=`카테고리: ${cat}\n${selTitle?'선택된 SEO 제목: '+selTitle:''}\n${kw?'SEO 키워드: '+kw:''}\n${info}${ctx}${pCtx}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그`;
-  showPg('write');
-  document.getElementById('fmCard').style.display='none';
-  document.getElementById('oaEl').classList.remove('on');
-  document.getElementById('ldEl').classList.add('on');
-  const steps=['분석 중','SEO 최적화 중','초안 작성 중','마무리 중'];
-  let si=0;const iv=setInterval(()=>{si=(si+1)%steps.length;document.getElementById('ldStep').textContent=steps[si];},1600);
-  try{
-    const d=await callClaude(getSP(recSelItem?.category||catName),prompt,4000);
-    const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'';
-    if(!txt)throw new Error('응답이 비어있어요');
-    parseNormal(txt);
-  }catch(e){
-    toast('오류: '+(e.message||'다시 시도해주세요'));
-  }finally{
-    clearInterval(iv);
-    document.getElementById('ldEl').classList.remove('on');
-  }
-}
-
-// ======= API 상태 =======
-async function checkApi(){
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/models',{headers:{'x-api-key':AK,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
-    const el=document.getElementById('apiBg');
-    if(r.ok){el.textContent='💳 API 활성';el.style.background='#EDF4EE';el.style.color='#2E7D32';}
-    else{el.textContent='💳 크레딧 부족';el.style.background='#FEECEC';el.style.color='#C62828';}
-  }catch(e){document.getElementById('apiBg').textContent='💳 확인불가';}
-}
-
-// ======= 초기화 =======
-document.addEventListener('DOMContentLoaded', () => {
-  // 모바일 터치이벤트
-  document.querySelectorAll('.cb').forEach(btn=>btn.addEventListener('touchend',e=>{e.preventDefault();selCat(btn);},{passive:false}));
-  document.querySelectorAll('.ti').forEach(btn=>btn.addEventListener('touchend',e=>{e.preventDefault();showPg(btn.id.replace('t-',''));},{passive:false}));
-  document.querySelectorAll('.kpi').forEach(card=>card.addEventListener('touchend',e=>{e.preventDefault();setKpi(card.id.replace('kpi-',''));},{passive:false}));
-  // 초기 데이터
-  renderDrafts();
-  checkApi();
-});
-</script>
-</body>
-</html>
-function manualPlace() {
-  const q = document.getElementById('placeKw').value.trim();
-  const pr = document.getElementById('placeResult');
-  // 기존 버튼은 유지하고 폼 추가
-  const existing = pr.querySelector('.manual-form');
-  if (existing) { existing.style.display = 'block'; return; }
-  const div = document.createElement('div');
-  div.className = 'manual-form';
-  div.style.cssText = 'margin-top:8px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rs);padding:12px;';
-  div.innerHTML = `
-    <div style="font-size:12px;font-weight:600;color:var(--sb);margin-bottom:8px;">✏️ 직접 입력 (네이버 지도에서 복사해서 붙여넣기)</div>
-    <input class="fi" placeholder="매장명" id="mp_name" value="${q}" style="margin-bottom:5px;">
-    <input class="fi" placeholder="주소" id="mp_addr" style="margin-bottom:5px;">
-    <input class="fi" placeholder="영업시간 (예: 11:00~21:00, 월요일 휴무)" id="mp_hours" style="margin-bottom:5px;">
-    <input class="fi" placeholder="주차 (예: 가능 / 불가 / 2시간 무료)" id="mp_park" style="margin-bottom:5px;">
-    <input class="fi" placeholder="전화번호" id="mp_phone" style="margin-bottom:5px;">
-    <input class="fi" placeholder="가격대 (예: 1인 15,000~25,000원)" id="mp_price" style="margin-bottom:10px;">
-    <button class="gen" onclick="confirmManualPlace()" style="padding:11px;">✓ 이 정보로 사용하기</button>`;
-  pr.appendChild(div);
-  div.scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-
-function confirmManualPlace() {
-  lastPlace = {
-    name: document.getElementById('mp_name')?.value || document.getElementById('placeKw').value,
-    address: document.getElementById('mp_addr')?.value || '',
-    hours: document.getElementById('mp_hours')?.value || '',
-    parking: document.getElementById('mp_park')?.value || '',
-    phone: document.getElementById('mp_phone')?.value || '',
-    price: document.getElementById('mp_price')?.value || ''
-  };
-  selectPlace(-1);
-}
-
-function selectPlace(idx) {
-  if (idx >= 0 && window._places?.[idx]) lastPlace = window._places[idx];
-  if (!lastPlace) return;
-  placeInfo = `매장명: ${lastPlace.name}\n주소: ${lastPlace.address}\n영업시간: ${lastPlace.hours}\n주차: ${lastPlace.parking}\n전화: ${lastPlace.phone}\n가격대: ${lastPlace.price}`;
-  document.getElementById('placeResult').innerHTML = '';
-  const ok = document.getElementById('placeOk');
-  ok.textContent = `✅ ${lastPlace.name} 선택됨`;
-  ok.classList.add('on');
-  toast(`${lastPlace.name} 선택됐어요`);
-}
-
-
-// ======= 파일 =======
-function addFiles(inp){Array.from(inp.files).forEach(f=>{files.push(f);const c=document.createElement('div');c.className='pc';c.innerHTML=`📎 ${f.name} <span style="cursor:pointer;color:var(--ht);" onclick="rmFile('${f.name}',this)">×</span>`;document.getElementById('pcs').appendChild(c);});}
-function rmFile(n,el){files=files.filter(f=>f.name!==n);el.parentElement.remove();}
-
-// ======= 프롬프트 =======
-function buildPrompt() {
-  const fields=FORMS[catName]?.fields||[];
-  const info=fields.map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
-  const tp=selTitle?`\n선택된 SEO 제목: ${selTitle}`:'';
-  const kp=''; // 제목은 선택된 경우만 사용
-  const pp=placeInfo?`\n\n[매장 기본정보 - 블로그 상단 포함]\n${placeInfo}`:'';
-  const fp=files.length?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
-  if(catName==='살림재테크'){
-    const topic=gv('topic'),series=gv('series'),sit=gv('my_situation'),ext=gv('extra');
-    const sn=series.startsWith('3')?3:series.startsWith('2')?2:1;
-    const today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
-    const guides=['1편: 제도 핵심 총정리','2편: 실제 신청/경험 후기','3편: 실수령액 계산+주의사항'];
-    const fmt=sn===1?'[BLOG]\n블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그':
-      Array.from({length:sn},(_,i)=>`[BLOG_${i+1}]\n${i+1}편 블로그 초안`).join('\n\n')+'\n\n'+Array.from({length:sn},(_,i)=>`[INSTA_${i+1}]\n${i+1}편 인스타`).join('\n\n');
-    return `오늘: ${today}\n주제: ${topic}\n시리즈: ${series}\n상황: ${sit||'없음'}\n추가: ${ext||'없음'}\n구성: ${guides.slice(0,sn).join(' / ')}\n웹검색으로 최신 정부정책(정부24·고용노동부·법제처) 확인 후 기준연도 명시.\n\n${fmt}`;
-  }
-  // 먹고기록/놀고기록은 블로그 초안 상단에 SEO 제목 후보 포함 요청
-  const needTitle = (catName==='먹고기록'||catName==='놀고기록') && !selTitle;
-  const titleReq = needTitle ? '\n\n블로그 제목 후보 3개를 [TITLE] 섹션에 먼저 작성해줘. 형식:\n[TITLE]\n1. 제목1\n2. 제목2\n3. 제목3' : '';
-  return `카테고리: ${catName} (${catType})${tp}${kp}\n${info}${pp}${fp}${titleReq}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그${files.length?'\n\n[PHOTO]\n사진 배치 안내':''}`;
-}
-
-// ======= Claude 호출 =======
-async function callClaude(system, user, maxTokens=4000, webSearch=false) {
-  const body={model:'claude-sonnet-4-6',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]};
-  if(webSearch) body.tools=[{"type":"web_search_20250305","name":"web_search"}];
-  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':AK,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
-  const d=await r.json();
-  if(d.error) throw new Error(d.error.message||JSON.stringify(d.error));
-  return d;
-}
-
-// ======= 초안 생성 =======
-async function generate() {
-  if(!catName){toast('카테고리를 선택해주세요');return;}
-  document.getElementById('fmCard').style.display='none';
-  document.getElementById('ldEl').classList.add('on');
-  document.getElementById('oaEl').classList.remove('on');
-  const isFin=catName==='살림재테크';
-  const steps=isFin?['정부 공식 사이트 검색 중','법령 최신 기준 확인 중','정책 분석 중','초안 작성 중','마무리 중']:['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','마무리 중'];
-  let si=0; const iv=setInterval(()=>{si=(si+1)%steps.length;document.getElementById('ldStep').textContent=steps[si];},1600);
-  try {
-    const d=await callClaude(getSP(catName),buildPrompt(),isFin?6000:4000,isFin);
-    const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'';
-    if(!txt) throw new Error('응답이 비어있어요');
-    if(txt.includes('[BLOG_1]')) await parseSeriesOut(txt);
-    else parseNormal(txt);
-  } catch(e){toast('오류: '+(e.message||'다시 시도해주세요'));document.getElementById('fmCard').style.display='block';}
-  finally{clearInterval(iv);document.getElementById('ldEl').classList.remove('on');}
-}
-
-// ======= 텍스트 파싱 =======
-function cleanDraft(txt) {
-  if (!txt) return '';
-  const lines = txt.split('\n');
-  const bad = ['입력값이','실제 에피소드','아래처럼 입력','채울 수가 없','제대로 된 글로'];
-  let cut = lines.length;
-  for (let i=0;i<lines.length;i++) {
-    const line = lines[i].trim();
-    if (line.startsWith('#') || line.startsWith('네이버태그')) continue;
-    if (bad.some(b=>lines[i].includes(b))) { cut=i; break; }
-    if (/^-{3,}$/.test(line)) {
-      const restHasTag = lines.slice(i+1).some(l=>l.trim().startsWith('#')||l.trim().startsWith('네이버태그'));
-      if (restHasTag) continue;
-      const nextLine = (lines[i+1]||'').trim();
-      const isGuide = bad.some(b=>nextLine.includes(b)) || nextLine.startsWith('실제') || nextLine.startsWith('예)');
-      if (isGuide) { cut=i; break; }
-    }
-  }
-  return lines.slice(0,cut).join('\n').trim();
-}
-
-function cleanInsta(txt) {
-  if (!txt) return '';
-  const sepIdx = txt.indexOf('\n---');
-  if (sepIdx > -1) {
-    const after = txt.slice(sepIdx);
-    if (after.includes('#')) return txt;
-    return txt.slice(0, sepIdx).trim();
-  }
-  return cleanDraft(txt);
-}
-
-function secTxt(txt,from,to){const si=txt.indexOf(`[${from}]`);if(si===-1)return '';const st=si+from.length+2;if(!to)return txt.slice(st).trim();const ei=txt.indexOf(`[${to}]`,st);return(ei===-1?txt.slice(st):txt.slice(st,ei)).trim();}
-
-function parseNormal(txt) {
-  let blog=secTxt(txt,'BLOG','INSTA')||txt;
-  let insta=secTxt(txt,'INSTA','PHOTO')||secTxt(txt,'INSTA',null);
-  const photo=secTxt(txt,'PHOTO',null);
-  // [INSTA] 이후 내용이 blog에 포함된 경우 제거
-  const ii=blog.indexOf('[INSTA]'); if(ii>-1) blog=blog.slice(0,ii);
-  // 블로그에서 [네이버태그] 이후 Claude 안내메시지 제거
-  const blogClean = cleanDraft(blog);
-  // 인스타에서 --- 이후 Claude 안내메시지 제거
-  const instaClean = cleanInsta(insta);
-  // [TITLE] 섹션 파싱
-  let titleCandidates = [];
-  if (txt.includes('[TITLE]')) {
-    const titleSec = secTxt(txt,'TITLE','BLOG');
-    titleCandidates = titleSec.split('\n')
-      .filter(l=>l.trim())
-      .map(line => {
-        const clean = line.replace(/^\d+\.\s*/,'').trim();
-        const bracketMatch = clean.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
-        const dashMatch = clean.match(/^(.+?)\s*[-–]\s*(.+)$/);
-        const isRec = clean.includes('⭐') || clean.includes('추천');
-        if (bracketMatch) return {title: bracketMatch[1].trim(), label: bracketMatch[2].trim(), rec: isRec};
-        if (dashMatch) return {title: dashMatch[1].trim(), label: dashMatch[2].trim(), rec: isRec};
-        return {title: clean.replace('⭐','').trim(), label:'', rec: isRec};
-      })
-      .filter(p => p.title && p.title.length > 2)
-      .slice(0, 3);
-  }
-
-  document.getElementById('blogTxt').textContent=blogClean;
-  document.getElementById('instaTxt').textContent=instaClean;
-
-  // 제목 카드 UI 표시
-  const titleEl = document.getElementById('titleTxt');
-  if (titleEl) {
-    if (titleCandidates.length > 0) {
-      titleEl.innerHTML = titleCandidates.map(p => `
-        <div onclick="pickBlogTitle(this,'${p.title.replace(/'/g,"&#39;")}')"
-          class="title-opt"
-          style="padding:10px 12px;margin-bottom:6px;border:1.5px solid ${p.rec?'var(--ac)':'var(--bd)'};border-radius:var(--rs);cursor:pointer;touch-action:manipulation;background:${p.rec?'var(--al)':'var(--sf)'};">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <span style="font-size:13px;font-weight:${p.rec?'600':'400'};color:var(--tx);text-align:left;line-height:1.4;">${p.title}</span>
-            ${p.rec
-              ? '<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 8px;border-radius:10px;flex-shrink:0;white-space:nowrap;">⭐ 추천</span>'
-              : p.label ? `<span style="font-size:10px;color:var(--ht);flex-shrink:0;white-space:nowrap;">${p.label}</span>` : ''}
-          </div>
-        </div>`).join('') +
-        '<div style="font-size:11px;color:var(--ht);margin-top:2px;">제목을 탭해서 선택하세요</div>';
-    } else {
-      // TITLE 없으면 기존 방식
-      const rawTitle = selTitle || (FORMS[catName]?.fields[0] ? gv(FORMS[catName].fields[0].id) ? `${catName} - ${gv(FORMS[catName].fields[0].id)}` : catName : catName);
-      titleEl.textContent = rawTitle.trim() || catName;
-    }
-  }
-  if(photo&&files.length>0){
-    document.getElementById('photoG').innerHTML=`<div style="background:#F2F0FA;border:.5px solid #C4BEE0;border-radius:var(--rs);padding:12px;"><div style="font-size:12px;font-weight:600;color:#7A6DB0;margin-bottom:8px;">📷 사진 배치 가이드</div>${photo.split('\n').filter(l=>l.trim()).map((l,i)=>`<div style="display:flex;gap:7px;padding:5px 0;border-bottom:.5px solid #D8D4EE;"><span style="width:20px;height:20px;border-radius:50%;background:#7A6DB0;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span><span style="font-size:12px;color:var(--sb);">${l}</span></div>`).join('')}</div>`;
-  } else {
-    document.getElementById('photoG').innerHTML='<div class="em"><div class="emi">📷</div>사진 첨부 시 배치 가이드가 나와요</div>';
-  }
-  wSt={blog:false,insta:false};
-  document.getElementById('blogSt').className='stbtn stn'; document.getElementById('blogSt').textContent='미업로드'; document.getElementById('blogD').textContent='-';
-  document.getElementById('instaSt').className='stbtn stn'; document.getElementById('instaSt').textContent='미업로드'; document.getElementById('instaD').textContent='-';
-  const fv=FORMS[catName]?.fields[0]?gv(FORMS[catName].fields[0].id):'';
-  // 제목: SEO 선택 제목 → 첫번째 입력값 → 카테고리명 순서
-  // 제목 확정: SEO선택 > 첫번째필드값 > 카테고리명+시간
-  const rawTitle = selTitle || (fv ? `${catName} - ${fv}` : '');
-  const title = rawTitle.trim() || `${catName} ${nowDate()}`;
-  const now=nowDate();
-  // blogClean/instaClean으로 저장 (안내메시지 제거된 버전)
-  drafts.unshift({id:'d'+Date.now(),cat:catName,type:catType,title,date:now,blog:blogClean,insta:instaClean});
-  if(drafts.length>50)drafts=drafts.slice(0,50);
-  localStorage.setItem('ml_drafts',JSON.stringify(drafts));
-  autoSave(catName,title,blogClean,instaClean,now);
-  document.getElementById('oaEl').classList.add('on');
-  swOut('blog',document.querySelector('.ot'));
-  setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
-}
-
-async function parseSeriesOut(txt) {
-  const has3=txt.includes('[BLOG_3]'),has2=txt.includes('[BLOG_2]');
-  const count=has3?3:has2?2:1;
-  const blogs=[],instas=[];
-  for(let i=1;i<=count;i++){blogs.push(secTxt(txt,`BLOG_${i}`,i<count?`BLOG_${i+1}`:'INSTA_1'));instas.push(secTxt(txt,`INSTA_${i}`,i<count?`INSTA_${i+1}`:null));}
-  const oaCard=document.querySelector('#oaEl .card');
-  if(oaCard){
-    let h='<div class="ct">📝 생성된 초안</div><div class="ots">';
-    for(let i=1;i<=count;i++)h+=`<button class="ot${i===1?' on':''}" onclick="swOut('s${i}',this)">${i}편</button>`;
-    h+='<button class="ot" onclick="swOut(\'photo\',this)">📷 사진</button></div>';
-    for(let i=1;i<=count;i++){const b=blogs[i-1].replace(/&/g,'&amp;').replace(/</g,'&lt;');const n=instas[i-1].replace(/&/g,'&amp;').replace(/</g,'&lt;');h+=`<div class="oc${i===1?' on':''}" id="o-s${i}"><div class="ob" id="s${i}B" style="white-space:pre-wrap;">${b}</div><div class="oas"><button class="oab p" onclick="cpEl('s${i}B')">블로그 복사</button></div><div style="margin-top:10px;border-top:.5px solid var(--bd);padding-top:10px;"><div style="font-size:12px;font-weight:600;color:var(--sb);margin-bottom:6px;">📸 ${i}편 인스타</div><div class="ob" id="s${i}I" style="white-space:pre-wrap;">${n}</div><div class="oas"><button class="oab p" onclick="cpEl('s${i}I')">인스타 복사</button></div></div></div>`;}
-    h+='<div class="oc" id="o-photo"><div id="photoG"><div class="em"><div class="emi">📷</div>사진 첨부 시 가이드가 나와요</div></div></div>';
-    oaCard.innerHTML=h;
-  }
-  const fv=gv('topic'); const baseTitle=selTitle||(fv?`${catName} - ${fv}`:catName);
-  const now=nowDate();
-  for(let i=0;i<count;i++){
-    drafts.unshift({id:'d'+Date.now()+'_'+i,cat:catName,type:catType,title:`${baseTitle} ${i+1}편`,date:now,blog:blogs[i],insta:instas[i]});
-    await autoSave(catName,`${baseTitle} ${i+1}편`,blogs[i],instas[i],now);
-  }
-  if(drafts.length>50)drafts=drafts.slice(0,50);
-  localStorage.setItem('ml_drafts',JSON.stringify(drafts));
-  document.getElementById('oaEl').classList.add('on');
-  setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
-}
-
-// ======= 업로드 체크 =======
-function togWSt(ch){wSt[ch]=!wSt[ch];const on=wSt[ch],today=nowDate();if(ch==='blog'){document.getElementById('blogSt').className=`stbtn ${on?'std':'stn'}`;document.getElementById('blogSt').textContent=on?'업로드 완료':'미업로드';document.getElementById('blogD').textContent=on?today:'-';}else{document.getElementById('instaSt').className=`stbtn ${on?'std':'stn'}`;document.getElementById('instaSt').textContent=on?'업로드 완료':'미업로드';document.getElementById('instaD').textContent=on?today:'-';}}
-
-// ======= 유틸 =======
-function swOut(id,btn){document.querySelectorAll('.ot').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.oc').forEach(c=>c.classList.remove('on'));if(btn)btn.classList.add('on');document.getElementById(`o-${id}`)?.classList.add('on');}
-function cpEl(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('📋 복사됐어요'));}
-function cpTitle(){
-  const el=document.getElementById('titleTxt');
-  const txt=el?.querySelector('.selected-title')?.textContent || el?.textContent;
-  if(txt&&txt.trim()) navigator.clipboard.writeText(txt.trim()).then(()=>toast('📌 제목 복사됐어요'));
-  else toast('제목을 먼저 선택해주세요');
-}
-function pickBlogTitle(el, title) {
-  document.querySelectorAll('.title-opt').forEach(t=>{
-    t.style.borderColor='var(--bd)'; t.style.background='';
-  });
-  el.style.borderColor='var(--ac)'; el.style.background='var(--al)';
-  selTitle = title;
-  // 복사 버튼 위에 선택된 제목 표시
-  const box = document.getElementById('titleTxt');
-  if (!box.querySelector('.selected-title')) {
-    const sel = document.createElement('div');
-    sel.className='selected-title';
-    sel.style.cssText='font-size:12px;color:var(--ac);font-weight:600;margin-top:8px;padding:6px 10px;background:var(--al);border-radius:var(--rs);';
-    box.appendChild(sel);
-  }
-  box.querySelector('.selected-title').textContent = '✓ ' + title;
-  toast('📌 제목 선택됐어요');
-}
-let toastT; function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2500);}
-
-// ======= 페이지 전환 =======
-function showPg(id){
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.ti').forEach(t=>t.classList.remove('on'));
-  document.getElementById(`pg-${id}`)?.classList.add('on');
-  document.getElementById(`t-${id}`)?.classList.add('on');
-  const labels={write:'글 작성',log:'기록',rec:'✨ 추천'};
-  document.getElementById('pgBg').textContent=labels[id]||id;
-  document.querySelector('.wrap').scrollTop=0;
-  if(id==='log'){renderDrafts();renderLog();swLog(activeKpi||'pend');}
-  if(id==='rec') initRec();
-}
-
-// ======= 추천 탭 =======
-let recArchive=[];
-try { recArchive=JSON.parse(localStorage.getItem('rec_archive')||'[]'); } catch(e){ recArchive=[]; }
-let persona={};
-try { persona=JSON.parse(localStorage.getItem('rec_persona')||'{}'); } catch(e){ persona={}; }
-let recItems=null, recSelItem=null, recSelTitle='';
-
-function initRec(){
-  renderArchive();
-  document.getElementById('recDate').textContent=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
-  if(persona.preg) document.getElementById('p_preg').value=persona.preg;
-  if(persona.daily) document.getElementById('p_daily').value=persona.daily;
-  if(persona.interest) document.getElementById('p_interest').value=persona.interest;
-  if(persona.recent) document.getElementById('p_recent').value=persona.recent;
-}
-
-function togPersona(){const f=document.getElementById('pgForm'),ic=document.getElementById('pgIcon'),h=f.style.display==='none';f.style.display=h?'block':'none';ic.textContent=h?'▲':'▼';if(!h)savePersona();}
-function savePersona(){persona={preg:document.getElementById('p_preg')?.value||'',daily:document.getElementById('p_daily')?.value||'',interest:document.getElementById('p_interest')?.value||'',recent:document.getElementById('p_recent')?.value||''};localStorage.setItem('rec_persona',JSON.stringify(persona));}
-
-function genRecForce(){
-  localStorage.removeItem('rec_cache_'+new Date().toDateString());
-  genRec();
-}
-
-async function genRec(){
-  savePersona();
-  const btn=document.getElementById('recBtn'),ld=document.getElementById('recLoading'),list=document.getElementById('recList');
-  document.getElementById('recFormArea').style.display='none';
-  // 당일 캐시 확인
-  const todayKey='rec_cache_'+new Date().toDateString();
-  const pKey=JSON.stringify(persona);
-  try {
-    const cached=JSON.parse(localStorage.getItem(todayKey)||'null');
-    if(cached&&cached.pKey===pKey&&cached.items?.length){
-      recItems=cached.items; renderRec(recItems);
-      toast('✨ 오늘 추천 (저장됨) — 🔄로 새로 검색');
-      return;
-    }
-  } catch(e){}
-  btn.disabled=true;btn.textContent='분석 중...';ld.style.display='block';list.innerHTML='';
-  const steps=['트렌드 수집 중','검색량 분석 중','카테고리 매칭 중','추천 구성 중'];
-  let si=0;const iv=setInterval(()=>{si=(si+1)%steps.length;document.getElementById('recStep').textContent=steps[si];},1500);
-  try{
-    const today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
-    const prompt=`오늘(${today}) 대한민국 임신·육아·신혼·맛집·재테크 검색량 급상승/이슈 키워드를 웹검색으로 파악해줘.
-
-[말랑파파 현재 상황]
-${persona.preg?'임신/출산: '+persona.preg:''}
-${persona.daily?'요즘 일상: '+persona.daily:''}
-${persona.interest?'관심사: '+persona.interest:''}
-${persona.recent?'최근 작성글: '+persona.recent:''}
-
-말랑파파 실제 상황과 오늘 트렌드를 결합해 콘텐츠 5개 추천.
-분석 과정이나 요약 없이 아래 JSON 형식만 정확히 출력해줘:
-{"items":[{"type":"hot|trend|season","category":"임신기록|연애회상|육아정보|육아용품|먹고기록|놀고기록|살림재테크","title":"SEO 최적화 제목","desc":"추천 이유 한 줄","keyword":"핵심 키워드","hook":"말랑파파 도입 문장"}]}`;
-    const d=await callClaude('당신은 블로그 콘텐츠 전략가입니다. 분석 과정 설명 없이 JSON만 출력.',prompt,1500,true);
-    const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('')||'';
-    // ```json 코드블록 우선 추출, 없으면 일반 JSON 패턴
-    const codeBlockMatch = txt.match(/```json\s*([\s\S]*?)```/);
-    const jsonText = codeBlockMatch ? codeBlockMatch[1] : txt;
-    const m = jsonText.match(/\{[\s\S]*\}/);
-    if(!m) throw new Error('추천 결과를 받지 못했어요. 다시 시도해주세요.');
-    let result;
-    try { result = JSON.parse(m[0]); }
-    catch(e) { throw new Error('응답 형식 오류. 다시 시도해주세요.'); }
-    recItems=result.items||[];
-    // 당일 캐시 저장
-    const todayKey2='rec_cache_'+new Date().toDateString();
-    localStorage.setItem(todayKey2,JSON.stringify({items:recItems,pKey:JSON.stringify(persona)}));
-    Object.keys(localStorage).filter(k=>k.startsWith('rec_cache_')&&k!==todayKey2).forEach(k=>localStorage.removeItem(k));
-    renderRec(recItems);
-  }catch(e){list.innerHTML=`<div class="em"><div class="emi">❌</div>${e.message||'오류'}<br><small>다시 시도해주세요</small></div>`;}
-  finally{clearInterval(iv);ld.style.display='none';btn.disabled=false;btn.textContent='🔍 다시 추천';}
-}
-
-const rcTypes={hot:'🔥 급상승',trend:'📈 트렌드',season:'🌸 시즌'};
-const rcCls={hot:'rc-hot',trend:'rc-trend',season:'rc-season'};
-
-function renderRec(items){
-  document.getElementById('recList').innerHTML=items.map((item,i)=>`
-    <div class="rc">
-      <span class="rc-badge ${rcCls[item.type]||'rc-trend'}">${rcTypes[item.type]||'📌'}</span>
-      <div class="rc-title">${item.title}</div>
-      <div class="rc-desc">${item.desc}</div>
-      <div class="rc-kw">🔍 ${item.keyword}</div>
-      <div class="rc-desc" style="margin-top:5px;font-style:italic;color:var(--ac);">"${item.hook}"</div>
-      <div class="rc-acts">
-        <button class="rcb rcb-p" onclick="useRec(${i},false)">✏️ 바로 작성</button>
-        <button class="rcb" onclick="saveRec(${i})">📚 저장</button>
-      </div>
-    </div>`).join('');
-}
-
-async function useRec(i, fromArch){
-  const src=fromArch?recArchive:(recItems||[]);
-  const item=src?.[i]; if(!item)return;
-  recSelItem=item; recSelTitle=item.title||'';
-  // 저장 안 된 경우만 저장 (recItems가 있을 때만)
-  if(!fromArch && recItems?.length && !recArchive.some(r=>r.title===item.title)) await saveRec(i);
-  // 폼 표시
-  const fa=document.getElementById('recFormArea'); fa.style.display='block';
-  document.getElementById('recFmTitle').textContent=`${item.category} — ${item.title}`;
-  const hb=document.getElementById('recHintBox');
-  hb.style.display='block';
-  hb.innerHTML=`<div style="font-size:11px;font-weight:600;color:var(--ad);margin-bottom:4px;">💡 추천 이유</div><div style="font-size:12px;color:var(--sb);line-height:1.5;">${item.desc}</div><div style="font-size:12px;color:var(--ac);margin-top:5px;font-style:italic;">"${item.hook}"</div>`;
-  buildForm('r', item.category);
-  // recKw 제거됨 - 내용 기반 제목 추천
-  document.getElementById('recSelTxt').textContent=item.title;
-  document.getElementById('recSelBox').classList.add('on');
-  // 폼 필드 자동 입력
-  const topEl=document.getElementById('r_topic'); if(topEl&&!topEl.value) topEl.value=item.keyword||item.title||'';
-  const sumEl=document.getElementById('r_sum'); if(sumEl&&!sumEl.value) sumEl.value=item.desc||'';
-  fa.scrollIntoView({behavior:'smooth',block:'start'});
-  toast('✏️ 내용 입력 후 초안을 생성해주세요');
-}
-
-async function saveRec(i){
-  const item=(recItems||[])[i]; if(!item)return;
-  if(recArchive.some(r=>r.title===item.title)){toast('이미 저장된 추천이에요');return;}
-  const today=nowDate();
-  recArchive.unshift({...item,savedAt:today});
-  if(recArchive.length>30) recArchive=recArchive.slice(0,30);
-  localStorage.setItem('rec_archive',JSON.stringify(recArchive));
-  renderArchive();
-  const row=['',`[추천][${item.category||''}]`,item.title||'',today,'','','','',today,''];
-  const ok=await sheetAppend(row);
-  cache=null;
-  toast(ok?'📚 저장 + 시트 기록됐어요':'📚 저장됐어요');
-}
-
-function renderArchive(){
-  const card=document.getElementById('archCard'),list=document.getElementById('archList'),cnt=document.getElementById('archCount');
-  if(!recArchive.length){card.style.display='none';return;}
-  card.style.display='block'; cnt.textContent=`${recArchive.length}개`;
-  list.innerHTML=recArchive.map((item,i)=>`
-    <div class="li">
-      <div class="lh"><span class="lc lci">${item.category||''}</span><span style="font-size:11px;color:var(--ht);">${item.savedAt||''}</span></div>
-      <div class="lti">${item.title}</div>
-      <div class="rc-kw">🔍 ${item.keyword||''}</div>
-      <div class="rc-acts" style="margin-top:7px;">
-        <button class="rcb rcb-p" onclick="useRec(${i},true)">✏️ 작성</button>
-        <button class="rcb" onclick="delArch(${i})" style="color:#C62828;">🗑️</button>
-      </div>
-    </div>`).join('');
-}
-function delArch(i){recArchive.splice(i,1);localStorage.setItem('rec_archive',JSON.stringify(recArchive));renderArchive();toast('삭제됐어요');}
-
-function closeRecForm(){document.getElementById('recFormArea').style.display='none';recSelItem=null;recSelTitle='';}
-
-async function genRecTitles(){
-  if (!recSelItem) return;
-  const kw = '';
-  const fields = FORMS[recSelItem.category]?.fields || [];
-  const inputSummary = fields.map(f => {
-    const v = gv(f.id, 'r');
-    return v ? `${f.lb}: ${v}` : null;
-  }).filter(Boolean).join('\n');
-  const context = inputSummary || (kw ? `키워드: ${kw}` : `카테고리: ${recSelItem.category}, 주제: ${recSelItem.title}`);
-
-  const btn=document.querySelector('#recFormArea .seo-b');
-  btn.disabled=true; btn.textContent='분석 중...';
-  const opts=document.getElementById('recOpts');
-  opts.style.display='flex'; opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
-  try {
-    const d=await callClaude(SP_T,`카테고리: ${recSelItem.category}\n\n[내용]\n${context}\n\nSEO+CTR 최적화 제목 3개 추천.`,200);
-    const raw = d.content?.[0]?.text || '';
-    const lines = raw.split('\n').filter(l=>l.trim());
-    const parsed = lines.map(line => {
-      const clean = line.replace(/^\d+\.\s*/,'').trim();
-      const bracketMatch = clean.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
-      const dashMatch = clean.match(/^(.+?)\s*[-–]\s*(.+)$/);
-      const isRec = clean.includes('⭐') || clean.includes('추천') || clean.includes('균형');
-      if (bracketMatch) return {title:bracketMatch[1].trim(), label:bracketMatch[2].trim(), rec:isRec};
-      if (dashMatch) return {title:dashMatch[1].trim(), label:dashMatch[2].trim(), rec:isRec};
-      return {title:clean.replace('⭐','').trim(), label:'', rec:isRec};
-    }).filter(p=>p.title&&p.title.length>2).slice(0,3);
-
-    opts.innerHTML = parsed.map(p=>`
-      <button class="seo-opt" onclick="pickRecTitle(this,'${p.title.replace(/'/g,"&#39;")}')"
-        style="${p.rec?'border-color:var(--ac);background:var(--al);':''}">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span style="font-size:13px;font-weight:${p.rec?'600':'400'};text-align:left;">${p.title}</span>
-          ${p.rec?'<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 7px;border-radius:10px;flex-shrink:0;">⭐ 추천</span>':
-            p.label?`<span style="font-size:10px;color:var(--ht);flex-shrink:0;">${p.label}</span>`:''}
-        </div>
-      </button>`).join('');
-  } catch(e) {
-    opts.innerHTML=`<div style="color:#C62828;font-size:12px;">❌ ${e.message}</div>`;
-  } finally {
-    btn.disabled=false; btn.textContent='추천';
-  }
-}
-function pickRecTitle(el,t){document.querySelectorAll('#recOpts .seo-opt').forEach(b=>b.classList.remove('on'));el.classList.add('on');recSelTitle=t;document.getElementById('recSelTxt').textContent=t;document.getElementById('recSelBox').classList.add('on');toast('제목 선택됐어요 ✓');}
-
-async function generateFromRec(){
-  if(!recSelItem)return;
-  const cat=recSelItem.category;
-  // 전역 상태 설정
-  catName=cat;
-  catType='정보형';
-  selTitle=recSelTitle||recSelItem.title||'';
-  const kw='';
+  const kw=document.getElementById('recKw').value.trim();
   const fields=FORMS[cat]?.fields||[];
   const info=fields.map(f=>{const v=gv(f.id,'r');return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const ctx=`\n\n[추천 맥락]\n주제: ${recSelItem.title}\n방향: ${recSelItem.desc||''}\n도입문: "${recSelItem.hook||''}"\n키워드: ${recSelItem.keyword||''}`;
