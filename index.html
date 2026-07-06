@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1783325586">
+<meta name="version" content="1783326506">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -757,7 +757,6 @@ function selCat(btn) {
   document.getElementById('oaEl').classList.remove('on');
   document.getElementById('ldEl').classList.remove('on');
   document.getElementById('fmTitle').textContent=catName;
-  document.getElementById('seoKw').value='';
   document.getElementById('seoOpts').style.display='none'; document.getElementById('seoOpts').innerHTML='';
   document.getElementById('selBox').classList.remove('on');
   document.getElementById('placeBox').style.display=(catName==='먹고기록'||catName==='놀고기록')?'block':'none';
@@ -780,8 +779,7 @@ function gv(id, prefix='f') { const el=document.getElementById(`${prefix}_${id}`
 
 // ======= SEO 제목 =======
 async function genTitles() {
-  const kw=document.getElementById('seoKw').value.trim();
-  if(!kw||!catName){toast(kw?'카테고리를 먼저 선택해주세요':'키워드를 입력해주세요');return;}
+  if(!catName){toast('카테고리를 먼저 선택해주세요');return;}
   const btn=document.querySelector('.seo-b'); btn.disabled=true; btn.textContent='생성 중...';
   const opts=document.getElementById('seoOpts'); opts.style.display='flex'; opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
   try {
@@ -876,7 +874,7 @@ function buildPrompt() {
   const fields=FORMS[catName]?.fields||[];
   const info=fields.map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const tp=selTitle?`\n선택된 SEO 제목: ${selTitle}`:'';
-  const kp=document.getElementById('seoKw').value.trim()?`\nSEO 키워드: ${document.getElementById('seoKw').value.trim()}`:'';
+  const kp='';
   const pp=placeInfo?`\n\n[매장 기본정보 - 블로그 상단 포함]\n${placeInfo}`:'';
   const fp=files.length?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
   if(catName==='살림재테크'){
