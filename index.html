@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1783307432">
+<meta name="version" content="1783307678">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -244,9 +244,11 @@ input[type="file"]{display:none;}
       <div class="card" id="fmCard" style="display:none;">
         <div class="ct">✏️ <span id="fmTitle">내용 입력</span></div>
         <div class="seo">
-          <div class="seot">🔍 SEO 제목 추천</div>
-          <div class="seo-r"><input class="fi" id="seoKw" placeholder="핵심 키워드 입력 (예: 임신 34주 증상)"><button class="seo-b" onclick="genTitles()">제목 추천</button></div>
-          <div class="seo-h">키워드 입력 후 탭하면 제목 3개를 추천해드려요</div>
+          <div class="seot">🔍 SEO 제목 추천 <span style="font-size:10px;font-weight:400;color:#5A8AD4;">내용 입력 후 자동 분석</span></div>
+          <div style="display:flex;gap:6px;margin-bottom:5px;">
+            <button class="seo-b" onclick="genTitles()" style="flex:1;">✨ 제목 추천받기</button>
+          </div>
+          <div class="seo-h">내용을 입력한 뒤 탭하면 SEO+CTR 최적화 제목 3개를 추천해드려요</div>
           <div class="seo-opts" id="seoOpts" style="display:none;"></div>
           <div class="sel-box" id="selBox">선택된 제목: <span id="selTxt"></span></div>
         </div>
@@ -730,7 +732,20 @@ function getSP(catName) {
   return extra ? base + '\n\n[' + catName + ' 전용]\n' + extra : base;
 }
 
-const SP_T = `네이버 블로그 SEO 제목 3개. 20자 내외. 번호없이 제목만 3줄 출력.`;
+const SP_T = `네이버 블로그 SEO+CTR 전문가. 입력된 글 내용을 분석해서 검색 최적화 제목 3개 추천.
+
+제목 작성 원칙:
+- 실제 검색자가 검색할 키워드 포함 (검색량 높은 단어 우선)
+- 클릭률(CTR) 높이는 표현: 숫자, 후기, 솔직, 총정리, 실제, 추천 등
+- 20자 내외 (너무 길면 검색 결과에서 잘림)
+- 말랑파파 브랜드 느낌 유지
+
+출력 형식 (정확히 준수):
+1. [제목1] - SEO점수 높음
+2. [제목2] - CTR점수 높음  
+3. [제목3] ⭐추천 - SEO+CTR 균형
+
+번호와 레이블 포함해서 3줄만 출력.`;
 
 const FORMS = {
   임신기록:{fields:[{id:'week',lb:'임신 주차',ph:'예) 34주'},{id:'baby',lb:'이번 주 말랑이',ta:1,ph:'태동, 태아 변화'},{id:'mom',lb:'이번 주 말랑맘',ta:1,ph:'몸 변화, 감정'},{id:'couple',lb:'이번 주 우리 부부',ta:1,ph:'준비한 것, 나눈 대화'},{id:'letter',lb:'말랑이에게 한마디',ph:'예) 곧 만나자'}]},
@@ -776,16 +791,54 @@ function gv(id, prefix='f') { const el=document.getElementById(`${prefix}_${id}`
 
 // ======= SEO 제목 =======
 async function genTitles() {
-  const kw=document.getElementById('seoKw').value.trim();
-  if(!kw||!catName){toast(kw?'카테고리를 먼저 선택해주세요':'키워드를 입력해주세요');return;}
-  const btn=document.querySelector('.seo-b'); btn.disabled=true; btn.textContent='생성 중...';
-  const opts=document.getElementById('seoOpts'); opts.style.display='flex'; opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
+  if (!catName) { toast('카테고리를 먼저 선택해주세요'); return; }
+  // 입력 내용 수집
+  const fields = FORMS[catName]?.fields || [];
+  const inputSummary = fields.map(f => {
+    const v = gv(f.id);
+    return v ? `${f.lb}: ${v}` : null;
+  }).filter(Boolean).join('\n');
+  if (!inputSummary.trim()) { toast('내용을 먼저 입력해주세요'); return; }
+
+  const btn = document.querySelector('.seo-b');
+  btn.disabled = true; btn.textContent = '분석 중...';
+  const opts = document.getElementById('seoOpts');
+  opts.style.display = 'flex'; opts.innerHTML = '<div style="color:var(--ht);font-size:12px;padding:8px;">⏳ 입력 내용 분석 중...</div>';
+
   try {
-    const d=await callClaude(SP_T,`카테고리: ${catName}\n키워드: ${kw}\n제목 3개만.`,150);
-    const titles=(d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
-    opts.innerHTML=titles.map(t=>`<button class="seo-opt" onclick="pickTitle(this,'${t.replace(/'/g,"&#39;")}')">${t}</button>`).join('');
-  } catch(e){opts.innerHTML=`<div style="color:#C62828;font-size:12px;padding:6px;">❌ ${e.message}</div>`;}
-  finally{btn.disabled=false;btn.textContent='제목 추천';}
+    const prompt = `카테고리: ${catName}\n\n[입력 내용]\n${inputSummary}\n\n위 내용을 기반으로 네이버 블로그 SEO+CTR 최적화 제목 3개 추천.`;
+    const d = await callClaude(SP_T, prompt, 200);
+    const raw = d.content?.[0]?.text || '';
+
+    // "1. 제목 - 레이블" 형식 파싱
+    const lines = raw.split('\n').filter(l => l.trim());
+    const parsed = lines.map(line => {
+      const clean = line.replace(/^\d+\.\s*/, '').trim();
+      // [제목] - 레이블 또는 제목 - 레이블 형식
+      const bracketMatch = clean.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
+      const dashMatch = clean.match(/^(.+?)\s*[-–]\s*(.+)$/);
+      const isRec = clean.includes('⭐') || clean.includes('추천') || clean.includes('균형');
+      if (bracketMatch) return { title: bracketMatch[1].trim(), label: bracketMatch[2].trim(), rec: isRec };
+      if (dashMatch) return { title: dashMatch[1].trim(), label: dashMatch[2].trim(), rec: isRec };
+      return { title: clean.replace('⭐','').trim(), label: '', rec: isRec };
+    }).filter(p => p.title && p.title.length > 2).slice(0, 3);
+
+    if (!parsed.length) throw new Error('제목을 파싱할 수 없어요');
+
+    opts.innerHTML = parsed.map(p => `
+      <button class="seo-opt${p.rec?' rec-star':''}" onclick="pickTitle(this,'${p.title.replace(/'/g,"&#39;")}')"
+        style="${p.rec ? 'border-color:var(--ac);background:var(--al);' : ''}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span style="font-size:13px;font-weight:${p.rec?'600':'400'};text-align:left;">${p.title}</span>
+          ${p.rec ? '<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 7px;border-radius:10px;flex-shrink:0;">⭐ 추천</span>' :
+            p.label ? `<span style="font-size:10px;color:var(--ht);flex-shrink:0;">${p.label}</span>` : ''}
+        </div>
+      </button>`).join('');
+  } catch(e) {
+    opts.innerHTML = `<div style="color:#C62828;font-size:12px;padding:6px;">❌ ${e.message}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ 제목 추천받기';
+  }
 }
 function pickTitle(el,t){document.querySelectorAll('.seo-opt').forEach(b=>b.classList.remove('on'));el.classList.add('on');selTitle=t;document.getElementById('selTxt').textContent=t;document.getElementById('selBox').classList.add('on');toast('제목 선택됐어요 ✓');}
 
@@ -872,7 +925,7 @@ function buildPrompt() {
   const fields=FORMS[catName]?.fields||[];
   const info=fields.map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const tp=selTitle?`\n선택된 SEO 제목: ${selTitle}`:'';
-  const kp=document.getElementById('seoKw').value.trim()?`\nSEO 키워드: ${document.getElementById('seoKw').value.trim()}`:'';
+  const kp=''; // 제목은 선택된 경우만 사용
   const pp=placeInfo?`\n\n[매장 기본정보 - 블로그 상단 포함]\n${placeInfo}`:'';
   const fp=files.length?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
   if(catName==='살림재테크'){
@@ -1228,15 +1281,47 @@ function delArch(i){recArchive.splice(i,1);localStorage.setItem('rec_archive',JS
 function closeRecForm(){document.getElementById('recFormArea').style.display='none';recSelItem=null;recSelTitle='';}
 
 async function genRecTitles(){
-  const kw=document.getElementById('recKw').value.trim(); if(!kw||!recSelItem)return;
-  const btn=document.querySelector('#recFormArea .seo-b'); btn.disabled=true;btn.textContent='생성 중...';
-  const opts=document.getElementById('recOpts'); opts.style.display='flex';opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
-  try{
-    const d=await callClaude(SP_T,`카테고리: ${recSelItem.category}\n키워드: ${kw}\n제목 3개만.`,300);
-    const titles=(d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
-    opts.innerHTML=titles.map(t=>`<button class="seo-opt" onclick="pickRecTitle(this,'${t.replace(/'/g,"&#39;")}')">${t}</button>`).join('');
-  }catch(e){opts.innerHTML=`<div style="color:#C62828;font-size:12px;">❌</div>`;}
-  finally{btn.disabled=false;btn.textContent='추천';}
+  if (!recSelItem) return;
+  const kw = document.getElementById('recKw').value.trim();
+  const fields = FORMS[recSelItem.category]?.fields || [];
+  const inputSummary = fields.map(f => {
+    const v = gv(f.id, 'r');
+    return v ? `${f.lb}: ${v}` : null;
+  }).filter(Boolean).join('\n');
+  const context = inputSummary || (kw ? `키워드: ${kw}` : `카테고리: ${recSelItem.category}, 주제: ${recSelItem.title}`);
+
+  const btn=document.querySelector('#recFormArea .seo-b');
+  btn.disabled=true; btn.textContent='분석 중...';
+  const opts=document.getElementById('recOpts');
+  opts.style.display='flex'; opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
+  try {
+    const d=await callClaude(SP_T,`카테고리: ${recSelItem.category}\n\n[내용]\n${context}\n\nSEO+CTR 최적화 제목 3개 추천.`,200);
+    const raw = d.content?.[0]?.text || '';
+    const lines = raw.split('\n').filter(l=>l.trim());
+    const parsed = lines.map(line => {
+      const clean = line.replace(/^\d+\.\s*/,'').trim();
+      const bracketMatch = clean.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
+      const dashMatch = clean.match(/^(.+?)\s*[-–]\s*(.+)$/);
+      const isRec = clean.includes('⭐') || clean.includes('추천') || clean.includes('균형');
+      if (bracketMatch) return {title:bracketMatch[1].trim(), label:bracketMatch[2].trim(), rec:isRec};
+      if (dashMatch) return {title:dashMatch[1].trim(), label:dashMatch[2].trim(), rec:isRec};
+      return {title:clean.replace('⭐','').trim(), label:'', rec:isRec};
+    }).filter(p=>p.title&&p.title.length>2).slice(0,3);
+
+    opts.innerHTML = parsed.map(p=>`
+      <button class="seo-opt" onclick="pickRecTitle(this,'${p.title.replace(/'/g,"&#39;")}')"
+        style="${p.rec?'border-color:var(--ac);background:var(--al);':''}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span style="font-size:13px;font-weight:${p.rec?'600':'400'};text-align:left;">${p.title}</span>
+          ${p.rec?'<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 7px;border-radius:10px;flex-shrink:0;">⭐ 추천</span>':
+            p.label?`<span style="font-size:10px;color:var(--ht);flex-shrink:0;">${p.label}</span>`:''}
+        </div>
+      </button>`).join('');
+  } catch(e) {
+    opts.innerHTML=`<div style="color:#C62828;font-size:12px;">❌ ${e.message}</div>`;
+  } finally {
+    btn.disabled=false; btn.textContent='추천';
+  }
 }
 function pickRecTitle(el,t){document.querySelectorAll('#recOpts .seo-opt').forEach(b=>b.classList.remove('on'));el.classList.add('on');recSelTitle=t;document.getElementById('recSelTxt').textContent=t;document.getElementById('recSelBox').classList.add('on');toast('제목 선택됐어요 ✓');}
 
@@ -1350,7 +1435,7 @@ function buildPrompt() {
   const fields=FORMS[catName]?.fields||[];
   const info=fields.map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const tp=selTitle?`\n선택된 SEO 제목: ${selTitle}`:'';
-  const kp=document.getElementById('seoKw').value.trim()?`\nSEO 키워드: ${document.getElementById('seoKw').value.trim()}`:'';
+  const kp=''; // 제목은 선택된 경우만 사용
   const pp=placeInfo?`\n\n[매장 기본정보 - 블로그 상단 포함]\n${placeInfo}`:'';
   const fp=files.length?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
   if(catName==='살림재테크'){
@@ -1706,15 +1791,47 @@ function delArch(i){recArchive.splice(i,1);localStorage.setItem('rec_archive',JS
 function closeRecForm(){document.getElementById('recFormArea').style.display='none';recSelItem=null;recSelTitle='';}
 
 async function genRecTitles(){
-  const kw=document.getElementById('recKw').value.trim(); if(!kw||!recSelItem)return;
-  const btn=document.querySelector('#recFormArea .seo-b'); btn.disabled=true;btn.textContent='생성 중...';
-  const opts=document.getElementById('recOpts'); opts.style.display='flex';opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
-  try{
-    const d=await callClaude(SP_T,`카테고리: ${recSelItem.category}\n키워드: ${kw}\n제목 3개만.`,300);
-    const titles=(d.content?.[0]?.text||'').split('\n').map(t=>t.replace(/^[-•*\d.]+\s*/,'').trim()).filter(t=>t&&t.length>2).slice(0,3);
-    opts.innerHTML=titles.map(t=>`<button class="seo-opt" onclick="pickRecTitle(this,'${t.replace(/'/g,"&#39;")}')">${t}</button>`).join('');
-  }catch(e){opts.innerHTML=`<div style="color:#C62828;font-size:12px;">❌</div>`;}
-  finally{btn.disabled=false;btn.textContent='추천';}
+  if (!recSelItem) return;
+  const kw = document.getElementById('recKw').value.trim();
+  const fields = FORMS[recSelItem.category]?.fields || [];
+  const inputSummary = fields.map(f => {
+    const v = gv(f.id, 'r');
+    return v ? `${f.lb}: ${v}` : null;
+  }).filter(Boolean).join('\n');
+  const context = inputSummary || (kw ? `키워드: ${kw}` : `카테고리: ${recSelItem.category}, 주제: ${recSelItem.title}`);
+
+  const btn=document.querySelector('#recFormArea .seo-b');
+  btn.disabled=true; btn.textContent='분석 중...';
+  const opts=document.getElementById('recOpts');
+  opts.style.display='flex'; opts.innerHTML='<div style="color:var(--ht);font-size:12px;padding:6px;">⏳</div>';
+  try {
+    const d=await callClaude(SP_T,`카테고리: ${recSelItem.category}\n\n[내용]\n${context}\n\nSEO+CTR 최적화 제목 3개 추천.`,200);
+    const raw = d.content?.[0]?.text || '';
+    const lines = raw.split('\n').filter(l=>l.trim());
+    const parsed = lines.map(line => {
+      const clean = line.replace(/^\d+\.\s*/,'').trim();
+      const bracketMatch = clean.match(/^\[(.+?)\]\s*[-–]?\s*(.*)$/);
+      const dashMatch = clean.match(/^(.+?)\s*[-–]\s*(.+)$/);
+      const isRec = clean.includes('⭐') || clean.includes('추천') || clean.includes('균형');
+      if (bracketMatch) return {title:bracketMatch[1].trim(), label:bracketMatch[2].trim(), rec:isRec};
+      if (dashMatch) return {title:dashMatch[1].trim(), label:dashMatch[2].trim(), rec:isRec};
+      return {title:clean.replace('⭐','').trim(), label:'', rec:isRec};
+    }).filter(p=>p.title&&p.title.length>2).slice(0,3);
+
+    opts.innerHTML = parsed.map(p=>`
+      <button class="seo-opt" onclick="pickRecTitle(this,'${p.title.replace(/'/g,"&#39;")}')"
+        style="${p.rec?'border-color:var(--ac);background:var(--al);':''}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span style="font-size:13px;font-weight:${p.rec?'600':'400'};text-align:left;">${p.title}</span>
+          ${p.rec?'<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 7px;border-radius:10px;flex-shrink:0;">⭐ 추천</span>':
+            p.label?`<span style="font-size:10px;color:var(--ht);flex-shrink:0;">${p.label}</span>`:''}
+        </div>
+      </button>`).join('');
+  } catch(e) {
+    opts.innerHTML=`<div style="color:#C62828;font-size:12px;">❌ ${e.message}</div>`;
+  } finally {
+    btn.disabled=false; btn.textContent='추천';
+  }
 }
 function pickRecTitle(el,t){document.querySelectorAll('#recOpts .seo-opt').forEach(b=>b.classList.remove('on'));el.classList.add('on');recSelTitle=t;document.getElementById('recSelTxt').textContent=t;document.getElementById('recSelBox').classList.add('on');toast('제목 선택됐어요 ✓');}
 
