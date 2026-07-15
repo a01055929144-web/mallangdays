@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784121930">
+<meta name="version" content="1784121964">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -731,6 +731,25 @@ const FORMS = {
   육아용품:{fields:[{id:'product',lb:'제품명',ph:'예) 범보 멀티시트'},{id:'price',lb:'가격/구매처',ph:'예) 89,000원 / 쿠팡'},{id:'reason',lb:'구매 이유',ta:1,ph:''},{id:'pros',lb:'좋았던 점',ta:1,ph:''},{id:'cons',lb:'아쉬운 점',ta:1,ph:''},{id:'rec',lb:'추천 대상',ph:'예) 3개월 이상'},{id:'sp',lb:'구매 유형',sel:['내돈내산','협찬·제공','선물받음','당근마켓']}]},
   먹고기록:{fields:[{id:'menu',lb:'주문한 메뉴 & 가격',ta:1,ph:'예) 연어사시미 35,000원'},{id:'taste',lb:'솔직한 맛 평가',ta:1,ph:''},{id:'ctx',lb:'방문 계기 (선택)',ph:'예) 만삭여행 중'}]},
   놀고기록:{fields:[{id:'place',lb:'장소 / 코스',ph:'예) 가평 쁘띠프랑스, 홍대 방탈출, 제주 카멜리아힐'},{id:'date_info',lb:'언제 / 날씨',ph:'예) 2026년 6월 어느 주말, 날씨 맑음'},{id:'highlight',lb:'가장 기억에 남는 순간',ta:1,ph:'예) 말랑맘이 미로에서 길을 잃어서 한참 웃었어요'},{id:'vibe',lb:'분위기 / 특징',ta:1,ph:'예) 한적하고 아기자기한 분위기, 사진 잘 나오는 포인트 많음'},{id:'mom_reaction',lb:'말랑맘 반응',ph:'예) 여기 진짜 좋다, 또 오자!'},{id:'again',lb:'재방문 의사',sel:['또 오고 싶어요 ⭐⭐⭐⭐⭐','괜찮았어요 ⭐⭐⭐⭐','글쎄요 ⭐⭐⭐']}]},
+  집밥요리:{fields:[
+    {id:'dish',lb:'요리 이름',ph:'예) 미역국, 된장찌개, 아기 이유식 감자퓨레'},
+    {id:'keyword',lb:'핵심 키워드 / 한 줄 소개',ph:'예) 초보도 쉬운 미역국, 임산부 영양식, 이유식 첫 단계'},
+    {id:'reason',lb:'만든 계기',ph:'예) 말랑맘 입맛 없어해서, 이유식 시작해서'},
+    {id:'recipe',lb:'재료 & 간단 레시피',ta:1,ph:'재료와 만드는 순서를 간단히'},
+    {id:'result',lb:'맛·결과',ta:1,ph:'예) 생각보다 맛있었어요, 말랑맘이 두 그릇 먹었어요'},
+    {id:'tip',lb:'요리 팁 (선택)',ph:'예) 간은 마지막에, 약불로 오래 끓이기'}
+  ]},
+  살림리뷰:{fields:[
+    {id:'product',lb:'제품명',ph:'예) 유한락스 베이킹소다, 비타민D 영양제'},
+    {id:'keyword',lb:'핵심 키워드 / 한 줄 소개',ph:'예) 신생아 집 청소, 임산부 영양제, 주방 세제 비교'},
+    {id:'category',lb:'제품 종류',sel:['생활용품','식품·건강','주방용품','청소용품','기타']},
+    {id:'purchase',lb:'구매 유형',sel:['내돈내산','협찬·제공','선물받음','당근마켓']},
+    {id:'price',lb:'가격 / 구매처',ph:'예) 12,000원 / 쿠팡'},
+    {id:'reason',lb:'구매 이유',ta:1,ph:''},
+    {id:'pros',lb:'좋았던 점',ta:1,ph:''},
+    {id:'cons',lb:'아쉬운 점',ta:1,ph:''},
+    {id:'rec',lb:'추천 대상',ph:'예) 신생아 있는 가정, 주부'}
+  ]},
   살림재테크:{fields:[{id:'topic',lb:'주제',ph:'예) 2026년 육아휴직, 신생아특례대출'},{id:'series',lb:'시리즈 구성',sel:['1편 (단독글)','2편 시리즈','3편 시리즈']},{id:'my_situation',lb:'나의 상황/계획/경험',ta:1,ph:'예) 말랑이 출생 후 육아휴직 6개월 신청 예정'},{id:'extra',lb:'추가 내용 (선택)',ta:1,ph:''}]},
 };
 
