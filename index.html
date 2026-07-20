@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784515126">
+<meta name="version" content="1784517138">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -952,6 +952,17 @@ async function generate() {
 }
 
 // ======= 텍스트 파싱 =======
+function removeEmoji(txt) {
+  if (!txt) return '';
+  // 이모지 유니코드 범위 제거 (해시태그 줄은 유지)
+  return txt.split('\n').map(line => {
+    // 해시태그 줄은 이모지 제거 안 함
+    if (line.trim().startsWith('#')) return line;
+    // 본문에서 이모지 제거
+    return line.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F1FF}\u{1F200}-\u{1F2FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{FE00}-\u{FE0F}]/gu, '').trim();
+  }).join('\n');
+}
+
 function cleanDraft(txt) {
   if (!txt) return '';
   const lines = txt.split('\n');
@@ -969,7 +980,7 @@ function cleanDraft(txt) {
       if (isGuide) { cut=i; break; }
     }
   }
-  return lines.slice(0,cut).join('\n').trim();
+  return removeEmoji(lines.slice(0,cut).join('\n').trim());
 }
 
 function cleanInsta(txt) {
@@ -977,8 +988,8 @@ function cleanInsta(txt) {
   const sepIdx = txt.indexOf('\n---');
   if (sepIdx > -1) {
     const after = txt.slice(sepIdx);
-    if (after.includes('#')) return txt;
-    return txt.slice(0, sepIdx).trim();
+    if (after.includes('#')) return removeEmoji(txt);
+    return removeEmoji(txt.slice(0, sepIdx).trim());
   }
   return cleanDraft(txt);
 }
