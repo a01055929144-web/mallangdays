@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784510486">
+<meta name="version" content="1784514347">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -675,10 +675,11 @@ const SP = `말랑데이즈 블로그 작가. 말랑파파(아빠시점)·말랑
 - 한 문장 2~3줄 이내. 긴 문장 나눌 것.
 - 이모지 전환점에만. 남발 금지.
 - 분량: 블로그 1,500~2,000자 / 인스타 200~300자.
+- 해시태그: '네이버태그:' 레이블 없이 # 기호로만 시작. 줄바꿈 없이 한 줄로 쭉 나열.
 
 [고정값 - 절대 변경 금지]
 블로그 첫 줄: 모든 카테고리 예외없이 "안녕하세요, 말랑파파에요! 😊" 로 시작.
-블로그 고정태그 (맨 앞 필수): #말랑데이즈 #말랑파파 #말랑맘 #말랑이 #육아정보 #육아일상 #신생아육아 #초보아빠 #초보부모 #아기키우기
+블로그 해시태그: '네이버태그:' 레이블 없이 해시태그만. 줄바꿈 없이 한 줄로 나열. 맨 앞 고정: #말랑데이즈 #말랑파파 #말랑맘 #말랑이 #육아정보 #육아일상 #신생아육아 #초보아빠 #초보부모 #아기키우기
 인스타 고정태그 (필수): #말랑데이즈 #말랑파파 #말랑맘 #말랑이 #육아정보 #육아일상 #신생아육아 #초보아빠
 
 [출력형식]
@@ -689,7 +690,7 @@ const SP = `말랑데이즈 블로그 작가. 말랑파파(아빠시점)·말랑
 
 [BLOG]
 (완성형 블로그글)
-네이버태그: #말랑데이즈 #말랑파파 #말랑맘 #말랑이 #육아정보 #육아일상 #신생아육아 #초보아빠 #초보부모 #아기키우기 + 카테고리관련태그 (합계 20~30개)
+#말랑데이즈 #말랑파파 #말랑맘 #말랑이 #육아정보 #육아일상 #신생아육아 #초보아빠 #초보부모 #아기키우기 카테고리관련태그 (합계 20~30개, 줄글로 나열 - 줄바꿈 없이 한 줄로)
 
 [INSTA]
 (훅1~2줄+본문3~5줄+"자세한 내용은 블로그에서 확인하세요 🔗")
@@ -958,10 +959,10 @@ function cleanDraft(txt) {
   let cut = lines.length;
   for (let i=0;i<lines.length;i++) {
     const line = lines[i].trim();
-    if (line.startsWith('#') || line.startsWith('네이버태그')) continue;
+    if (line.startsWith('#')) continue;
     if (bad.some(b=>lines[i].includes(b))) { cut=i; break; }
     if (/^-{3,}$/.test(line)) {
-      const restHasTag = lines.slice(i+1).some(l=>l.trim().startsWith('#')||l.trim().startsWith('네이버태그'));
+      const restHasTag = lines.slice(i+1).some(l=>l.trim().startsWith('#'));
       if (restHasTag) continue;
       const nextLine = (lines[i+1]||'').trim();
       const isGuide = bad.some(b=>nextLine.includes(b)) || nextLine.startsWith('실제') || nextLine.startsWith('예)');
