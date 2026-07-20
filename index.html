@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784121964">
+<meta name="version" content="1784510486">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -241,6 +241,7 @@ input[type="file"]{display:none;}
           <button class="cb" data-cat="살림재테크" data-type="정보형" onclick="selCat(this)">살림·재테크<span>정보형 · 정보 90%</span></button>
           <button class="cb" data-cat="집밥요리" data-type="정보형" onclick="selCat(this)">집밥·요리 기록<span>정보형 · 감성 60%</span></button>
           <button class="cb" data-cat="살림리뷰" data-type="정보형" onclick="selCat(this)">살림·제품 리뷰<span>정보형 · 정보 85%</span></button>
+          <button class="cb" data-cat="생활정보후기" data-type="정보형" onclick="selCat(this)">생활정보·후기<span>정보형 · 정보 80%</span></button>
         </div>
       </div>
       <div class="card" id="fmCard" style="display:none;">
@@ -708,6 +709,7 @@ const SP_CATS = {
   '놀고기록': '기본정보(위치·시간·입장료·주차) 먼저.\n구조: 기본정보→계기→에피소드→분위기→말랑맘반응→총평.\n추가태그: #데이트 #부부데이트 #신혼데이트 #나들이 +장소명',
   '집밥요리': '집밥·요리 기록. 첫줄 "안녕하세요, 말랑파파에요! 😊".\n입력된 키워드/한줄소개를 SEO 제목과 첫 문단에 자연스럽게 반영.\n구조: 만든계기(감성적으로)→재료(간결하게)→만드는과정(이야기처럼)→맛·결과→팁이나 한마디.\n핵심: 레시피 나열이 아닌 이야기처럼. 말랑맘·말랑이 반응 포함. 실패했으면 솔직하게.\n추가태그: #집밥 #요리기록 #집밥스타그램 #자취요리 #이유식 #육아요리 #아빠요리',
   '살림리뷰': '살림·생활용품·식품 솔직후기. 첫줄 "안녕하세요, 말랑파파에요! 😊".\n입력된 키워드/한줄소개를 SEO 제목과 첫 문단에 자연스럽게 반영.\n구조: 한줄결론→구매계기→좋은점→아쉬운점→실제사용경험→가격구매처→추천대상.\n구매유형필수반영: 내돈내산→"직접 사봤어요", 협찬→"제공받아", 선물→"선물받아서"(살까말까금지), 당근→"당근득템".\n이모지소제목금지. 장단점섹션제목없이 이야기처럼.\n추가태그: #살림 #살림템 #생활용품추천 #주방용품 #식품리뷰 #내돈내산 #살림스타그램',
+  '생활정보후기': '생활 서비스·장소 방문 후기. 첫줄 "안녕하세요, 말랑파파에요! 😊".\n입력된 키워드/한줄소개를 SEO 제목과 첫 문단에 자연스럽게 반영.\n구조: 방문계기→과정(대기·비용·소요시간 구체적으로)→결과→팁·주의사항→총평.\n핵심: 같은 상황의 독자에게 실질적으로 도움되는 정보 위주. 비용·시간·예약여부 반드시 포함.\n추가태그: #생활정보 #자동차정비 #생활후기 #육아생활 #신혼생활 #생활꿀팁 +방문장소명',
   '살림재테크': '웹검색필수·2026년기준명시·출처표기.\n구조: 결론(숫자)→자격→방법→계산→주의사항.\n추가태그: #재테크 #신혼재테크 #정부지원금 #출산지원 #신혼부부혜택',
 };
 
@@ -749,6 +751,14 @@ const FORMS = {
     {id:'pros',lb:'좋았던 점',ta:1,ph:''},
     {id:'cons',lb:'아쉬운 점',ta:1,ph:''},
     {id:'rec',lb:'추천 대상',ph:'예) 신생아 있는 가정, 주부'}
+  ]},
+  생활정보후기:{fields:[
+    {id:'service',lb:'방문한 곳 / 서비스명',ph:'예) 현대자동차 서비스센터, 교통안전공단 자동차검사'},
+    {id:'keyword',lb:'핵심 키워드 / 한 줄 소개',ph:'예) 자동차 정기검사 후기, 신생아 예방접종 병원 추천'},
+    {id:'purpose',lb:'방문 목적',ph:'예) 엔진오일 교체 + 정기점검, 아기 BCG 접종'},
+    {id:'process',lb:'과정 / 소요시간 / 비용',ta:1,ph:'예) 예약 없이 갔는데 1시간 대기, 점검비 45,000원'},
+    {id:'result',lb:'결과 / 느낀 점',ta:1,ph:'예) 생각보다 빨리 끝났어요, 직원분이 친절했어요'},
+    {id:'tip',lb:'팁 / 주의사항 (선택)',ta:1,ph:'예) 예약 필수, 주차 넓음, 근처 카페 있음'}
   ]},
   살림재테크:{fields:[{id:'topic',lb:'주제',ph:'예) 2026년 육아휴직, 신생아특례대출'},{id:'series',lb:'시리즈 구성',sel:['1편 (단독글)','2편 시리즈','3편 시리즈']},{id:'my_situation',lb:'나의 상황/계획/경험',ta:1,ph:'예) 말랑이 출생 후 육아휴직 6개월 신청 예정'},{id:'extra',lb:'추가 내용 (선택)',ta:1,ph:''}]},
 };
@@ -1170,7 +1180,7 @@ ${persona.recent?'최근 작성글: '+persona.recent:''}
 
 말랑파파 실제 상황과 오늘 트렌드를 결합해 콘텐츠 5개 추천.
 분석 과정이나 요약 없이 아래 JSON 형식만 정확히 출력해줘:
-{"items":[{"type":"hot|trend|season","category":"임신기록|연애회상|육아정보|육아용품|먹고기록|놀고기록|살림재테크|집밥요리|살림리뷰","title":"SEO 최적화 제목","desc":"추천 이유 한 줄","keyword":"핵심 키워드","hook":"말랑파파 도입 문장"}]}`;
+{"items":[{"type":"hot|trend|season","category":"임신기록|연애회상|육아정보|육아용품|먹고기록|놀고기록|살림재테크|집밥요리|살림리뷰|생활정보후기","title":"SEO 최적화 제목","desc":"추천 이유 한 줄","keyword":"핵심 키워드","hook":"말랑파파 도입 문장"}]}`;
     const d=await callClaude('블로그 콘텐츠 전략가. JSON만 출력.',prompt,600,true);
     const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('')||'';
     // ```json 코드블록 우선 추출, 없으면 일반 JSON 패턴
