@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784701825">
+<meta name="version" content="1784869183">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -389,10 +389,10 @@ async function sheetUpdate(rowIdx, col, value) {
 async function autoSave(cat, title, blog, insta, date) {
   try {
     // 이미 clean된 값이 들어오지만 혹시 모르니 한번 더 처리
-    // 저작권 문구 포함 확인 (없으면 추가)
-    const COPYRIGHT_TXT = '\n\n📸 사진의 저작권은 작성자에게 있습니다.\n\n무단 사용·복제·배포 및 상업적 이용을 금지하며,\n\n위반 시 법적 조치를 받을 수 있습니다.';
-    const rawBlog = (blog||'').trim();
-    const blogVal = rawBlog.includes('저작권은 작성자에게') ? rawBlog : (() => {
+    const COPYRIGHT_TXT = '\n\n📸 사진의 저작권은 작성자에게 있습니다. 무단 사용·복제·배포 및 상업적 이용을 금지하며, 위반 시 법적 조치를 받을 수 있습니다.';
+    // 기존 저작권 문구 모두 제거 후 단일 삽입 (중복 방지)
+    const rawBlog = (blog||'').trim().replace(/\n*📸 사진의 저작권[^\n#]*/g, '');
+    const blogVal = (() => {
       const hi = rawBlog.lastIndexOf('\n#');
       return hi > -1 ? rawBlog.slice(0,hi) + COPYRIGHT_TXT + rawBlog.slice(hi) : rawBlog + COPYRIGHT_TXT;
     })();
@@ -1045,11 +1045,13 @@ function parseNormal(txt) {
     const titleSec = secTxt(txt,'TITLE','BLOG');
     titleCandidates = titleSec.split('\n').map(l=>l.replace(/^\d+\.\s*/,'').trim()).filter(t=>t.length>2);
   }
-  // 저작권 문구 강제 삽입 (해시태그 앞에)
-  const hashIdx = blogClean.lastIndexOf('\n#');
+  // 저작권 문구 - 기존 제거 후 단일 삽입 (중복 방지)
+  const COPY_TXT = '\n\n📸 사진의 저작권은 작성자에게 있습니다. 무단 사용·복제·배포 및 상업적 이용을 금지하며, 위반 시 법적 조치를 받을 수 있습니다.';
+  const blogNoCopy = blogClean.replace(/\n*📸 사진의 저작권[^\n#]*/g, '');
+  const hashIdx = blogNoCopy.lastIndexOf('\n#');
   const blogWithCopy = hashIdx > -1
-    ? blogClean.slice(0, hashIdx) + '\n\n📸 사진의 저작권은 작성자에게 있습니다.\n\n무단 사용·복제·배포 및 상업적 이용을 금지하며,\n\n위반 시 법적 조치를 받을 수 있습니다.' + blogClean.slice(hashIdx)
-    : blogClean + '\n\n📸 사진의 저작권은 작성자에게 있습니다.\n\n무단 사용·복제·배포 및 상업적 이용을 금지하며,\n\n위반 시 법적 조치를 받을 수 있습니다.';
+    ? blogNoCopy.slice(0, hashIdx) + COPY_TXT + blogNoCopy.slice(hashIdx)
+    : blogNoCopy + COPY_TXT;
   document.getElementById('blogTxt').textContent=blogWithCopy;
   document.getElementById('instaTxt').textContent=instaClean;
   // [TITLE] 섹션 파싱 → 제목 카드
