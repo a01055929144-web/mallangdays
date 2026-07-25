@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784963079">
+<meta name="version" content="1784989779">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -21,12 +21,26 @@
   --r:14px;--rs:8px;--th:60px;--sab:env(safe-area-inset-bottom,0px);--sat:env(safe-area-inset-top,0px);
 }
 @media(prefers-color-scheme:dark){
-  :root{
+  :root:not(.light-mode){
     --bg:#1C1C1E;--sf:#2C2C2E;--bd:#3A3A3C;--tx:#F2F2F7;--sb:#AEAEB2;--ht:#636366;
     --ac:#E8956A;--al:#2D1F15;--ad:#F0A882;
     --gr:#66BB6A;--gl:#1A2E1A;
     --bl:#5BA3F5;--bll:#1A2A3D;
   }
+}
+/* 수동 다크모드 */
+:root.dark-mode{
+  --bg:#1C1C1E;--sf:#2C2C2E;--bd:#3A3A3C;--tx:#F2F2F7;--sb:#AEAEB2;--ht:#636366;
+  --ac:#E8956A;--al:#2D1F15;--ad:#F0A882;
+  --gr:#66BB6A;--gl:#1A2E1A;
+  --bl:#5BA3F5;--bll:#1A2A3D;
+}
+/* 수동 라이트모드 */
+:root.light-mode{
+  --bg:#FAFAF8;--sf:#FFF;--bd:#E8E6E0;--tx:#1A1916;--sb:#6B6860;--ht:#A8A49E;
+  --ac:#D4845A;--al:#FAF0EB;--ad:#B86A42;
+  --gr:#5A8A5E;--gl:#EDF4EE;
+  --bl:#3B7DD8;--bll:#EBF2FD;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
@@ -201,6 +215,9 @@ input[type="file"]{display:none;}
       <div class="bg bg-g" id="syncBg">✅ 연결됨</div>
       <div class="bg bg-b" id="apiBg">💳 확인 중</div>
       <div class="bg bg-a" id="pgBg">글 작성</div>
+      <button id="themeToggle" onclick="toggleTheme()" style="background:none;border:1px solid var(--bd);border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--sb);touch-action:manipulation;display:flex;align-items:center;gap:4px;">
+        <span id="themeIcon">☀️</span><span id="themeLabel">라이트</span>
+      </button>
       <div class="bg" onclick="document.getElementById('helpModal').style.display='flex'" style="color:var(--ht);cursor:pointer;">?</div>
     </div>
   </div>
@@ -459,20 +476,30 @@ function getMalrangAge() {
   const diffMs = now - BIRTH_DATE;
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   const diffWeeks = Math.floor(diffDays / 7);
+  const remainDaysAfterWeeks = diffDays % 7;
   const months = (now.getFullYear() - BIRTH_DATE.getFullYear()) * 12 + (now.getMonth() - BIRTH_DATE.getMonth());
-  const days = now.getDate() - BIRTH_DATE.getDate();
-  const realMonths = days < 0 ? months - 1 : months;
-  const remainDays = diffDays - (realMonths * 30); // 대략
+  const dayDiff = now.getDate() - BIRTH_DATE.getDate();
+  const realMonths = dayDiff < 0 ? months - 1 : months;
+  const remainDaysAfterMonths = diffDays - (realMonths * 30);
+
+  // 주수+일수 표기 (e.g. 1w 3d / 4w 2d)
+  const wdLabel = diffWeeks > 0
+    ? `${diffWeeks}w ${remainDaysAfterWeeks}d`
+    : `${diffDays}d`;
+
+  // 전체 라벨
+  const fullLabel = diffDays < 30
+    ? `생후 ${diffDays}일 (${wdLabel})`
+    : realMonths < 12
+      ? `생후 ${realMonths}개월 ${remainDaysAfterWeeks}일 (${wdLabel})`
+      : `${Math.floor(realMonths/12)}살 ${realMonths%12}개월 (${wdLabel})`;
 
   return {
     days: diffDays,
     weeks: diffWeeks,
     months: realMonths,
-    label: diffDays < 30
-      ? `생후 ${diffDays}일`
-      : realMonths < 12
-        ? `생후 ${realMonths}개월 ${diffDays - realMonths*30}일`
-        : `${Math.floor(realMonths/12)}살 ${realMonths%12}개월`,
+    wd: wdLabel,
+    label: fullLabel,
     short: diffDays < 30 ? `${diffDays}일` : `${realMonths}개월`,
     birthDate: '2026년 7월 16일',
     today: `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일`
@@ -2237,6 +2264,53 @@ async function generateFromRec(){
 }
 
 // ======= API 상태 =======
+function toggleTheme() {
+  const root = document.documentElement;
+  const isDark = root.classList.contains('dark-mode');
+  const isLight = root.classList.contains('light-mode');
+  const icon = document.getElementById('themeIcon');
+  const label = document.getElementById('themeLabel');
+
+  if (isDark) {
+    // 다크 → 라이트
+    root.classList.remove('dark-mode');
+    root.classList.add('light-mode');
+    localStorage.setItem('theme', 'light');
+    if (icon) icon.textContent = '☀️';
+    if (label) label.textContent = '라이트';
+  } else {
+    // 라이트/기본 → 다크
+    root.classList.remove('light-mode');
+    root.classList.add('dark-mode');
+    localStorage.setItem('theme', 'dark');
+    if (icon) icon.textContent = '🌙';
+    if (label) label.textContent = '다크';
+  }
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  const root = document.documentElement;
+  const icon = document.getElementById('themeIcon');
+  const label = document.getElementById('themeLabel');
+  if (saved === 'dark') {
+    root.classList.add('dark-mode');
+    if (icon) icon.textContent = '🌙';
+    if (label) label.textContent = '다크';
+  } else if (saved === 'light') {
+    root.classList.add('light-mode');
+    if (icon) icon.textContent = '☀️';
+    if (label) label.textContent = '라이트';
+  } else {
+    // 시스템 따름 - 현재 상태 감지
+    const prefersDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+    if (prefersDark) {
+      if (icon) icon.textContent = '🌙';
+      if (label) label.textContent = '다크';
+    }
+  }
+}
+
 function saveCustomGreet() {
   const val = document.getElementById('customGreet')?.value?.trim();
   if (!val) { toast('인삿말을 입력해주세요'); return; }
@@ -2349,12 +2423,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const found = AUTO_SCHEDULES.find(a=>a.id===s.id);
     if (found) found.enabled = s.enabled;
   });
+  initTheme();
   renderAutoSchedules();
   // 말랑이 나이 배너 업데이트
   const ageBanner = document.getElementById('ageBanner');
   if (ageBanner) {
     const age = getMalrangAge();
-    ageBanner.textContent = `말랑이 ${age.label} (${age.today})`;
+    ageBanner.textContent = `말랑이 ${age.label} · ${age.today}`;
   }
   setTimeout(checkVersion, 3000);
   setTimeout(checkReminder, 2000);
