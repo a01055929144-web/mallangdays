@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784961090">
+<meta name="version" content="1784961110">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -821,16 +821,9 @@ const SP_CATS = {
 추가태그: #재테크 #신혼재테크 #정부지원금 #출산지원 #신혼부부혜택`,
 };
 
-function getSP
 function getSP(catName) {
   const extra = SP_CATS[catName];
   return extra ? SP + '\n\n[' + catName + ' 전용]\n' + extra : SP;
-}
-
-function getSP(catName) {
-  const base = SP;
-  const extra = SP_CATS[catName];
-  return extra ? base + '\n\n[' + catName + ' 전용]\n' + extra : base;
 }
 
 const SP_T = `네이버 블로그 SEO 제목 3개. 20자 내외. 번호없이 제목만 3줄 출력.`;
