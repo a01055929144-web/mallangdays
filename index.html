@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784961913">
+<meta name="version" content="1784962012">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -313,7 +313,10 @@ input[type="file"]{display:none;}
               <div id="blogCount" style="font-size:11px;color:var(--ht);"></div>
             </div>
             <div id="qualScore" style="display:none;background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);"></div>
-            <div class="ob" id="blogTxt"></div>
+            <div class="ob" id="blogTxt" contenteditable="true" oninput="onBlogEdit()" style="outline:none;min-height:200px;white-space:pre-wrap;word-break:break-all;"></div>
+            <div id="editSaveBtn" style="display:none;margin-top:6px;">
+              <button class="gen" onclick="saveEditedBlog()" style="padding:10px;font-size:13px;">수정 내용 시트에 저장</button>
+            </div>
             <div class="oas">
               <button class="oab p" onclick="cpEl('blogTxt')">본문 복사</button>
               <button class="oab" onclick="openNaver()" style="background:#03C75A;color:#fff;border-color:#03C75A;">N 블로그</button>
@@ -347,8 +350,22 @@ input[type="file"]{display:none;}
         <input class="fi" id="logSearch" placeholder="제목·카테고리 검색..." oninput="filterLog(this.value)" style="margin-bottom:0;">
       </div>
       <!-- 이번달 통계 -->
+      <div id="pubGoalBar" style="background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-size:12px;font-weight:600;color:var(--sb);">이번달 목표</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input id="pubGoalInput" type="number" min="1" max="100" style="width:44px;padding:3px 6px;border:1px solid var(--bd);border-radius:6px;font-size:12px;text-align:center;background:var(--bg);color:var(--tx);" placeholder="목표">
+            <span style="font-size:11px;color:var(--ht);">개/월</span>
+          </div>
+        </div>
+        <div style="height:8px;background:var(--bd);border-radius:4px;overflow:hidden;">
+          <div id="pubGoalProg" style="height:100%;width:0%;background:var(--ac);border-radius:4px;transition:width .5s;"></div>
+        </div>
+        <div id="pubGoalLabel" style="font-size:11px;color:var(--ht);margin-top:4px;text-align:right;"></div>
+      </div>
       <div id="logStats" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
       <div id="catChart" style="background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);display:none;"></div>
+      <div id="calView" style="background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);display:none;"></div>
       <div class="kpis">
         <div class="kpi" id="kpi-all" onclick="setKpi('all')"><div class="kn" id="kTot">-</div><div class="kl">전체</div></div>
         <div class="kpi" id="kpi-pend" onclick="setKpi('pend')"><div class="kn" id="kPend">-</div><div class="kl">업로드 대기</div></div>
@@ -1366,6 +1383,31 @@ function openNaver() {
   });
 }
 
+function onBlogEdit() {
+  const btn = document.getElementById('editSaveBtn');
+  if (btn) btn.style.display = 'block';
+  // 글자수 업데이트
+  const txt = document.getElementById('blogTxt')?.textContent||'';
+  const bc = document.getElementById('blogCount');
+  if (bc) {
+    const cnt = txt.length;
+    const color = cnt < 1000?'#C62828':cnt>2500?'#E65100':'#2E7D32';
+    bc.innerHTML = `<span style="color:${color};font-weight:600;">${cnt.toLocaleString()}자</span> <span style="color:var(--ht);">(권장 1,500~2,000)</span>`;
+  }
+}
+
+async function saveEditedBlog() {
+  if (!lastRowIdx) { toast('저장된 시트 행이 없어요. 초안을 먼저 생성해주세요'); return; }
+  const txt = document.getElementById('blogTxt')?.textContent||'';
+  if (!txt) { toast('내용이 없어요'); return; }
+  const btn = document.getElementById('editSaveBtn')?.querySelector('button');
+  if (btn) { btn.disabled=true; btn.textContent='저장 중...'; }
+  const ok = await sheetUpdate(lastRowIdx, 'F', txt);
+  if (btn) { btn.disabled=false; btn.textContent='수정 내용 시트에 저장'; }
+  if (ok) { document.getElementById('editSaveBtn').style.display='none'; toast('시트에 저장됐어요!'); cache=null; }
+  else toast('저장 실패. 다시 시도해주세요');
+}
+
 function exportDraft() {
   const title = document.getElementById('titleTxt')?.querySelector('.selected-title')?.textContent?.replace('✓ ','') 
     || selTitle || '말랑데이즈_초안';
@@ -1600,6 +1642,62 @@ function filterLog(q) {
   });
 }
 
+function renderCalView(data) {
+  const el = document.getElementById('calView');
+  if (!el) return;
+  const rows = (data||[]).slice(1).filter(r=>(r[2]||'').trim());
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const firstDay = new Date(y, m, 1).getDay();
+  // 발행일 맵
+  const pubMap = {};
+  rows.forEach(r=>{
+    const d = new Date(r[3]);
+    if(d.getMonth()===m && d.getFullYear()===y) {
+      const key = d.getDate();
+      pubMap[key] = (pubMap[key]||0)+1;
+    }
+  });
+  const dayNames = ['일','월','화','수','목','금','토'];
+  let html = `<div style="font-size:12px;font-weight:600;color:var(--sb);margin-bottom:8px;">${y}년 ${m+1}월 발행 현황</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;">
+    ${dayNames.map(d=>`<div style="font-size:10px;color:var(--ht);padding:2px;">${d}</div>`).join('')}
+    ${Array(firstDay).fill('<div></div>').join('')}`;
+  for(let d=1;d<=daysInMonth;d++){
+    const cnt = pubMap[d]||0;
+    const isToday = d===now.getDate();
+    const bg = cnt>0?'var(--ac)':isToday?'var(--al)':'transparent';
+    const color = cnt>0?'#fff':isToday?'var(--ac)':'var(--tx)';
+    const border = isToday?'1px solid var(--ac)':'1px solid transparent';
+    html+=`<div style="font-size:11px;padding:4px 2px;border-radius:6px;background:${bg};color:${color};border:${border};position:relative;">
+      ${d}${cnt>1?`<span style="position:absolute;top:-2px;right:-2px;font-size:8px;background:#C62828;color:#fff;border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;">${cnt}</span>`:''}
+    </div>`;
+  }
+  html+='</div>';
+  el.style.display='block';
+  el.innerHTML=html;
+}
+
+function updateGoalBar(data) {
+  const rows = (data||[]).slice(1).filter(r=>(r[2]||'').trim());
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+  const monthRows = rows.filter(r=>{
+    const d = new Date(r[3]);
+    return d.getMonth()===thisMonth && d.getFullYear()===thisYear;
+  });
+  const goal = parseInt(localStorage.getItem('pub_goal')||'10');
+  const done = monthRows.length;
+  const pct = Math.min(Math.round(done/goal*100), 100);
+  const prog = document.getElementById('pubGoalProg');
+  const label = document.getElementById('pubGoalLabel');
+  if (prog) prog.style.width = pct+'%';
+  if (prog) prog.style.background = pct>=100?'#2E7D32':pct>=70?'var(--ac)':'var(--bl)';
+  if (label) label.textContent = `${done}/${goal}개 달성 (${pct}%)${pct>=100?' 목표 달성!':''}`;
+}
+
 function renderCatChart(data) {
   const el = document.getElementById('catChart');
   if (!el) return;
@@ -1640,6 +1738,15 @@ function renderLogStats(data) {
   rows.forEach(r=>{ const cat=(r[1]||'').replace(/[\[\]]/g,''); cats[cat]=(cats[cat]||0)+1; });
   const topCat = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
   renderCatChart(data);
+  renderCalView(data);
+  // 발행 목표 달성률
+  const goalInput = document.getElementById('pubGoalInput');
+  const savedGoal = parseInt(localStorage.getItem('pub_goal')||'10');
+  if (goalInput) {
+    goalInput.value = savedGoal;
+    goalInput.oninput = ()=>{ localStorage.setItem('pub_goal', goalInput.value); updateGoalBar(data); };
+  }
+  updateGoalBar(data);
   el.innerHTML = [
     {label:'전체', val: total+'개'},
     {label:'발행완료', val: published+'개'},
