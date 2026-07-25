@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784961250">
+<meta name="version" content="1784961523">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -296,6 +296,7 @@ input[type="file"]{display:none;}
             <div class="oas">
               <button class="oab p" onclick="cpEl('blogTxt')">본문 복사</button>
               <button class="oab" onclick="openNaver()" style="background:#03C75A;color:#fff;border-color:#03C75A;">N 블로그</button>
+              <button class="oab" onclick="exportDraft()" style="background:var(--sf);color:var(--sb);border-color:var(--bd);">내보내기</button>
               <button class="oab" onclick="markPublished()" style="background:#5A8AD4;color:#fff;border-color:#5A8AD4;">발행 완료</button>
             </div>
           </div>
@@ -1038,6 +1039,16 @@ function buildPrompt() {
 }
 
 // ======= Claude 호출 =======
+function getApiErrorMsg(err) {
+  const msg = err?.message || err?.error?.message || String(err);
+  if (msg.includes('401') || msg.includes('authentication')) return '❌ API 키가 잘못됐어요. 설정을 확인해주세요.';
+  if (msg.includes('429') || msg.includes('rate')) return '❌ 요청이 너무 많아요. 잠시 후 다시 시도해주세요.';
+  if (msg.includes('500') || msg.includes('overloaded')) return '❌ Claude 서버가 혼잡해요. 잠시 후 다시 시도해주세요.';
+  if (msg.includes('network') || msg.includes('fetch')) return '❌ 인터넷 연결을 확인해주세요.';
+  if (msg.includes('credit') || msg.includes('billing')) return '❌ API 크레딧이 부족해요. 충전이 필요해요.';
+  return '❌ 오류가 발생했어요: ' + msg.slice(0, 60);
+}
+
 async function callClaude(system, user, maxTokens=4000, webSearch=false) {
   const body={model:'claude-sonnet-4-6',max_tokens:maxTokens,system,messages:[{role:'user',content:user}]};
   if(webSearch) body.tools=[{"type":"web_search_20250305","name":"web_search"}];
@@ -1262,6 +1273,30 @@ function openNaver() {
     toast('본문 복사됐어요. 네이버 블로그로 이동합니다!');
     setTimeout(()=>window.open('https://blog.naver.com/GoPost.naver', '_blank'), 800);
   });
+}
+
+function exportDraft() {
+  const title = document.getElementById('titleTxt')?.querySelector('.selected-title')?.textContent?.replace('✓ ','') 
+    || selTitle || '말랑데이즈_초안';
+  const blog = document.getElementById('blogTxt')?.textContent || '';
+  const insta = document.getElementById('instaTxt')?.textContent || '';
+  if (!blog) { toast('초안이 없어요'); return; }
+  const txt = `[블로그 초안]
+${title}
+
+${blog}
+
+${'='.repeat(40)}
+
+[인스타 캡션]
+${insta}`;
+  const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${title.slice(0,20).replace(/[\s/\\:*?"<>|]/g,'_')}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('파일로 내보냈어요!');
 }
 
 async function markPublished() {
