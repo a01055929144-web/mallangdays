@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784990371">
+<meta name="version" content="1784990535">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -31,36 +31,100 @@
 }
 /* 수동 다크모드 */
 :root.dark-mode{
-  --bg:#121212;--sf:#1E1E1E;--bd:#2C2C2C;
-  --tx:#F5F5F5;--sb:#D0CFC9;--ht:#888882;
-  --ac:#F0976E;--al:#2D1F15;--ad:#F5B08A;
-  --gr:#66BB6A;--gl:#1A2E1A;
-  --bl:#5BA3F5;--bll:#152033;
+  --bg:#121212;--sf:#1E1E1E;--bd:#333;
+  --tx:#F0EDE8;--sb:#C8C4BE;--ht:#787470;
+  --ac:#F0976E;--al:#2A1A10;--ad:#F5B08A;
+  --gr:#66BB6A;--gl:#162016;
+  --bl:#5BA3F5;--bll:#101A28;
 }
-:root.dark-mode .ob,
-:root.dark-mode .fi,
-:root.dark-mode textarea,
-:root.dark-mode input,
-:root.dark-mode select{background:var(--sf)!important;color:var(--tx)!important;border-color:var(--bd)!important;}
-:root.dark-mode .card{background:var(--sf)!important;border-color:var(--bd)!important;}
-:root.dark-mode .li{border-bottom-color:var(--bd)!important;}
-:root.dark-mode .lti,.dark-mode .kn{color:var(--tx)!important;}
-:root.dark-mode .cb{background:var(--sf)!important;border-color:var(--bd)!important;color:var(--tx)!important;}
-:root.dark-mode .cb.on{border-color:var(--ac)!important;background:var(--al)!important;}
-:root.dark-mode .ot button{color:var(--sb)!important;border-color:var(--bd)!important;background:var(--sf)!important;}
-:root.dark-mode .ot button.on{color:var(--tx)!important;border-color:var(--ac)!important;background:var(--al)!important;}
-:root.dark-mode .hd{background:var(--sf)!important;border-bottom:1px solid var(--bd)!important;}
-:root.dark-mode .wrap{background:var(--bg)!important;}
-:root.dark-mode .kpi{background:var(--sf)!important;border-color:var(--bd)!important;}
-:root.dark-mode .kn{color:var(--tx)!important;}
-:root.dark-mode .rc-kw{color:var(--ht)!important;}
-:root.dark-mode .de-ta{background:var(--sf)!important;color:var(--tx)!important;border-color:var(--bd)!important;}
-:root.dark-mode .oab{background:var(--sf)!important;color:var(--sb)!important;border-color:var(--bd)!important;}
+/* === 다크모드 전체 요소 보정 === */
+
+/* 기본 배경/텍스트 */
+:root.dark-mode body,:root.dark-mode .wrap{background:var(--bg)!important;color:var(--tx)!important;}
+
+/* 헤더 */
+:root.dark-mode .hd{background:#1A1A1A!important;border-bottom:1px solid var(--bd)!important;}
+:root.dark-mode .hd *{color:var(--sb)!important;}
+:root.dark-mode .bg{background:#252525!important;color:var(--sb)!important;border-color:var(--bd)!important;}
+:root.dark-mode .bg.on,:root.dark-mode .bg-a{background:var(--ac)!important;color:#fff!important;}
+:root.dark-mode .bg-b{background:#252525!important;color:var(--sb)!important;}
+
+/* 카드 */
+:root.dark-mode .card{background:#1A1A1A!important;border-color:var(--bd)!important;}
+:root.dark-mode .ct{color:var(--tx)!important;}
+
+/* KPI 카드 */
+:root.dark-mode .kpis{background:transparent!important;}
+:root.dark-mode .kpi{background:#1A1A1A!important;border-color:var(--bd)!important;}
+:root.dark-mode .kn{color:var(--tx)!important;font-weight:700;}
+:root.dark-mode .kl{color:var(--ht)!important;}
+
+/* 기록 탭 탭버튼 */
+:root.dark-mode .chb{background:#252525!important;color:var(--sb)!important;border-color:var(--bd)!important;}
+:root.dark-mode .chb.ch-on{background:var(--ac)!important;color:#fff!important;border-color:var(--ac)!important;}
+
+/* 리스트 아이템 */
+:root.dark-mode .li{background:transparent!important;border-bottom:1px solid var(--bd)!important;}
+:root.dark-mode .lti{color:var(--tx)!important;font-weight:500;}
+:root.dark-mode .lh{color:var(--ht)!important;}
+:root.dark-mode .lh span{color:var(--ht)!important;}
+
+/* 카테고리 뱃지 */
+:root.dark-mode .lc{opacity:1!important;}
+:root.dark-mode .lci{background:#2A1A10!important;color:#F0976E!important;}
+:root.dark-mode .lcr{background:#162016!important;color:#66BB6A!important;}
+:root.dark-mode .lc[style*="background"]{filter:brightness(0.9) saturate(1.2);}
+
+/* 초안 탭 버튼들 */
+:root.dark-mode .db{background:#252525!important;color:var(--sb)!important;border-color:var(--bd)!important;}
+
+/* 탭 선택 버튼(블로그/인스타/사진배치) */
+:root.dark-mode .ot{background:transparent!important;}
+:root.dark-mode .ot button{background:#252525!important;color:var(--sb)!important;border-color:var(--bd)!important;}
+:root.dark-mode .ot button.on{background:var(--ac)!important;color:#fff!important;border-color:var(--ac)!important;}
+
+/* 초안 텍스트 박스 */
+:root.dark-mode .ob{background:#1A1A1A!important;color:var(--tx)!important;border-color:var(--bd)!important;white-space:pre-wrap!important;}
+:root.dark-mode .oc{background:transparent!important;}
+
+/* 입력 요소 */
+:root.dark-mode input,:root.dark-mode textarea,:root.dark-mode select{background:#252525!important;color:var(--tx)!important;border-color:var(--bd)!important;}
+:root.dark-mode input::placeholder,:root.dark-mode textarea::placeholder{color:var(--ht)!important;}
+:root.dark-mode .fi{background:#252525!important;color:var(--tx)!important;border-color:var(--bd)!important;}
+
+/* 버튼 */
+:root.dark-mode .gen{background:var(--ac)!important;color:#fff!important;}
+:root.dark-mode .oab{background:#252525!important;color:var(--sb)!important;border-color:var(--bd)!important;}
 :root.dark-mode .oab.p{background:var(--tx)!important;color:var(--bg)!important;}
-:root.dark-mode .gen{background:var(--tx)!important;color:var(--bg)!important;}
-:root.dark-mode .bg{background:var(--sf)!important;color:var(--sb)!important;border-color:var(--bd)!important;}
-:root.dark-mode .bg.on,.dark-mode .bg-a{background:var(--ac)!important;color:#fff!important;}
-/* 수동 라이트모드 */
+:root.dark-mode .cb{background:#1A1A1A!important;border-color:var(--bd)!important;color:var(--tx)!important;}
+:root.dark-mode .cb span{color:var(--ht)!important;}
+:root.dark-mode .cb.on{border-color:var(--ac)!important;background:var(--al)!important;color:var(--ac)!important;}
+
+/* 캘린더 */
+:root.dark-mode #calView div[style*="font-size:11px"]{color:var(--tx)!important;}
+:root.dark-mode #calView div[style*="color:#fff"]{color:#fff!important;}
+
+/* 편집 textarea */
+:root.dark-mode .de-ta{background:#252525!important;color:var(--tx)!important;border-color:var(--bd)!important;}
+
+/* contenteditable 블로그 박스 */
+:root.dark-mode [contenteditable]{background:#1A1A1A!important;color:var(--tx)!important;border-color:var(--bd)!important;}
+
+/* 링크 색상 */
+:root.dark-mode a{color:var(--bl)!important;}
+
+/* 토스트 */
+:root.dark-mode .toast{background:#2A2A2A!important;color:var(--tx)!important;border:1px solid var(--bd)!important;}
+
+/* rc-kw 키워드 */
+:root.dark-mode .rc-kw{color:var(--ht)!important;}
+
+/* 배너 */
+:root.dark-mode #ageBanner{background:var(--al)!important;color:var(--ad)!important;border-bottom-color:var(--bd)!important;}
+
+/* 스플래시 */
+:root.dark-mode #splash{background:var(--bg)!important;}
+
 :root.light-mode{
   --bg:#FAFAF8;--sf:#FFF;--bd:#E8E6E0;--tx:#1A1916;--sb:#6B6860;--ht:#A8A49E;
   --ac:#D4845A;--al:#FAF0EB;--ad:#B86A42;
