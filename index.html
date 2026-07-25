@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784962238">
+<meta name="version" content="1784962368">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -374,7 +374,8 @@ input[type="file"]{display:none;}
       <div id="logStats" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
       <div id="catChart" style="background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);display:none;"></div>
       <div id="calView" style="background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);display:none;"></div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+      <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:6px;">
+        <button onclick="backupSheet()" style="font-size:11px;padding:5px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:20px;cursor:pointer;color:var(--sb);touch-action:manipulation;">CSV 백업</button>
         <button onclick="showMonthReport()" style="font-size:11px;padding:5px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:20px;cursor:pointer;color:var(--sb);touch-action:manipulation;">월별 리포트</button>
       </div>
       <div class="kpis">
@@ -419,6 +420,11 @@ input[type="file"]{display:none;}
       <button onclick="document.getElementById('helpModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--ht);">✕</button>
     </div>
     <div style="font-size:13px;line-height:1.8;">
+      <div style="font-weight:600;color:var(--ac);margin-bottom:4px;">인삿말 커스텀</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <input id="customGreet" class="fi" placeholder="예) 안녕하세요, 말랑파파에요!" style="flex:1;margin-bottom:0;font-size:12px;" value="${localStorage.getItem('custom_greet')||'안녕하세요, 말랑파파에요!'}">
+        <button onclick="saveCustomGreet()" style="padding:8px 12px;background:var(--ac);color:#fff;border:none;border-radius:var(--rs);font-size:12px;cursor:pointer;flex-shrink:0;">저장</button>
+      </div>
       <div style="font-weight:600;color:var(--ac);margin-bottom:2px;">추천 탭</div>
       <div style="color:var(--sb);margin-bottom:10px;">트렌드 기반 콘텐츠 추천. 탭하면 바로 작성 가능해요.</div>
       <div style="font-weight:600;color:var(--ac);margin-bottom:2px;">글 작성 탭</div>
@@ -702,6 +708,8 @@ async function renderLog() {
   if (!rows) { document.getElementById('pendList').innerHTML='<div class="em"><div class="emi">❌</div>불러오기 실패<br><small>새로고침해주세요</small></div>'; return; }
   const items = parseRows(rows);
   window._lastSheetData = rows;
+  // 오프라인 대비 로컬 캐시 저장 (최신 데이터)
+  try { localStorage.setItem('sheet_cache', JSON.stringify({ts:Date.now(), rows})); } catch(e){}
   renderLogStats(rows);
   const pend = items.filter(({r})=>!isDone(r[4])||!isDone(r[6]));
   const done = items.filter(({r})=>isDone(r[4])&&isDone(r[6]));
@@ -746,6 +754,14 @@ function renderDrafts() {
       </div>
     </div>`).join('');
 }
+function clearDrafts() {
+  if (!confirm(`초안 ${drafts.length}개를 모두 삭제할까요? 복구할 수 없어요.`)) return;
+  drafts = [];
+  localStorage.setItem('ml_drafts', JSON.stringify(drafts));
+  renderDrafts();
+  toast('초안 히스토리를 모두 삭제했어요');
+}
+
 function pinDraft(i) {
   drafts[i].pinned = !drafts[i].pinned;
   // 고정된 항목을 맨 앞으로
@@ -1461,6 +1477,26 @@ async function saveEditedBlog() {
   else toast('저장 실패. 다시 시도해주세요');
 }
 
+function backupSheet() {
+  const rows = sheetData;
+  if (!rows || rows.length < 2) { toast('시트 데이터가 없어요. 기록 탭을 먼저 열어주세요'); return; }
+  const headers = rows[0] || ['No','카테고리','제목','업로드일','블로그상태','블로그초안','인스타상태','인스타초안','예정일','유튜브'];
+  const csv = [headers, ...rows.slice(1)].map(row =>
+    row.map(cell => {
+      const s = String(cell||'').replace(/"/g,'""');
+      return s.includes(',') || s.includes('\n') || s.includes('"') ? `"${s}"` : s;
+    }).join(',')
+  ).join('\n');
+  const bom = '\uFEFF'; // 한글 깨짐 방지
+  const blob = new Blob([bom+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `말랑데이즈_백업_${nowDate().replace(/\. /g,'-').replace('.','')}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('시트 백업 파일을 저장했어요!');
+}
+
 function exportDraft() {
   const title = document.getElementById('titleTxt')?.querySelector('.selected-title')?.textContent?.replace('✓ ','') 
     || selTitle || '말랑데이즈_초안';
@@ -1942,6 +1978,24 @@ async function generateFromRec(){
 }
 
 // ======= API 상태 =======
+function saveCustomGreet() {
+  const val = document.getElementById('customGreet')?.value?.trim();
+  if (!val) { toast('인삿말을 입력해주세요'); return; }
+  localStorage.setItem('custom_greet', val);
+  toast('인삿말이 저장됐어요!');
+}
+
+// getSP에서 커스텀 인삿말 반영
+const _origGetSP = getSP;
+function getSP(catName) {
+  const sp = _origGetSP(catName);
+  const greet = localStorage.getItem('custom_greet');
+  if (greet && greet !== '안녕하세요, 말랑파파에요!') {
+    return sp.replace('안녕하세요, 말랑파파에요!', greet);
+  }
+  return sp;
+}
+
 function checkReminder() {
   const lastPub = localStorage.getItem('last_pub_date');
   if (!lastPub) return;
