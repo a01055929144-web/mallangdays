@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784961523">
+<meta name="version" content="1784961560">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -15,6 +15,14 @@
   --gr:#5A8A5E;--gl:#EDF4EE;
   --bl:#3B7DD8;--bll:#EBF2FD;
   --r:14px;--rs:8px;--th:60px;--sab:env(safe-area-inset-bottom,0px);--sat:env(safe-area-inset-top,0px);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1C1C1E;--sf:#2C2C2E;--bd:#3A3A3C;--tx:#F2F2F7;--sb:#AEAEB2;--ht:#636366;
+    --ac:#E8956A;--al:#2D1F15;--ad:#F0A882;
+    --gr:#66BB6A;--gl:#1A2E1A;
+    --bl:#5BA3F5;--bll:#1A2A3D;
+  }
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
@@ -1074,7 +1082,7 @@ const d=await callClaude(getSP(catName),buildPrompt(),isFin?4000:2500,needWeb||i
     if(!txt) throw new Error('응답이 비어있어요');
     if(txt.includes('[BLOG_1]')) await parseSeriesOut(txt);
     else parseNormal(txt);
-  } catch(e){toast('오류: '+(e.message||'다시 시도해주세요'));document.getElementById('fmCard').style.display='block';}
+  } catch(e){toast(getApiErrorMsg(e));document.getElementById('fmCard').style.display='block';}
   finally{clearInterval(iv);document.getElementById('ldEl').classList.remove('on');}
 }
 
@@ -1511,6 +1519,8 @@ function renderLogStats(data) {
   ].map(s=>`<div style="background:var(--sf);border-radius:var(--rs);padding:6px 10px;font-size:11px;color:var(--sb);"><div style="font-weight:600;font-size:13px;color:var(--tx);">${s.val}</div>${s.label}</div>`).join('');
 }
 
+let archivePage=0;
+const ARCH_SIZE=20;
 function renderArchive(){
   const card=document.getElementById('archCard'),list=document.getElementById('archList'),cnt=document.getElementById('archCount');
   if(!recArchive.length){card.style.display='none';return;}
@@ -1568,7 +1578,7 @@ async function generateFromRec(){
     if(!txt)throw new Error('응답이 비어있어요');
     parseNormal(txt);
   }catch(e){
-    toast('오류: '+(e.message||'다시 시도해주세요'));
+    toast(getApiErrorMsg(e));
   }finally{
     clearInterval(iv);
     document.getElementById('ldEl').classList.remove('on');
