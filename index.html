@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784962211">
+<meta name="version" content="1784962238">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -374,6 +374,9 @@ input[type="file"]{display:none;}
       <div id="logStats" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
       <div id="catChart" style="background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);display:none;"></div>
       <div id="calView" style="background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);display:none;"></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+        <button onclick="showMonthReport()" style="font-size:11px;padding:5px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:20px;cursor:pointer;color:var(--sb);touch-action:manipulation;">월별 리포트</button>
+      </div>
       <div class="kpis">
         <div class="kpi" id="kpi-all" onclick="setKpi('all')"><div class="kn" id="kTot">-</div><div class="kl">전체</div></div>
         <div class="kpi" id="kpi-pend" onclick="setKpi('pend')"><div class="kn" id="kPend">-</div><div class="kl">업로드 대기</div></div>
