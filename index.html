@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784963059">
+<meta name="version" content="1784963079">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -1235,6 +1235,8 @@ function buildPrompt() {
   const info=fields.map(f=>{const v=gv(f.id);return v?`${f.lb}: ${v}`:null;}).filter(Boolean).join('\n');
   const tp=selTitle?`\n선택된 SEO 제목: ${selTitle}`:'';
   const kp='';
+  const age=getMalrangAge();
+  const ageContext=`\n[말랑이 정보] 출생일:${age.birthDate} / 오늘:${age.today} / 나이:${age.label}`;
   const pp=placeInfo?`\n\n[매장 기본정보 - 블로그 상단 포함]\n${placeInfo}`:'';
   const fp=files.length?`\n첨부 사진: ${files.map((f,i)=>`사진${i+1}(${f.name})`).join(', ')}`:'';
   if(catName==='살림재테크'){
