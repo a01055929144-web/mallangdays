@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784961713">
+<meta name="version" content="1784961759">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -659,6 +659,7 @@ function renderDrafts() {
       <div class="ch-btns">
         <button class="db db-bl" onclick="togLD(${i},'blog')">📝 블로그</button>
         <button class="db db-in" onclick="togLD(${i},'insta')">📸 인스타</button>
+        <button class="db" onclick="regenDraft(${i})" style="background:var(--al);color:var(--ac);border:1px solid var(--ac);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;">재생성</button>
         <button class="chb ch-off" onclick="delDraft(${i})" style="background:#FFEBEE;color:#C62828;border:none;">🗑️</button>
       </div>
       <div class="de" id="ld_${i}">
@@ -674,6 +675,20 @@ function renderDrafts() {
       </div>
     </div>`).join('');
 }
+function regenDraft(i) {
+  const d = drafts[i];
+  if (!d) return;
+  // 해당 카테고리 선택 후 글작성 탭으로 이동
+  const btn = document.querySelector(`.cb[data-cat="${d.cat}"]`);
+  if (btn) {
+    selCat(btn);
+    showPg('write');
+    toast(`${d.cat} 카테고리 선택됐어요. 내용 수정 후 재생성하세요!`);
+  } else {
+    toast('해당 카테고리를 찾을 수 없어요');
+  }
+}
+
 let ldState = {};
 function togLD(i, ch) {
   const box=document.getElementById(`ld_${i}`), ta=document.getElementById(`ldta_${i}`), lb=document.getElementById(`ldl_${i}`);
@@ -1641,6 +1656,19 @@ function updatePendingBadge() {
 }
 
 async function checkApi(){
+  // 시트 연결 상태 확인
+  try {
+    const sr = await fetch(AS + '?action=read');
+    const sd = await sr.json();
+    const connEl = document.getElementById('hConn');
+    if (connEl && sd.ok) {
+      connEl.textContent = `✅ 시트(${(sd.data?.length||1)-1}행)`;
+    }
+  } catch(e) {
+    const connEl = document.getElementById('hConn');
+    if (connEl) connEl.textContent = '❌ 시트 오류';
+  }
+  updatePendingBadge();
   try{
     const r=await fetch('https://api.anthropic.com/v1/models',{headers:{'x-api-key':AK,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
     const el=document.getElementById('apiBg');
