@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784962079">
+<meta name="version" content="1784962211">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -178,6 +178,13 @@ input[type="file"]{display:none;}
 </style>
 </head>
 <body>
+<div id="reminderBanner" style="display:none;position:fixed;bottom:70px;left:0;right:0;z-index:500;background:var(--bl);color:#fff;padding:10px 16px;font-size:13px;align-items:center;justify-content:space-between;gap:8px;">
+  <span></span>
+  <div style="display:flex;gap:8px;flex-shrink:0;">
+    <button onclick="showPg('write')" style="background:#fff;color:var(--bl);border:none;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;">글 작성</button>
+    <button onclick="this.closest('#reminderBanner').style.display='none'" style="background:none;border:none;color:#fff;font-size:16px;cursor:pointer;">✕</button>
+  </div>
+</div>
 <div id="splash" style="position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;">
   <div style="font-size:40px;">🌸</div>
   <div style="font-size:20px;font-weight:700;color:var(--ac);">말랑데이즈</div>
@@ -393,6 +400,15 @@ input[type="file"]{display:none;}
     <button class="ti" id="t-log" onclick="showPg('log')"><span class="tic">📋</span><span class="til">기록</span><div class="tid"></div></button>
   </div>
 </div>
+<div id="reportModal" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.5);padding:20px;overflow-y:auto;" onclick="this.style.display='none'">
+  <div style="background:var(--bg);border-radius:16px;padding:20px;max-width:500px;margin:0 auto;" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:16px;font-weight:700;color:var(--tx);" id="reportTitle">월별 리포트</div>
+      <button onclick="document.getElementById('reportModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--ht);">✕</button>
+    </div>
+    <div id="reportContent" style="font-size:13px;line-height:1.8;color:var(--sb);"></div>
+  </div>
+</div>
 <div id="helpModal" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.5);padding:20px;overflow-y:auto;" onclick="this.style.display='none'">
   <div style="background:var(--bg);border-radius:16px;padding:20px;max-width:500px;margin:0 auto;" onclick="event.stopPropagation()">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -531,6 +547,7 @@ async function autoSave(cat, title, blog, insta, date) {
 
     cache = null;
     lastRowIdx = rowIdx;
+    localStorage.setItem('last_pub_date', new Date().toISOString());
     toast('✅ 시트에 저장됐어요');
   } catch(e) {
     console.error('autoSave error:', e);
@@ -710,6 +727,7 @@ function renderDrafts() {
         <button class="db db-bl" onclick="togLD(${i},'blog')">📝 블로그</button>
         <button class="db db-in" onclick="togLD(${i},'insta')">📸 인스타</button>
         <button class="db" onclick="regenDraft(${i})" style="background:var(--al);color:var(--ac);border:1px solid var(--ac);font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;">재생성</button>
+        <button class="db" onclick="pinDraft(${i})" style="font-size:13px;background:none;border:none;cursor:pointer;" title="즐겨찾기">${drafts[i].pinned?'★':'☆'}</button>
         <button class="chb ch-off" onclick="delDraft(${i})" style="background:#FFEBEE;color:#C62828;border:none;">🗑️</button>
       </div>
       <div class="de" id="ld_${i}">
@@ -725,6 +743,15 @@ function renderDrafts() {
       </div>
     </div>`).join('');
 }
+function pinDraft(i) {
+  drafts[i].pinned = !drafts[i].pinned;
+  // 고정된 항목을 맨 앞으로
+  drafts.sort((a,b) => (b.pinned?1:0) - (a.pinned?1:0));
+  localStorage.setItem('ml_drafts', JSON.stringify(drafts));
+  renderDrafts();
+  toast(drafts[i].pinned ? '★ 즐겨찾기에 추가됐어요' : '☆ 즐겨찾기 해제됐어요');
+}
+
 function regenDraft(i) {
   const d = drafts[i];
   if (!d) return;
@@ -1702,6 +1729,71 @@ function renderCalView(data) {
   el.innerHTML=html;
 }
 
+async function showMonthReport() {
+  const modal = document.getElementById('reportModal');
+  const content = document.getElementById('reportContent');
+  const title = document.getElementById('reportTitle');
+  modal.style.display = 'flex';
+  content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--ht);">데이터 분석 중...</div>';
+
+  // 시트 데이터 로드
+  let rows;
+  try {
+    const r = await fetch(AS + '?action=read');
+    const d = await r.json();
+    rows = d.data?.slice(1).filter(r=>(r[2]||'').trim()) || [];
+  } catch(e) { content.innerHTML = '데이터를 불러올 수 없어요'; return; }
+
+  const now = new Date();
+  // 최근 6개월 통계
+  const months = [];
+  for (let i=5; i>=0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const y = d.getFullYear(), m = d.getMonth();
+    const monthRows = rows.filter(r => {
+      const rd = new Date(r[3]);
+      return rd.getFullYear()===y && rd.getMonth()===m;
+    });
+    const published = monthRows.filter(r=>(r[4]||'').includes('발행완료')).length;
+    months.push({
+      label: `${m+1}월`,
+      total: monthRows.length,
+      published,
+      cats: [...new Set(monthRows.map(r=>(r[1]||'').replace(/[\[\]추천]/g,'').trim()))].filter(Boolean)
+    });
+  }
+
+  const maxTotal = Math.max(...months.map(m=>m.total), 1);
+  title.textContent = `월별 리포트 (최근 6개월)`;
+  content.innerHTML = `
+    <div style="margin-bottom:16px;">
+      ${months.map(m=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <div style="font-size:12px;color:var(--sb);width:28px;flex-shrink:0;">${m.label}</div>
+          <div style="flex:1;height:24px;background:var(--bd);border-radius:6px;overflow:hidden;position:relative;">
+            <div style="height:100%;width:${Math.round(m.total/maxTotal*100)}%;background:var(--ac);border-radius:6px;display:flex;align-items:center;padding-left:8px;">
+              ${m.total>0?`<span style="font-size:11px;color:#fff;font-weight:600;">${m.total}개</span>`:''}
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--ht);width:40px;flex-shrink:0;">발행${m.published}</div>
+        </div>`).join('')}
+    </div>
+    <div style="background:var(--sf);border-radius:10px;padding:12px;">
+      <div style="font-size:12px;font-weight:600;color:var(--sb);margin-bottom:8px;">이번달 요약</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        ${[
+          {l:'총 초안', v: months[5].total+'개'},
+          {l:'발행 완료', v: months[5].published+'개'},
+          {l:'주요 카테고리', v: months[5].cats[0]||'-'},
+          {l:'전월 대비', v: months[4].total>0?Math.round((months[5].total-months[4].total)/months[4].total*100)+'%':'첫달'},
+        ].map(s=>`<div style="background:var(--bg);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:16px;font-weight:700;color:var(--ac);">${s.v}</div>
+          <div style="font-size:11px;color:var(--ht);">${s.l}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+}
+
 function updateGoalBar(data) {
   const rows = (data||[]).slice(1).filter(r=>(r[2]||'').trim());
   const now = new Date();
@@ -1847,6 +1939,24 @@ async function generateFromRec(){
 }
 
 // ======= API 상태 =======
+function checkReminder() {
+  const lastPub = localStorage.getItem('last_pub_date');
+  if (!lastPub) return;
+  const daysSince = Math.floor((Date.now() - new Date(lastPub)) / 86400000);
+  const goal = parseInt(localStorage.getItem('pub_goal')||'10');
+  const dayInMonth = new Date().getDate();
+  const remainDays = new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate() - dayInMonth;
+
+  // 3일 이상 발행 안 했으면 알림
+  if (daysSince >= 3) {
+    const banner = document.getElementById('reminderBanner');
+    if (banner) {
+      banner.style.display = 'flex';
+      banner.querySelector('span').textContent = `${daysSince}일 동안 글을 안 썼어요. 오늘 하나 써볼까요?`;
+    }
+  }
+}
+
 async function checkVersion() {
   try {
     const r = await fetch('https://api.github.com/repos/a01055929144-web/mallangdays/commits?path=index.html&per_page=1');
@@ -1927,6 +2037,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDrafts();
   checkApi();
   setTimeout(checkVersion, 3000);
+  setTimeout(checkReminder, 2000);
   // 스플래시 제거
   const sp = document.getElementById('splash');
   const bar = document.getElementById('splashBar');
