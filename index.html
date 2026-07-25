@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784961759">
+<meta name="version" content="1784961913">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -178,6 +178,14 @@ input[type="file"]{display:none;}
 </style>
 </head>
 <body>
+<div id="splash" style="position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .4s;">
+  <div style="font-size:40px;">🌸</div>
+  <div style="font-size:20px;font-weight:700;color:var(--ac);">말랑데이즈</div>
+  <div style="font-size:13px;color:var(--ht);">콘텐츠 스튜디오</div>
+  <div style="width:40px;height:3px;background:var(--bd);border-radius:2px;margin-top:8px;overflow:hidden;">
+    <div id="splashBar" style="height:100%;width:0%;background:var(--ac);transition:width .6s ease;border-radius:2px;"></div>
+  </div>
+</div>
 <div class="app">
   <div class="top">
     <div><div class="tl">🌸 말랑데이즈</div><div class="ts">콘텐츠 스튜디오</div></div>
@@ -304,6 +312,7 @@ input[type="file"]{display:none;}
               <div style="font-size:12px;font-weight:600;color:var(--sb);">📝 본문</div>
               <div id="blogCount" style="font-size:11px;color:var(--ht);"></div>
             </div>
+            <div id="qualScore" style="display:none;background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);"></div>
             <div class="ob" id="blogTxt"></div>
             <div class="oas">
               <button class="oab p" onclick="cpEl('blogTxt')">본문 복사</button>
@@ -339,6 +348,7 @@ input[type="file"]{display:none;}
       </div>
       <!-- 이번달 통계 -->
       <div id="logStats" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
+      <div id="catChart" style="background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);display:none;"></div>
       <div class="kpis">
         <div class="kpi" id="kpi-all" onclick="setKpi('all')"><div class="kn" id="kTot">-</div><div class="kl">전체</div></div>
         <div class="kpi" id="kpi-pend" onclick="setKpi('pend')"><div class="kn" id="kPend">-</div><div class="kl">업로드 대기</div></div>
@@ -1106,6 +1116,58 @@ const d=await callClaude(getSP(catName),buildPrompt(),isFin?4000:2500,needWeb||i
 }
 
 // ======= 텍스트 파싱 =======
+function calcQuality(blog, insta) {
+  const el = document.getElementById('qualScore');
+  if (!el) return;
+  let score = 0; const reasons = [];
+
+  // 분량 체크 (30점)
+  const bl = blog.length;
+  if (bl >= 1500 && bl <= 2500) { score+=30; reasons.push({t:'분량 적절',c:'#2E7D32'}); }
+  else if (bl >= 1000) { score+=15; reasons.push({t:'분량 부족',c:'#E65100'}); }
+  else reasons.push({t:'분량 너무 적음',c:'#C62828'});
+
+  // 인삿말 체크 (15점)
+  if (blog.includes('안녕하세요, 말랑파파에요!')) { score+=15; reasons.push({t:'인삿말 포함',c:'#2E7D32'}); }
+  else reasons.push({t:'인삿말 누락',c:'#C62828'});
+
+  // 해시태그 체크 (20점)
+  const tags = (blog.match(/#\S+/g)||[]).length;
+  if (tags >= 20) { score+=20; reasons.push({t:`태그 ${tags}개`,c:'#2E7D32'}); }
+  else if (tags >= 10) { score+=10; reasons.push({t:`태그 ${tags}개(부족)`,c:'#E65100'}); }
+  else reasons.push({t:`태그 ${tags}개(부족)`,c:'#C62828'});
+
+  // 고정태그 체크 (15점)
+  if (blog.includes('#말랑데이즈') && blog.includes('#말랑파파')) { score+=15; reasons.push({t:'고정태그 포함',c:'#2E7D32'}); }
+  else reasons.push({t:'고정태그 누락',c:'#C62828'});
+
+  // 저작권 문구 체크 (10점)
+  if (blog.includes('저작권은 작성자에게')) { score+=10; reasons.push({t:'저작권 포함',c:'#2E7D32'}); }
+  else reasons.push({t:'저작권 누락',c:'#E65100'});
+
+  // 인스타 체크 (10점)
+  if (insta && insta.length >= 100) { score+=10; reasons.push({t:'인스타 OK',c:'#2E7D32'}); }
+  else reasons.push({t:'인스타 짧음',c:'#E65100'});
+
+  const scoreColor = score>=85?'#2E7D32':score>=60?'#E65100':'#C62828';
+  const grade = score>=85?'A':score>=70?'B':score>=55?'C':'D';
+  el.style.display='block';
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <div style="font-size:24px;font-weight:700;color:${scoreColor};">${grade}</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:${scoreColor};">${score}점</div>
+        <div style="font-size:11px;color:var(--ht);">발행 품질 점수</div>
+      </div>
+      <div style="flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${score}%;background:${scoreColor};border-radius:3px;transition:width .5s;"></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;">
+      ${reasons.map(r=>`<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:${r.c}22;color:${r.c};border:1px solid ${r.c}44;">${r.t}</span>`).join('')}
+    </div>`;
+}
+
 function removeEmoji(txt) {
   if (!txt) return '';
   return txt.split('\n').map(line => {
@@ -1182,6 +1244,8 @@ function parseNormal(txt) {
     const color = cnt < 1000 ? '#C62828' : cnt > 2500 ? '#E65100' : '#2E7D32';
     bc.innerHTML = `<span style="color:${color};font-weight:600;">${cnt.toLocaleString()}자</span> <span style="color:var(--ht);">(권장 1,500~2,000)</span>`;
   }
+  // 글 품질 점수 계산
+  calcQuality(blogWithCopy, instaClean);
   document.getElementById('instaTxt').textContent=instaClean;
   // 인스타 글자수
   const ic = document.getElementById('instaCount');
@@ -1351,7 +1415,6 @@ function pickBlogTitle(el, title) {
   });
   el.style.borderColor='var(--ac)'; el.style.background='var(--al)';
   selTitle = title;
-  // 복사 버튼 위에 선택된 제목 표시
   const box = document.getElementById('titleTxt');
   if (!box.querySelector('.selected-title')) {
     const sel = document.createElement('div');
@@ -1360,7 +1423,27 @@ function pickBlogTitle(el, title) {
     box.appendChild(sel);
   }
   box.querySelector('.selected-title').textContent = '✓ ' + title;
-  toast('📌 제목 선택됐어요');
+  // SEO 미리보기 업데이트
+  updateSeoPreview(title);
+  toast('제목 선택됐어요');
+}
+
+function updateSeoPreview(title) {
+  const preview = document.getElementById('seoPreview');
+  if (!preview) return;
+  const url = 'blog.naver.com/mallangdays';
+  const desc = document.getElementById('blogTxt')?.textContent?.slice(0,120).replace(/\n/g,' ') || '말랑파파의 육아·일상 블로그';
+  const titleLen = title.length;
+  const titleColor = titleLen > 32 ? '#C62828' : titleLen > 28 ? '#E65100' : '#2E7D32';
+  preview.style.display = 'block';
+  preview.innerHTML = `
+    <div style="font-size:11px;color:var(--ht);margin-bottom:6px;font-weight:600;">🔍 네이버 검색 미리보기</div>
+    <div style="background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;">
+      <div style="font-size:14px;color:#1A0DAB;font-weight:500;line-height:1.4;margin-bottom:3px;">${title}</div>
+      <div style="font-size:11px;color:var(--gr);margin-bottom:3px;">${url}</div>
+      <div style="font-size:12px;color:var(--sb);line-height:1.5;">${desc}...</div>
+    </div>
+    <div style="font-size:11px;margin-top:5px;color:${titleColor};">제목 ${titleLen}자 ${titleLen>32?'(너무 길어요)':titleLen>28?'(약간 길어요)':'(적절해요)'}</div>`;
 }
 let toastT; function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2500);}
 
@@ -1517,6 +1600,32 @@ function filterLog(q) {
   });
 }
 
+function renderCatChart(data) {
+  const el = document.getElementById('catChart');
+  if (!el) return;
+  const rows = data.slice(1).filter(r=>(r[2]||'').trim());
+  const cats = {};
+  rows.forEach(r => {
+    const cat = (r[1]||'').replace(/[\[\]추천]/g,'').trim();
+    if (cat) cats[cat] = (cats[cat]||0) + 1;
+  });
+  const sorted = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const max = sorted[0]?.[1] || 1;
+  const colors = ['#D4845A','#5A8A5E','#3B7DD8','#9B59B6','#E67E22','#1ABC9C'];
+  el.style.display='block';
+  el.innerHTML = `
+    <div style="font-size:12px;font-weight:600;color:var(--sb);margin-bottom:8px;">카테고리별 발행 현황</div>
+    ${sorted.map(([cat,cnt],i)=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <div style="font-size:11px;color:var(--sb);width:70px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${cat}</div>
+        <div style="flex:1;height:18px;background:var(--bd);border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${Math.round(cnt/max*100)}%;background:${colors[i%colors.length]};border-radius:4px;transition:width .5s;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;">
+            <span style="font-size:10px;color:#fff;font-weight:600;">${cnt}</span>
+          </div>
+        </div>
+      </div>`).join('')}`;
+}
+
 function renderLogStats(data) {
   const el = document.getElementById('logStats');
   if (!el) return;
@@ -1530,6 +1639,7 @@ function renderLogStats(data) {
   const cats = {};
   rows.forEach(r=>{ const cat=(r[1]||'').replace(/[\[\]]/g,''); cats[cat]=(cats[cat]||0)+1; });
   const topCat = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+  renderCatChart(data);
   el.innerHTML = [
     {label:'전체', val: total+'개'},
     {label:'발행완료', val: published+'개'},
@@ -1687,6 +1797,11 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDrafts();
   checkApi();
   setTimeout(checkVersion, 3000);
+  // 스플래시 제거
+  const sp = document.getElementById('splash');
+  const bar = document.getElementById('splashBar');
+  if (bar) bar.style.width = '100%';
+  setTimeout(()=>{ if(sp){sp.style.opacity='0';setTimeout(()=>sp.remove(),400);} }, 700);
 });
 </script>
 </body>
