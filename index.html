@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784962012">
+<meta name="version" content="1784962079">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -194,6 +194,7 @@ input[type="file"]{display:none;}
       <div class="bg bg-g" id="syncBg">✅ 연결됨</div>
       <div class="bg bg-b" id="apiBg">💳 확인 중</div>
       <div class="bg bg-a" id="pgBg">글 작성</div>
+      <div class="bg" onclick="document.getElementById('helpModal').style.display='flex'" style="color:var(--ht);cursor:pointer;">?</div>
     </div>
   </div>
 
@@ -390,6 +391,28 @@ input[type="file"]{display:none;}
     <button class="ti" id="t-rec" onclick="showPg('rec')"><span class="tic">✨</span><span class="til">추천</span><div class="tid"></div></button>
     <button class="ti on" id="t-write" onclick="showPg('write')"><span class="tic">✏️</span><span class="til">글 작성</span><div class="tid"></div></button>
     <button class="ti" id="t-log" onclick="showPg('log')"><span class="tic">📋</span><span class="til">기록</span><div class="tid"></div></button>
+  </div>
+</div>
+<div id="helpModal" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.5);padding:20px;overflow-y:auto;" onclick="this.style.display='none'">
+  <div style="background:var(--bg);border-radius:16px;padding:20px;max-width:500px;margin:0 auto;" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:16px;font-weight:700;color:var(--tx);">사용 가이드</div>
+      <button onclick="document.getElementById('helpModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--ht);">✕</button>
+    </div>
+    <div style="font-size:13px;line-height:1.8;">
+      <div style="font-weight:600;color:var(--ac);margin-bottom:2px;">추천 탭</div>
+      <div style="color:var(--sb);margin-bottom:10px;">트렌드 기반 콘텐츠 추천. 탭하면 바로 작성 가능해요.</div>
+      <div style="font-weight:600;color:var(--ac);margin-bottom:2px;">글 작성 탭</div>
+      <div style="color:var(--sb);margin-bottom:10px;">카테고리 선택 → 내용 입력 → 초안 생성 순서로 진행해요.</div>
+      <div style="font-weight:600;color:var(--ac);margin-bottom:2px;">기록 탭</div>
+      <div style="color:var(--sb);margin-bottom:10px;">초안 히스토리·시트 기록 관리. 검색·캘린더·통계를 지원해요.</div>
+      <div style="font-weight:600;color:var(--ac);margin-bottom:2px;">N 블로그 버튼</div>
+      <div style="color:var(--sb);margin-bottom:10px;">본문 자동 복사 후 네이버 블로그 글쓰기 페이지로 이동해요.</div>
+      <div style="font-weight:600;color:var(--ac);margin-bottom:2px;">발행 완료 버튼</div>
+      <div style="color:var(--sb);margin-bottom:10px;">시트 상태를 발행완료로 업데이트해요.</div>
+      <div style="font-weight:600;color:var(--ac);margin-bottom:2px;">품질 점수</div>
+      <div style="color:var(--sb);">초안 생성 후 A~D 등급으로 글 품질을 자동 체크해요.</div>
+    </div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
