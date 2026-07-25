@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784962502">
+<meta name="version" content="1784962554">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -465,7 +465,16 @@ async function sheetRead(force) {
     const d = await r.json();
     if (d.ok) { cache = d.data; cacheTime = Date.now(); }
     return cache;
-  } catch(e) { return cache; }
+  } catch(e) {
+    // 오프라인 시 로컬 캐시 사용
+    if (!cache) {
+      try {
+        const cached = JSON.parse(localStorage.getItem('sheet_cache')||'null');
+        if (cached?.rows?.length) { toast('오프라인: 캐시 데이터를 사용해요'); return cached.rows; }
+      } catch(e2) {}
+    }
+    return cache;
+  }
 }
 
 async function sheetAppend(row) {
@@ -832,6 +841,28 @@ async function saveLD(i) {
   } else toast('❌ 저장 실패');
 }
 function copyLD(i) { const ta=document.getElementById(`ldta_${i}`); if(ta) navigator.clipboard.writeText(ta.value).then(()=>toast('📋 복사됐어요')); }
+async function suggestKeywords() {
+  const el = document.getElementById('kwSuggest');
+  if (!el || !catName) return;
+  el.innerHTML = '<div style="color:var(--ht);font-size:11px;">키워드 분석 중...</div>';
+  el.style.display = 'block';
+  try {
+    const fields = FORMS[catName]?.fields || [];
+    const inputs = fields.map(f=>gv(f.id)).filter(Boolean).join(' ');
+    const d = await callClaude(
+      '네이버 블로그 SEO 키워드. JSON만: {"keywords":["k1","k2",...8개]}',
+      `카테고리:${catName} 입력:${inputs.slice(0,150)}`,
+      120
+    );
+    const txt = d.content?.[0]?.text||'';
+    const m = txt.match(/\{[\s\S]*\}/);
+    const kws = m ? JSON.parse(m[0]).keywords||[] : [];
+    el.innerHTML = kws.length ? '<div style="font-size:11px;color:var(--ht);margin-bottom:5px;">연관 키워드 (탭해서 복사)</div><div style="display:flex;flex-wrap:wrap;gap:4px;">'
+      + kws.map(k=>`<span onclick="navigator.clipboard.writeText('${k}').then(()=>toast('${k} 복사됐어요'))" style="font-size:11px;padding:3px 9px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;cursor:pointer;color:var(--sb);touch-action:manipulation;">${k}</span>`).join('')
+      + '</div>' : '';
+  } catch(e) { el.innerHTML = ''; el.style.display='none'; }
+}
+
 function closeLD(i) { const b=document.getElementById(`ld_${i}`); if(b)b.classList.remove('on'); ldState[i]=null; }
 function delDraft(i) { if(!confirm('삭제할까요?'))return; drafts.splice(i,1); localStorage.setItem('ml_drafts',JSON.stringify(drafts)); renderDrafts(); toast('삭제됐어요'); }
 
