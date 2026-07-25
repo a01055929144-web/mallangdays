@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784990336">
+<meta name="version" content="1784990371">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -31,11 +31,35 @@
 }
 /* 수동 다크모드 */
 :root.dark-mode{
-  --bg:#1C1C1E;--sf:#2C2C2E;--bd:#3A3A3C;--tx:#F2F2F7;--sb:#AEAEB2;--ht:#636366;
-  --ac:#E8956A;--al:#2D1F15;--ad:#F0A882;
+  --bg:#121212;--sf:#1E1E1E;--bd:#2C2C2C;
+  --tx:#F5F5F5;--sb:#D0CFC9;--ht:#888882;
+  --ac:#F0976E;--al:#2D1F15;--ad:#F5B08A;
   --gr:#66BB6A;--gl:#1A2E1A;
-  --bl:#5BA3F5;--bll:#1A2A3D;
+  --bl:#5BA3F5;--bll:#152033;
 }
+:root.dark-mode .ob,
+:root.dark-mode .fi,
+:root.dark-mode textarea,
+:root.dark-mode input,
+:root.dark-mode select{background:var(--sf)!important;color:var(--tx)!important;border-color:var(--bd)!important;}
+:root.dark-mode .card{background:var(--sf)!important;border-color:var(--bd)!important;}
+:root.dark-mode .li{border-bottom-color:var(--bd)!important;}
+:root.dark-mode .lti,.dark-mode .kn{color:var(--tx)!important;}
+:root.dark-mode .cb{background:var(--sf)!important;border-color:var(--bd)!important;color:var(--tx)!important;}
+:root.dark-mode .cb.on{border-color:var(--ac)!important;background:var(--al)!important;}
+:root.dark-mode .ot button{color:var(--sb)!important;border-color:var(--bd)!important;background:var(--sf)!important;}
+:root.dark-mode .ot button.on{color:var(--tx)!important;border-color:var(--ac)!important;background:var(--al)!important;}
+:root.dark-mode .hd{background:var(--sf)!important;border-bottom:1px solid var(--bd)!important;}
+:root.dark-mode .wrap{background:var(--bg)!important;}
+:root.dark-mode .kpi{background:var(--sf)!important;border-color:var(--bd)!important;}
+:root.dark-mode .kn{color:var(--tx)!important;}
+:root.dark-mode .rc-kw{color:var(--ht)!important;}
+:root.dark-mode .de-ta{background:var(--sf)!important;color:var(--tx)!important;border-color:var(--bd)!important;}
+:root.dark-mode .oab{background:var(--sf)!important;color:var(--sb)!important;border-color:var(--bd)!important;}
+:root.dark-mode .oab.p{background:var(--tx)!important;color:var(--bg)!important;}
+:root.dark-mode .gen{background:var(--tx)!important;color:var(--bg)!important;}
+:root.dark-mode .bg{background:var(--sf)!important;color:var(--sb)!important;border-color:var(--bd)!important;}
+:root.dark-mode .bg.on,.dark-mode .bg-a{background:var(--ac)!important;color:#fff!important;}
 /* 수동 라이트모드 */
 :root.light-mode{
   --bg:#FAFAF8;--sf:#FFF;--bd:#E8E6E0;--tx:#1A1916;--sb:#6B6860;--ht:#A8A49E;
