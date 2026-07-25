@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784961560">
+<meta name="version" content="1784961585">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -1524,8 +1524,10 @@ const ARCH_SIZE=20;
 function renderArchive(){
   const card=document.getElementById('archCard'),list=document.getElementById('archList'),cnt=document.getElementById('archCount');
   if(!recArchive.length){card.style.display='none';return;}
-  card.style.display='block'; cnt.textContent=`${recArchive.length}개`;
-  list.innerHTML=recArchive.map((item,i)=>`
+  card.style.display='block'; cnt.textContent=`${recArchive.length}개 (${archivePage+1}/${Math.ceil(recArchive.length/ARCH_SIZE)||1}페이지)`;
+  const totalPg=Math.ceil(recArchive.length/ARCH_SIZE);
+  const paged=recArchive.slice(archivePage*ARCH_SIZE,(archivePage+1)*ARCH_SIZE);
+  list.innerHTML=paged.map((item,i)=>`
     <div class="li">
       <div class="lh"><span class="lc lci">${item.category||''}</span><span style="font-size:11px;color:var(--ht);">${item.savedAt||''}</span></div>
       <div class="lti">${item.title}</div>
