@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784961110">
+<meta name="version" content="1784961233">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -288,7 +288,10 @@ input[type="file"]{display:none;}
               <button class="oab p" onclick="cpTitle()" style="flex:none;padding:5px 12px;font-size:12px;">제목 복사</button>
             </div>
             <div class="ob" id="titleTxt" style="min-height:auto;padding:10px 14px;font-size:14px;font-weight:500;margin-bottom:10px;"></div>
-            <div style="font-size:12px;font-weight:600;color:var(--sb);margin-bottom:8px;">📝 본문</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <div style="font-size:12px;font-weight:600;color:var(--sb);">📝 본문</div>
+              <div id="blogCount" style="font-size:11px;color:var(--ht);"></div>
+            </div>
             <div class="ob" id="blogTxt"></div>
             <div class="oas">
               <button class="oab p" onclick="cpEl('blogTxt')">본문 복사</button>
@@ -296,7 +299,12 @@ input[type="file"]{display:none;}
               <button class="oab" onclick="markPublished()" style="background:#5A8AD4;color:#fff;border-color:#5A8AD4;">발행 완료</button>
             </div>
           </div>
-          <div class="oc" id="o-insta"><div class="ob" id="instaTxt"></div><div class="oas"><button class="oab p" onclick="cpEl('instaTxt')">복사</button></div></div>
+          <div class="oc" id="o-insta">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <div style="font-size:12px;font-weight:600;color:var(--sb);">인스타 캡션</div>
+              <div id="instaCount" style="font-size:11px;color:var(--ht);"></div>
+            </div>
+            <div class="ob" id="instaTxt"></div><div class="oas"><button class="oab p" onclick="cpEl('instaTxt')">복사</button></div></div>
           <div class="oc" id="o-photo"><div id="photoG"><div class="em"><div class="emi">📷</div>사진 첨부 시 배치 가이드가 나와요</div></div></div>
         </div>
         <div class="card">
@@ -1126,7 +1134,21 @@ function parseNormal(txt) {
     ? blogNoCopy.slice(0, hashIdx) + COPY_TXT + blogNoCopy.slice(hashIdx)
     : blogNoCopy + COPY_TXT;
   document.getElementById('blogTxt').textContent=blogWithCopy;
+  // 글자수 카운터
+  const bc = document.getElementById('blogCount');
+  if (bc) {
+    const cnt = blogWithCopy.length;
+    const color = cnt < 1000 ? '#C62828' : cnt > 2500 ? '#E65100' : '#2E7D32';
+    bc.innerHTML = `<span style="color:${color};font-weight:600;">${cnt.toLocaleString()}자</span> <span style="color:var(--ht);">(권장 1,500~2,000)</span>`;
+  }
   document.getElementById('instaTxt').textContent=instaClean;
+  // 인스타 글자수
+  const ic = document.getElementById('instaCount');
+  if (ic) {
+    const cnt = instaClean.length;
+    const color = cnt < 100 ? '#C62828' : cnt > 400 ? '#E65100' : '#2E7D32';
+    ic.innerHTML = `<span style="color:${color};font-weight:600;">${cnt.toLocaleString()}자</span> <span style="color:var(--ht);">(권장 200~300)</span>`;
+  }
   // [TITLE] 섹션 파싱 → 제목 카드
   const titleEl = document.getElementById('titleTxt');
   if (titleEl) {
@@ -1149,9 +1171,15 @@ function parseNormal(txt) {
           style="padding:10px 12px;margin-bottom:6px;border:1.5px solid ${p.rec?'var(--ac)':'var(--bd)'};border-radius:var(--rs);cursor:pointer;touch-action:manipulation;background:${p.rec?'var(--al)':'var(--sf)'};">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <span style="font-size:13px;font-weight:${p.rec?'600':'400'};text-align:left;line-height:1.4;">${p.title}</span>
-            ${p.rec?'<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 8px;border-radius:10px;flex-shrink:0;white-space:nowrap;">⭐ 추천</span>':p.label?`<span style="font-size:10px;color:var(--ht);flex-shrink:0;">${p.label}</span>`:''}
+            ${p.rec?'<span style="font-size:10px;background:var(--ac);color:#fff;padding:2px 8px;border-radius:10px;flex-shrink:0;white-space:nowrap;">추천</span>':p.label?`<span style="font-size:10px;color:var(--ht);flex-shrink:0;">${p.label}</span>`:''}
           </div>
         </div>`).join('')+'<div style="font-size:11px;color:var(--ht);margin-top:2px;">탭해서 선택하세요</div>';
+      // 추천 제목 자동 선택
+      const recCard = titleEl.querySelector('.title-opt[style*="var(--al)"]');
+      if (recCard) {
+        const recTitle = titleCards.find(p=>p.rec)?.title;
+        if (recTitle) { selTitle = recTitle; }
+      }
     } else {
       const rawTitle=selTitle||(FORMS[catName]?.fields[0]?gv(FORMS[catName].fields[0].id)?`${catName} - ${gv(FORMS[catName].fields[0].id)}`:catName:catName);
       titleEl.textContent=rawTitle.trim()||catName;
@@ -1214,6 +1242,15 @@ function togWSt(ch){wSt[ch]=!wSt[ch];const on=wSt[ch],today=nowDate();if(ch==='b
 // ======= 유틸 =======
 function swOut(id,btn){document.querySelectorAll('.ot').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.oc').forEach(c=>c.classList.remove('on'));if(btn)btn.classList.add('on');document.getElementById(`o-${id}`)?.classList.add('on');}
 function cpEl(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('📋 복사됐어요'));}
+function openInsta() {
+  const txt = document.getElementById('instaTxt')?.textContent||'';
+  if (!txt) { toast('먼저 초안을 생성해주세요'); return; }
+  navigator.clipboard.writeText(txt).then(()=>{
+    toast('인스타 캡션 복사됐어요. 인스타그램으로 이동합니다!');
+    setTimeout(()=>window.open('https://www.instagram.com/', '_blank'), 800);
+  });
+}
+
 function openNaver() {
   // 본문 복사 후 네이버 블로그 작성 페이지 열기
   const txt = document.getElementById('blogTxt')?.textContent||'';
