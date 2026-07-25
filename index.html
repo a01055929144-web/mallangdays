@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784989779">
+<meta name="version" content="1784990336">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -21,11 +21,12 @@
   --r:14px;--rs:8px;--th:60px;--sab:env(safe-area-inset-bottom,0px);--sat:env(safe-area-inset-top,0px);
 }
 @media(prefers-color-scheme:dark){
-  :root:not(.light-mode){
-    --bg:#1C1C1E;--sf:#2C2C2E;--bd:#3A3A3C;--tx:#F2F2F7;--sb:#AEAEB2;--ht:#636366;
-    --ac:#E8956A;--al:#2D1F15;--ad:#F0A882;
+  :root:not(.light-mode):not(.dark-mode){
+    --bg:#121212;--sf:#1E1E1E;--bd:#2C2C2C;
+    --tx:#F5F5F5;--sb:#D0CFC9;--ht:#888882;
+    --ac:#F0976E;--al:#2D1F15;--ad:#F5B08A;
     --gr:#66BB6A;--gl:#1A2E1A;
-    --bl:#5BA3F5;--bll:#1A2A3D;
+    --bl:#5BA3F5;--bll:#152033;
   }
 }
 /* 수동 다크모드 */
@@ -473,34 +474,49 @@ const BIRTH_DATE = new Date('2026-07-16'); // 말랑이 출생일
 
 function getMalrangAge() {
   const now = new Date();
-  const diffMs = now - BIRTH_DATE;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffWeeks = Math.floor(diffDays / 7);
-  const remainDaysAfterWeeks = diffDays % 7;
-  const months = (now.getFullYear() - BIRTH_DATE.getFullYear()) * 12 + (now.getMonth() - BIRTH_DATE.getMonth());
-  const dayDiff = now.getDate() - BIRTH_DATE.getDate();
-  const realMonths = dayDiff < 0 ? months - 1 : months;
-  const remainDaysAfterMonths = diffDays - (realMonths * 30);
+  // 총 생후 일수
+  const diffDays = Math.floor((now - BIRTH_DATE) / (1000 * 60 * 60 * 24));
+  // 생후 주수 (출산 후 기준 - 임신 주수와 별개)
+  const postWeeks = Math.floor(diffDays / 7);
+  const postDaysRem = diffDays % 7; // 주 나머지 일수
+  const wdLabel = `${postWeeks}w ${postDaysRem}d`;
 
-  // 주수+일수 표기 (e.g. 1w 3d / 4w 2d)
-  const wdLabel = diffWeeks > 0
-    ? `${diffWeeks}w ${remainDaysAfterWeeks}d`
-    : `${diffDays}d`;
+  // 개월 수 (정확하게 날짜 기준)
+  let months = (now.getFullYear() - BIRTH_DATE.getFullYear()) * 12
+    + (now.getMonth() - BIRTH_DATE.getMonth());
+  if (now.getDate() < BIRTH_DATE.getDate()) months--;
+  months = Math.max(0, months);
 
-  // 전체 라벨
-  const fullLabel = diffDays < 30
-    ? `생후 ${diffDays}일 (${wdLabel})`
-    : realMonths < 12
-      ? `생후 ${realMonths}개월 ${remainDaysAfterWeeks}일 (${wdLabel})`
-      : `${Math.floor(realMonths/12)}살 ${realMonths%12}개월 (${wdLabel})`;
+  // 월 나머지 일수
+  const monthStart = new Date(BIRTH_DATE.getFullYear(), BIRTH_DATE.getMonth() + months, BIRTH_DATE.getDate());
+  const remainDays = Math.floor((now - monthStart) / (1000 * 60 * 60 * 24));
+
+  // 라벨 생성 - 요청 형식: 생후 1개월 6일 (6w 0d)
+  let fullLabel;
+  if (diffDays < 7) {
+    fullLabel = `생후 ${diffDays}일 (${wdLabel})`;
+  } else if (months < 1) {
+    fullLabel = `생후 ${diffDays}일 (${wdLabel})`;
+  } else if (months < 12) {
+    fullLabel = remainDays > 0
+      ? `생후 ${months}개월 ${remainDays}일 (${wdLabel})`
+      : `생후 ${months}개월 (${wdLabel})`;
+  } else {
+    const y = Math.floor(months / 12);
+    const m = months % 12;
+    fullLabel = m > 0
+      ? `${y}살 ${m}개월 (${wdLabel})`
+      : `${y}살 (${wdLabel})`;
+  }
 
   return {
     days: diffDays,
-    weeks: diffWeeks,
-    months: realMonths,
+    weeks: postWeeks,
+    months,
+    remainDays,
     wd: wdLabel,
     label: fullLabel,
-    short: diffDays < 30 ? `${diffDays}일` : `${realMonths}개월`,
+    short: months < 1 ? `${diffDays}일` : `${months}개월`,
     birthDate: '2026년 7월 16일',
     today: `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일`
   };
