@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="말랑데이즈">
+<meta name="application-name" content="말랑데이즈">
+<meta name="theme-color" content="#D4845A">
+<link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784961585">
+<meta name="version" content="1784961713">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -1588,6 +1592,54 @@ async function generateFromRec(){
 }
 
 // ======= API 상태 =======
+async function checkVersion() {
+  try {
+    const r = await fetch('https://api.github.com/repos/a01055929144-web/mallangdays/commits?path=index.html&per_page=1');
+    const d = await r.json();
+    const latestSha = d[0]?.sha?.slice(0,7);
+    const currentVer = document.querySelector('meta[name=version]')?.content;
+    const savedSha = localStorage.getItem('app_sha');
+    if (latestSha && savedSha && savedSha !== latestSha) {
+      // 새 버전 알림 배너
+      const banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--ac);color:#fff;padding:10px 16px;font-size:13px;display:flex;justify-content:space-between;align-items:center;';
+      banner.innerHTML = '<span>새 버전이 있어요!</span><button onclick="location.reload(true)" style="background:#fff;color:var(--ac);border:none;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;">업데이트</button>';
+      document.body.prepend(banner);
+    }
+    if (latestSha) localStorage.setItem('app_sha', latestSha);
+  } catch(e) {}
+}
+
+async function retryPending() {
+  const pending = JSON.parse(localStorage.getItem('ml_pending')||'[]');
+  if (!pending.length) { toast('재시도할 저장 건이 없어요'); return; }
+  toast(`${pending.length}건 재시도 중...`);
+  const failed = [];
+  for (const item of pending) {
+    try {
+      const baseRow = ['', `[${item.cat}]`, item.title, item.date, '', '', '', '', '', ''];
+      const r1 = await fetchWithRetry(AS + '?action=append&row=' + encodeURIComponent(JSON.stringify(baseRow)));
+      const d1 = await r1.json();
+      if (!d1.ok) { failed.push(item); continue; }
+      const rowIdx = d1.rowIdx;
+      if (item.blog) await sheetUpdate(rowIdx, 'F', item.blog);
+      if (item.insta) await sheetUpdate(rowIdx, 'H', item.insta);
+    } catch(e) { failed.push(item); }
+  }
+  localStorage.setItem('ml_pending', JSON.stringify(failed));
+  cache = null;
+  if (!failed.length) toast('모두 저장됐어요!');
+  else toast(`${pending.length-failed.length}건 완료, ${failed.length}건 실패`);
+  updatePendingBadge();
+}
+
+function updatePendingBadge() {
+  const pending = JSON.parse(localStorage.getItem('ml_pending')||'[]');
+  const badge = document.getElementById('pendingBadge');
+  if (badge) badge.style.display = pending.length ? 'flex' : 'none';
+  if (badge) badge.textContent = pending.length;
+}
+
 async function checkApi(){
   try{
     const r=await fetch('https://api.anthropic.com/v1/models',{headers:{'x-api-key':AK,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
@@ -1606,6 +1658,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 초기 데이터
   renderDrafts();
   checkApi();
+  setTimeout(checkVersion, 3000);
 });
 </script>
 </body>
