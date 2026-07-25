@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784869591">
+<meta name="version" content="1784960965">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -292,7 +292,8 @@ input[type="file"]{display:none;}
             <div class="ob" id="blogTxt"></div>
             <div class="oas">
               <button class="oab p" onclick="cpEl('blogTxt')">본문 복사</button>
-              <a href="https://docs.google.com/spreadsheets/d/17JnY3k5j9ySX6TGbBAr3LNAubjGYY1erwMbNXGT2CPE/edit" target="_blank" class="oab">📊 시트</a>
+              <button class="oab" onclick="openNaver()" style="background:#03C75A;color:#fff;border-color:#03C75A;">N 블로그</button>
+              <button class="oab" onclick="markPublished()" style="background:#5A8AD4;color:#fff;border-color:#5A8AD4;">발행 완료</button>
             </div>
           </div>
           <div class="oc" id="o-insta"><div class="ob" id="instaTxt"></div><div class="oas"><button class="oab p" onclick="cpEl('instaTxt')">복사</button></div></div>
@@ -308,6 +309,12 @@ input[type="file"]{display:none;}
 
     <!-- 기록 탭 -->
     <div class="pg" id="pg-log">
+      <!-- 검색 -->
+      <div style="padding:0 0 8px;">
+        <input class="fi" id="logSearch" placeholder="제목·카테고리 검색..." oninput="filterLog(this.value)" style="margin-bottom:0;">
+      </div>
+      <!-- 이번달 통계 -->
+      <div id="logStats" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
       <div class="kpis">
         <div class="kpi" id="kpi-all" onclick="setKpi('all')"><div class="kn" id="kTot">-</div><div class="kl">전체</div></div>
         <div class="kpi" id="kpi-pend" onclick="setKpi('pend')"><div class="kn" id="kPend">-</div><div class="kl">업로드 대기</div></div>
@@ -365,21 +372,31 @@ async function sheetAppend(row) {
 }
 
 
+async function fetchWithRetry(url, opts={}, retries=3) {
+  for (let i=0; i<retries; i++) {
+    try {
+      const r = await fetch(url, opts);
+      if (r.ok) return r;
+    } catch(e) {
+      if (i === retries-1) throw e;
+      await new Promise(r=>setTimeout(r, 1000*(i+1)));
+    }
+  }
+}
+
 async function sheetUpdate(rowIdx, col, value) {
   try {
     const str = String(value||'');
-    const CHUNK = 500; // 모바일 URL 안전 길이
-    // 첫 청크: update (덮어쓰기)
+    const CHUNK = 500;
     const first = str.slice(0, CHUNK);
     const url1 = `${AS}?action=update&rowIdx=${rowIdx}&col=${encodeURIComponent(col)}&value=${encodeURIComponent(first)}`;
-    const r1 = await fetch(url1);
+    const r1 = await fetchWithRetry(url1);
     const d1 = await r1.json();
     if (!d1.ok) return false;
-    // 나머지 청크: updateAppend (이어붙이기)
-    for (let i = CHUNK; i < str.length; i += CHUNK) {
-      const chunk = str.slice(i, i + CHUNK);
+    for (let i=CHUNK; i<str.length; i+=CHUNK) {
+      const chunk = str.slice(i, i+CHUNK);
       const url2 = `${AS}?action=updateAppend&rowIdx=${rowIdx}&col=${encodeURIComponent(col)}&value=${encodeURIComponent(chunk)}`;
-      await fetch(url2);
+      await fetchWithRetry(url2);
     }
     if (cache?.[rowIdx-1]) cache[rowIdx-1][col.charCodeAt(0)-65] = str;
     return true;
@@ -400,11 +417,20 @@ async function autoSave(cat, title, blog, insta, date) {
 
     // 1단계: 기본 행 추가 (URL 짧게 - 제목/날짜만)
     const baseRow = ['', `[${cat}]`, title, date, '', '', '', '', '', ''];
-    const r1 = await fetch(AS + '?action=append&row=' + encodeURIComponent(JSON.stringify(baseRow)));
-    const t1 = await r1.text();
-    let d1;
-    try { d1 = JSON.parse(t1); } catch(e) { d1 = {ok:false}; }
-    if (!d1.ok) { toast('⚠️ 시트 저장 실패'); return; }
+    let d1, t1;
+    try {
+      const r1 = await fetchWithRetry(AS + '?action=append&row=' + encodeURIComponent(JSON.stringify(baseRow)));
+      t1 = await r1.text();
+      d1 = JSON.parse(t1);
+    } catch(e) { d1 = {ok:false}; }
+    if (!d1.ok) {
+      // 로컬 임시저장 (나중에 수동 재시도 가능)
+      const pending = JSON.parse(localStorage.getItem('ml_pending')||'[]');
+      pending.push({cat, title, blog: blogVal, insta: instaVal, date, ts: Date.now()});
+      localStorage.setItem('ml_pending', JSON.stringify(pending.slice(-10)));
+      toast('⚠️ 저장 실패 - 임시저장됨. 잠시 후 재시도해주세요');
+      return;
+    }
 
     // rowIdx 확인
     const rowIdx = d1.rowIdx;
@@ -430,6 +456,7 @@ async function autoSave(cat, title, blog, insta, date) {
     if (instaVal) await sheetUpdate(rowIdx, 'H', instaVal);
 
     cache = null;
+    lastRowIdx = rowIdx;
     toast('✅ 시트에 저장됐어요');
   } catch(e) {
     console.error('autoSave error:', e);
@@ -580,6 +607,8 @@ async function renderLog() {
   const rows = await sheetRead();
   if (!rows) { document.getElementById('pendList').innerHTML='<div class="em"><div class="emi">❌</div>불러오기 실패<br><small>새로고침해주세요</small></div>'; return; }
   const items = parseRows(rows);
+  window._lastSheetData = rows;
+  renderLogStats(rows);
   const pend = items.filter(({r})=>!isDone(r[4])||!isDone(r[6]));
   const done = items.filter(({r})=>isDone(r[4])&&isDone(r[6]));
   document.getElementById('kTot').textContent = items.length;
@@ -945,7 +974,10 @@ function buildPrompt() {
     };
     purchaseNote = spVal && spGuide[spVal] ? `\n\n[구매 유형 필수 반영] ${spGuide[spVal]}` : '';
   }
-  return `카테고리: ${catName} (${catType})${tp}${kp}\n${info}${pp}${fp}${purchaseNote}${titleReq}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그${files.length?'\n\n[PHOTO]\n사진 배치 안내':''}`;
+  // 연속 발행 시 다양한 글 유도 - 현재 시간 기반 변형
+  const varSeed = ['담백하게','솔직하게','감성적으로','구체적으로'][new Date().getHours()%4];
+  return `카테고리: ${catName} (${catType})${tp}${kp}
+[오늘의 글쓰기 방향: ${varSeed} 써주세요]\n${info}${pp}${fp}${purchaseNote}${titleReq}\n\n[BLOG]\nSEO 최적화 블로그 초안\n\n[INSTA]\n인스타 캡션+해시태그${files.length?'\n\n[PHOTO]\n사진 배치 안내':''}`;
 }
 
 // ======= Claude 호출 =======
@@ -968,7 +1000,8 @@ async function generate() {
   const steps=isFin?['정부 공식 사이트 검색 중','법령 최신 기준 확인 중','정책 분석 중','초안 작성 중','마무리 중']:['카테고리 분석 중','정보 수집 중','SEO 최적화 중','초안 작성 중','마무리 중'];
   let si=0; const iv=setInterval(()=>{si=(si+1)%steps.length;document.getElementById('ldStep').textContent=steps[si];},1600);
   try {
-    const d=await callClaude(getSP(catName),buildPrompt(),isFin?4000:2500,isFin);
+    const needWeb = catName==='살림재테크';
+const d=await callClaude(getSP(catName),buildPrompt(),isFin?4000:2500,needWeb||isFin);
     const txt=d.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'';
     if(!txt) throw new Error('응답이 비어있어요');
     if(txt.includes('[BLOG_1]')) await parseSeriesOut(txt);
@@ -1097,6 +1130,7 @@ function parseNormal(txt) {
   if(drafts.length>50)drafts=drafts.slice(0,50);
   localStorage.setItem('ml_drafts',JSON.stringify(drafts));
   autoSave(catName,title,blogClean,instaClean,now);
+  localStorage.removeItem('ml_temp_draft');
   document.getElementById('oaEl').classList.add('on');
   swOut('blog',document.querySelector('.ot'));
   setTimeout(()=>document.getElementById('oaEl').scrollIntoView({behavior:'smooth'}),50);
@@ -1134,6 +1168,29 @@ function togWSt(ch){wSt[ch]=!wSt[ch];const on=wSt[ch],today=nowDate();if(ch==='b
 // ======= 유틸 =======
 function swOut(id,btn){document.querySelectorAll('.ot').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.oc').forEach(c=>c.classList.remove('on'));if(btn)btn.classList.add('on');document.getElementById(`o-${id}`)?.classList.add('on');}
 function cpEl(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('📋 복사됐어요'));}
+function openNaver() {
+  // 본문 복사 후 네이버 블로그 작성 페이지 열기
+  const txt = document.getElementById('blogTxt')?.textContent||'';
+  if (!txt) { toast('먼저 초안을 생성해주세요'); return; }
+  navigator.clipboard.writeText(txt).then(()=>{
+    toast('본문 복사됐어요. 네이버 블로그로 이동합니다!');
+    setTimeout(()=>window.open('https://blog.naver.com/GoPost.naver', '_blank'), 800);
+  });
+}
+
+async function markPublished() {
+  // 발행 완료 처리 - 시트 E열(블로그상태) 업데이트
+  if (!lastRowIdx) { toast('저장된 글이 없어요'); return; }
+  const today = nowDate();
+  const r = await fetchWithRetry(AS + '?action=update&rowIdx=' + lastRowIdx + '&col=D&value=' + encodeURIComponent(today));
+  const d = await r.json();
+  if (d.ok) {
+    await fetchWithRetry(AS + '?action=update&rowIdx=' + lastRowIdx + '&col=E&value=' + encodeURIComponent('발행완료 ' + today));
+    cache = null;
+    toast('발행 완료로 기록됐어요!');
+  }
+}
+
 function cpTitle(){
   const el=document.getElementById('titleTxt');
   const txt=el?.querySelector('.selected-title')?.textContent || el?.textContent;
@@ -1243,6 +1300,8 @@ ${persona.recent?'최근 작성글: '+persona.recent:''}
     localStorage.setItem(todayKey2,JSON.stringify({items:recItems,pKey:JSON.stringify(persona)}));
     Object.keys(localStorage).filter(k=>k.startsWith('rec_cache_')&&k!==todayKey2).forEach(k=>localStorage.removeItem(k));
     renderRec(recItems);
+    // 살림재테크 웹검색 결과 캐시 (당일 재사용)
+    localStorage.setItem('finance_cache_'+new Date().toDateString(), JSON.stringify(recItems.filter(r=>r.category==='살림재테크')));
   }catch(e){list.innerHTML=`<div class="em"><div class="emi">❌</div>${e.message||'오류'}<br><small>다시 시도해주세요</small></div>`;}
   finally{clearInterval(iv);ld.style.display='none';btn.disabled=false;btn.textContent='🔍 다시 추천';}
 }
@@ -1300,6 +1359,35 @@ async function saveRec(i){
   const ok=await sheetAppend(row);
   cache=null;
   toast(ok?'📚 저장 + 시트 기록됐어요':'📚 저장됐어요');
+}
+
+function filterLog(q) {
+  const rows = document.querySelectorAll('.log-row');
+  rows.forEach(row => {
+    const txt = row.textContent.toLowerCase();
+    row.style.display = (!q || txt.includes(q.toLowerCase())) ? '' : 'none';
+  });
+}
+
+function renderLogStats(data) {
+  const el = document.getElementById('logStats');
+  if (!el) return;
+  const rows = data.slice(1).filter(r=>(r[2]||'').trim());
+  // 이번 달 통계
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}. ${now.getMonth()+1}.`;
+  const total = rows.length;
+  const published = rows.filter(r=>(r[4]||'').includes('발행완료')).length;
+  const thisMonthRows = rows.filter(r=>(r[3]||'').toString().includes(thisMonth));
+  const cats = {};
+  rows.forEach(r=>{ const cat=(r[1]||'').replace(/[\[\]]/g,''); cats[cat]=(cats[cat]||0)+1; });
+  const topCat = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+  el.innerHTML = [
+    {label:'전체', val: total+'개'},
+    {label:'발행완료', val: published+'개'},
+    {label:'이번달', val: thisMonthRows.length+'개'},
+    {label:'최다카테고리', val: topCat ? topCat[0].slice(0,4) : '-'},
+  ].map(s=>`<div style="background:var(--sf);border-radius:var(--rs);padding:6px 10px;font-size:11px;color:var(--sb);"><div style="font-weight:600;font-size:13px;color:var(--tx);">${s.val}</div>${s.label}</div>`).join('');
 }
 
 function renderArchive(){
