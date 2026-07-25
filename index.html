@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784962402">
+<meta name="version" content="1784962502">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -320,15 +320,17 @@ input[type="file"]{display:none;}
               <div style="font-size:12px;font-weight:600;color:var(--sb);">📝 본문</div>
               <div id="blogCount" style="font-size:11px;color:var(--ht);"></div>
             </div>
+            <div id="kwSuggest" style="display:none;margin-bottom:8px;padding:10px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);"></div>
             <div id="qualScore" style="display:none;background:var(--sf);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border:1px solid var(--bd);"></div>
             <div class="ob" id="blogTxt" contenteditable="true" oninput="onBlogEdit()" style="outline:none;min-height:200px;white-space:pre-wrap;word-break:break-all;"></div>
             <div id="editSaveBtn" style="display:none;margin-top:6px;">
               <button class="gen" onclick="saveEditedBlog()" style="padding:10px;font-size:13px;">수정 내용 시트에 저장</button>
             </div>
             <div class="oas">
-              <button class="oab p" onclick="cpEl('blogTxt')">본문 복사</button>
+              <button class="oab p" onclick="cpEl('blogTxt')" aria-label="블로그 본문 복사">본문 복사</button>
               <button class="oab" onclick="openNaver()" style="background:#03C75A;color:#fff;border-color:#03C75A;">N 블로그</button>
               <button class="oab" onclick="exportDraft()" style="background:var(--sf);color:var(--sb);border-color:var(--bd);">내보내기</button>
+              <button class="oab" onclick="shareContent()" style="background:var(--sf);color:var(--sb);border-color:var(--bd);">공유</button>
               <button class="oab" onclick="markPublished()" style="background:#5A8AD4;color:#fff;border-color:#5A8AD4;">발행 완료</button>
             </div>
           </div>
@@ -338,7 +340,7 @@ input[type="file"]{display:none;}
               <div id="instaCount" style="font-size:11px;color:var(--ht);"></div>
             </div>
             <div class="ob" id="instaTxt"></div><div class="oas">
-              <button class="oab p" onclick="cpEl('instaTxt')">복사</button>
+              <button class="oab p" onclick="cpEl('instaTxt')" aria-label="인스타 캡션 복사">복사</button>
               <button class="oab" onclick="openInsta()" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border:none;">인스타</button>
             </div></div>
           <div class="oc" id="o-photo"><div id="photoG"><div class="em"><div class="emi">📷</div>사진 첨부 시 배치 가이드가 나와요</div></div></div>
@@ -962,7 +964,13 @@ const SP_CATS = {
 
 function getSP(catName) {
   const extra = SP_CATS[catName];
-  return extra ? SP + '\n\n[' + catName + ' 전용]\n' + extra : SP;
+  let sp = extra ? SP + '\n\n[' + catName + ' 전용]\n' + extra : SP;
+  // 커스텀 인삿말 반영
+  const greet = localStorage.getItem('custom_greet');
+  if (greet && greet !== '안녕하세요, 말랑파파에요!') {
+    sp = sp.replace(/안녕하세요, 말랑파파에요!/g, greet);
+  }
+  return sp;
 }
 
 const SP_T = `네이버 블로그 SEO 제목 3개. 20자 내외. 번호없이 제목만 3줄 출력.`;
@@ -1336,6 +1344,8 @@ function parseNormal(txt) {
   }
   // 글 품질 점수 계산
   calcQuality(blogWithCopy, instaClean);
+  // 연관 키워드 추천 (백그라운드)
+  setTimeout(suggestKeywords, 500);
   document.getElementById('instaTxt').textContent=instaClean;
   // 인스타 글자수
   const ic = document.getElementById('instaCount');
@@ -1437,6 +1447,26 @@ function togWSt(ch){wSt[ch]=!wSt[ch];const on=wSt[ch],today=nowDate();if(ch==='b
 // ======= 유틸 =======
 function swOut(id,btn){document.querySelectorAll('.ot').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.oc').forEach(c=>c.classList.remove('on'));if(btn)btn.classList.add('on');document.getElementById(`o-${id}`)?.classList.add('on');}
 function cpEl(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('📋 복사됐어요'));}
+function shareContent() {
+  const title = selTitle || document.getElementById('titleTxt')?.querySelector('.selected-title')?.textContent?.replace('✓ ','') || '말랑데이즈';
+  const blog = document.getElementById('blogTxt')?.textContent || '';
+  const insta = document.getElementById('instaTxt')?.textContent || '';
+  if (!blog) { toast('초안이 없어요'); return; }
+
+  // Web Share API 지원 시 사용
+  if (navigator.share) {
+    navigator.share({
+      title: title,
+      text: insta || blog.slice(0, 300),
+      url: 'https://blog.naver.com/mallangdays'
+    }).then(()=>toast('공유했어요!')).catch(()=>{});
+  } else {
+    // 미지원 시 클립보드 복사
+    navigator.clipboard.writeText(`${title}\n\n${insta || blog.slice(0,300)}\n\nhttps://blog.naver.com/mallangdays`)
+      .then(()=>toast('공유 텍스트가 복사됐어요!'));
+  }
+}
+
 function openInsta() {
   const txt = document.getElementById('instaTxt')?.textContent||'';
   if (!txt) { toast('먼저 초안을 생성해주세요'); return; }
@@ -1989,16 +2019,7 @@ function saveCustomGreet() {
   toast('인삿말이 저장됐어요!');
 }
 
-// getSP에서 커스텀 인삿말 반영
-const _origGetSP = getSP;
-function getSP(catName) {
-  const sp = _origGetSP(catName);
-  const greet = localStorage.getItem('custom_greet');
-  if (greet && greet !== '안녕하세요, 말랑파파에요!') {
-    return sp.replace('안녕하세요, 말랑파파에요!', greet);
-  }
-  return sp;
-}
+// 커스텀 인삿말은 getSP 내부에서 처리
 
 function checkReminder() {
   const lastPub = localStorage.getItem('last_pub_date');
