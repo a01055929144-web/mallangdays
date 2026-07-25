@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784962368">
+<meta name="version" content="1784962402">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -391,6 +391,10 @@ input[type="file"]{display:none;}
         <button class="bg bg-g" onclick="refreshSheet()" style="border:none;cursor:pointer;font-family:inherit;margin-left:auto;">🔄</button>
       </div>
       <div class="card" style="padding-top:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-size:12px;color:var(--ht);">최근 20개 저장</div>
+          <button onclick="clearDrafts()" style="font-size:10px;padding:3px 10px;background:none;border:1px solid #C62828;color:#C62828;border-radius:10px;cursor:pointer;touch-action:manipulation;">전체 삭제</button>
+        </div>
         <div id="draftList"><div class="em"><div class="emi">📝</div>초안 생성 시 자동 저장돼요</div></div>
         <div id="pendList" style="display:none;"><div class="em"><div class="emi">🔄</div>불러오는 중...</div></div>
         <div id="doneList" style="display:none;"><div class="em"><div class="emi">🎉</div>완료된 콘텐츠 없음</div></div>
