@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1785026384">
+<meta name="version" content="1785026669">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -2549,20 +2549,82 @@ document.addEventListener('DOMContentLoaded', () => {
 // ======= 토큰 0원 템플릿 시스템 =======
 const FIXED_TAGS_BLOG = '#말랑데이즈 #말랑파파 #말랑맘 #말랑이 #육아정보 #육아일상 #신생아육아 #초보아빠 #초보부모 #아기키우기 #육아기록 #신생아일기';
 const FIXED_TAGS_INSTA = '#말랑데이즈 #말랑파파 #말랑맘 #말랑이 #육아정보 #육아일상 #신생아육아 #초보아빠';
-const COPYRIGHT = '\n\n사진의 저작권은 작성자에게 있습니다. 무단 사용·복제·배포 및 상업적 이용을 금지하며, 위반 시 법적 조치를 받을 수 있습니다.';
-const GREET = localStorage.getItem('custom_greet') || '안녕하세요, 말랑파파에요!';
+const COPYRIGHT_T = '\n\n사진의 저작권은 작성자에게 있습니다. 무단 사용·복제·배포 및 상업적 이용을 금지하며, 위반 시 법적 조치를 받을 수 있습니다.';
 
-function gvf(id) {
-  const el = document.getElementById(`f_${id}`);
-  return el ? el.value.trim() : '';
+// 말랑파파 톤앤매너 문장 풀
+const TONE = {
+  // 도입 연결
+  lead: [
+    '이걸 쓰고 싶었던 데는 이유가 있어요.',
+    '솔직하게 적어볼게요.',
+    '요즘 계속 생각이 나서 기록해두려고요.',
+    '짧게 남겨두는 기록이에요.',
+  ],
+  // 감정 전환
+  feel: [
+    '그때 기분이 묘했어요.',
+    '별거 아닌 것 같은데 계속 생각나더라고요.',
+    '저도 모르게 웃음이 났어요.',
+    '그 순간이 아직도 기억에 남아요.',
+    '말로 설명하기가 좀 어려운데요.',
+  ],
+  // 말랑맘 연결
+  mom: [
+    '말랑맘은 옆에서 뭐라고 했냐면요.',
+    '말랑맘 반응이 재밌었어요.',
+    '말랑맘도 같이 봤는데요.',
+    '말랑맘이 먼저 알아챘어요.',
+  ],
+  // 마무리
+  end: [
+    '이런 거 기록 안 하면 금방 잊어버리더라고요.',
+    '소소한 일상이지만 남겨두고 싶었어요.',
+    '나중에 말랑이 크면 같이 보고 싶어요.',
+    '다음에 또 기록할게요.',
+    '앞으로도 자주 올게요.',
+  ],
+  // 추천 연결
+  rec: [
+    '비슷한 상황이신 분들께 도움이 됐으면 좋겠어요.',
+    '저도 처음엔 몰랐거든요.',
+    '쓰다 보니 이게 맞는 것 같더라고요.',
+    '한 번쯤 고려해보시면 좋을 것 같아요.',
+  ],
+  // 아쉬운 점 연결
+  cons: [
+    '단점도 솔직하게 말씀드릴게요.',
+    '아쉬운 부분도 있긴 해요.',
+    '완벽하진 않아서요.',
+    '이 부분은 좀 아쉬웠어요.',
+  ],
+  // 장점 연결
+  pros: [
+    '쓰다 보니 진짜 편하더라고요.',
+    '이건 진짜 좋았어요.',
+    '기대 이상이었어요.',
+    '생각보다 훨씬 만족스러웠어요.',
+  ],
+  // 과정 연결
+  process: [
+    '실제로 해보니까요.',
+    '막상 해보면 어렵지 않아요.',
+    '과정을 간단히 정리해드릴게요.',
+    '순서대로 말씀드릴게요.',
+  ],
+};
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function gvf(id) { const el = document.getElementById(`f_${id}`); return el ? el.value.trim() : ''; }
+
+function makeBlog(paragraphs, extraTags = '') {
+  const greet = localStorage.getItem('custom_greet') || '안녕하세요, 말랑파파에요!';
+  const body = paragraphs.filter(Boolean).join('\n\n');
+  return `${greet}\n\n${body}${COPYRIGHT_T}\n\n${FIXED_TAGS_BLOG}${extraTags ? ' ' + extraTags : ''}`;
 }
 
-function makeBlog(body, extraTags='') {
-  return `${GREET}\n\n${body}${COPYRIGHT}\n\n${FIXED_TAGS_BLOG}${extraTags ? ' ' + extraTags : ''}`;
-}
-
-function makeInsta(caption, extraTags='') {
-  return `${caption}\n\n자세한 내용은 블로그에서 확인하세요\n\n${FIXED_TAGS_INSTA}${extraTags ? ' ' + extraTags : ''}`;
+function makeInsta(lines, extraTags = '') {
+  const body = lines.filter(Boolean).join('\n\n');
+  return `${body}\n\n자세한 내용은 블로그에서 확인하세요\n\n${FIXED_TAGS_INSTA}${extraTags ? ' ' + extraTags : ''}`;
 }
 
 // ============================================================
@@ -2576,27 +2638,31 @@ function tpl_임신기록() {
   const mom = gvf('mom');
   const dad = gvf('dad');
   const letter = gvf('letter');
-  const isPostBirth = period.includes('출산 후') || age.days >= 0;
+  const isPost = period.includes('출산 후') || age.days >= 0;
 
-  let body = '';
-  if (isPostBirth) {
-    body = `말랑이가 ${week}이 됐어요.\n\n`;
-    if (baby) body += `${baby}\n\n`;
-    if (mom) body += `말랑맘은 요즘 ${mom}\n\n`;
-    if (dad) body += `말랑파파인 저는 ${dad}\n\n`;
-    if (letter) body += `말랑이에게.\n${letter}\n\n`;
-    body += `벌써 ${week}이라니, 시간이 참 빠르게 가는 것 같아요.\n하루하루 소중한 순간들을 기록해두려고 해요.`;
+  const paras = [];
+  if (isPost) {
+    paras.push(`말랑이가 ${week}이 됐어요.`);
+    paras.push(pick(TONE.lead));
+    if (baby) paras.push(baby);
+    if (mom) paras.push(`${pick(TONE.mom)}\n${mom}`);
+    if (dad) paras.push(dad);
+    paras.push(pick(TONE.feel));
+    if (letter) paras.push(`말랑이에게.\n\n${letter}`);
+    paras.push(pick(TONE.end));
   } else {
-    body = `임신 ${week}차 기록이에요.\n\n`;
-    if (baby) body += `${baby}\n\n`;
-    if (mom) body += `말랑맘은 ${mom}\n\n`;
-    if (dad) body += `저는 ${dad}\n\n`;
-    if (letter) body += `말랑이에게.\n${letter}\n\n`;
-    body += `말랑이를 만날 날이 점점 다가오고 있어요.`;
+    paras.push(`임신 ${week}차예요.`);
+    paras.push(pick(TONE.lead));
+    if (baby) paras.push(baby);
+    if (mom) paras.push(`${pick(TONE.mom)}\n${mom}`);
+    if (dad) paras.push(dad);
+    paras.push(pick(TONE.feel));
+    if (letter) paras.push(`말랑이에게.\n\n${letter}`);
+    paras.push(`말랑이를 만날 날이 가까워지고 있어요.\n${pick(TONE.end)}`);
   }
 
-  const blog = makeBlog(body, '#임신기록 #육아일기 #신생아일기 #초보아빠육아 #아기성장');
-  const insta = makeInsta(`말랑이 ${week}\n\n${baby || letter || '오늘도 기록해요.'}`, '#임신기록 #육아일기 #아기성장');
+  const blog = makeBlog(paras, '#임신기록 #육아일기 #신생아일기 #초보아빠육아 #아기성장');
+  const insta = makeInsta([`말랑이 ${week}`, pick(TONE.feel), baby || letter || '오늘도 기록해요.'], '#임신기록 #육아일기 #아기성장');
   return { blog, insta, title: `말랑이 ${week} 기록` };
 }
 
@@ -2609,15 +2675,19 @@ function tpl_연애회상() {
   const feel = gvf('feel');
   const now = gvf('now');
 
-  let body = `${when}의 이야기예요.\n\n`;
-  if (ep) body += `${ep}\n\n`;
-  if (feel) body += `그때 저는 ${feel}\n\n`;
-  if (now) body += `지금 돌아보면 ${now}\n\n`;
-  body += `이런 소소한 순간들이 쌓여서 지금의 우리가 됐어요.\n말랑맘, 항상 고마워요.`;
+  const paras = [];
+  paras.push(`${when} 이야기예요.`);
+  paras.push(pick(TONE.lead));
+  if (ep) paras.push(ep);
+  paras.push(pick(TONE.feel));
+  if (feel) paras.push(`그때 ${feel}`);
+  if (now) paras.push(`지금 돌아보면요.\n\n${now}`);
+  paras.push(`이런 순간들이 쌓여서 지금의 우리가 됐어요.\n말랑맘, 고마워요.`);
+  paras.push(pick(TONE.end));
 
-  const blog = makeBlog(body, '#연애회상 #부부일상 #신혼일상 #커플일상 #부부기록 #추억소환');
-  const insta = makeInsta(`${when}\n\n${ep ? ep.slice(0, 80) + (ep.length > 80 ? '...' : '') : ''}`, '#연애회상 #부부일상 #신혼일상');
-  return { blog, insta, title: `${when} 연애 회상` };
+  const blog = makeBlog(paras, '#연애회상 #부부일상 #신혼일상 #커플일상 #부부기록 #추억소환');
+  const insta = makeInsta([`${when}`, ep ? ep.slice(0, 60) + (ep.length > 60 ? '...' : '') : pick(TONE.feel)], '#연애회상 #부부일상 #신혼일상');
+  return { blog, insta, title: `${when} - 연애 회상` };
 }
 
 // ============================================================
@@ -2629,15 +2699,17 @@ function tpl_육아정보() {
   const exp = gvf('exp');
   const warn = gvf('warn');
 
-  let body = `저도 처음엔 몰랐는데요, ${topic}에 대해 공유해드릴게요.\n\n`;
-  if (sum) body += `${sum}\n\n`;
-  if (exp) body += `말랑이한테 직접 해봤는데요.\n${exp}\n\n`;
-  if (warn) body += `주의하실 점도 있어요.\n${warn}\n\n`;
-  body += `육아는 정답이 없지만, 같은 상황의 부모님들께 조금이나마 도움이 됐으면 좋겠어요.`;
+  const paras = [];
+  paras.push(`저도 처음엔 몰랐는데요, ${topic}에 대해 정리해봤어요.`);
+  if (sum) paras.push(sum);
+  if (exp) paras.push(`말랑이한테 직접 해봤거든요.\n\n${exp}`);
+  if (warn) paras.push(`주의할 점도 있어요.\n\n${warn}`);
+  paras.push(pick(TONE.rec));
+  paras.push(pick(TONE.end));
 
-  const blog = makeBlog(body, `#${topic.slice(0,10)} #신생아 #육아꿀팁 #신생아케어 #아기키우기`);
-  const insta = makeInsta(`${topic}\n\n${sum ? sum.slice(0, 100) : ''}`, '#육아꿀팁 #신생아 #초보육아');
-  return { blog, insta, title: `${topic} - 말랑파파가 직접 해봤어요` };
+  const blog = makeBlog(paras, `#${topic.replace(/\s/g,'').slice(0,8)} #신생아 #육아꿀팁 #신생아케어 #아기키우기`);
+  const insta = makeInsta([`${topic}`, pick(TONE.lead), sum ? sum.slice(0, 80) : ''], '#육아꿀팁 #신생아 #초보육아');
+  return { blog, insta, title: `${topic} - 말랑파파 정리` };
 }
 
 // ============================================================
@@ -2652,59 +2724,60 @@ function tpl_육아용품() {
   const rec = gvf('rec');
   const sp = gvf('sp');
 
-  const intro = {
+  const introMap = {
     '내돈내산': '솔직히 살까 말까 고민 많이 했어요.',
-    '협찬·제공': '제품을 제공받아 솔직하게 써봤어요.',
-    '선물받음': '지인이 선물해줘서 써봤는데요.',
+    '협찬·제공': '제공받아서 솔직하게 써봤어요.',
+    '선물받음': '선물받아서 써봤는데, 할 말이 생겼어요.',
     '당근마켓': '당근마켓에서 득템했어요.',
-  }[sp] || '구매해서 써봤어요.';
+  };
 
-  let body = `${intro}\n\n`;
-  body += `이번에 소개해드릴 제품은 ${product}이에요.\n\n`;
-  if (reason) body += `${reason}\n\n`;
-  if (pros) body += `좋았던 점을 말씀드리면요.\n${pros}\n\n`;
-  if (cons) body += `아쉬운 점도 솔직하게 말씀드릴게요.\n${cons}\n\n`;
-  if (price) body += `가격은 ${price}이에요.\n\n`;
-  if (rec) body += `${rec}에게 추천해드려요.`;
+  const paras = [];
+  paras.push(introMap[sp] || '구매해서 써봤어요.');
+  paras.push(`${product} 후기예요.`);
+  if (reason) paras.push(reason);
+  if (pros) paras.push(`${pick(TONE.pros)}\n\n${pros}`);
+  if (cons) paras.push(`${pick(TONE.cons)}\n\n${cons}`);
+  if (price) paras.push(`가격은 ${price}이에요.`);
+  if (rec) paras.push(`${pick(TONE.rec)}\n${rec}에게 특히 추천해요.`);
+  paras.push(pick(TONE.end));
 
-  const blog = makeBlog(body, `#육아용품 #신생아용품 #${sp==='내돈내산'?'내돈내산':'육아용품추천'} #육아필수템 #아기용품추천`);
-  const insta = makeInsta(`${product} 솔직 후기\n\n${pros ? pros.slice(0, 80) : ''}`, '#육아용품 #신생아용품 #내돈내산');
-  return { blog, insta, title: `${product} 솔직 후기 (${sp || '사용 후기'})` };
+  const spTag = sp === '내돈내산' ? '#내돈내산' : '#육아용품추천';
+  const blog = makeBlog(paras, `#육아용품 #신생아용품 ${spTag} #육아필수템 #아기용품추천`);
+  const insta = makeInsta([`${product}`, introMap[sp] || '', pros ? pros.slice(0, 60) : ''], '#육아용품 #신생아용품 #내돈내산');
+  return { blog, insta, title: `${product} 솔직 후기 (${sp || '사용기'})` };
 }
 
 // ============================================================
 // 5. 먹고기록
 // ============================================================
 function tpl_먹고기록() {
-  const placeData = window.lastPlace || {};
-  const placeName = placeData.name || '맛집';
-  const addr = placeData.address || '';
-  const hours = placeData.hours || '';
-  const parking = placeData.parking || '';
-  const phone = placeData.phone || '';
-  const priceInfo = placeData.price || '';
+  const pl = window.lastPlace || {};
+  const name = pl.name || '맛집';
   const menu = gvf('menu');
   const taste = gvf('taste');
   const ctx = gvf('ctx');
 
-  let body = '';
-  if (addr || hours) {
-    body += `📍 ${addr}\n`;
-    if (hours) body += `🕐 ${hours}\n`;
-    if (parking) body += `🅿️ ${parking}\n`;
-    if (phone) body += `📞 ${phone}\n`;
-    if (priceInfo) body += `💰 ${priceInfo}\n`;
-    body += '\n';
+  const paras = [];
+  if (pl.address || pl.hours) {
+    let info = '';
+    if (pl.address) info += `📍 ${pl.address}\n`;
+    if (pl.hours) info += `🕐 ${pl.hours}\n`;
+    if (pl.parking) info += `🅿️ ${pl.parking}\n`;
+    if (pl.phone) info += `📞 ${pl.phone}\n`;
+    if (pl.price) info += `💰 ${pl.price}`;
+    paras.push(info.trim());
   }
-  if (ctx) body += `${ctx}\n\n`;
-  body += `${placeName}에 다녀왔어요.\n\n`;
-  if (menu) body += `주문한 메뉴는 ${menu}이에요.\n\n`;
-  if (taste) body += `${taste}\n\n`;
-  body += `또 생각나면 다시 방문할 것 같아요.`;
+  if (ctx) paras.push(ctx);
+  else paras.push(`${name}에 다녀왔어요.`);
+  paras.push(pick(TONE.lead));
+  if (menu) paras.push(`주문한 건 ${menu}이에요.`);
+  if (taste) paras.push(taste);
+  paras.push(pick(TONE.feel));
+  paras.push(`또 생각나면 다시 갈 것 같아요.\n${pick(TONE.end)}`);
 
-  const blog = makeBlog(body, `#맛집 #맛집추천 #먹스타그램 #맛집탐방 #${placeName.slice(0,8)}`);
-  const insta = makeInsta(`${placeName}\n\n${taste ? taste.slice(0, 80) : ''}`, '#맛집 #맛집추천 #먹스타그램');
-  return { blog, insta, title: `${placeName} 다녀왔어요` };
+  const blog = makeBlog(paras, `#맛집 #맛집추천 #먹스타그램 #맛집탐방 #${name.slice(0,6)}`);
+  const insta = makeInsta([`${name}`, taste ? taste.slice(0, 60) : pick(TONE.feel)], '#맛집 #맛집추천 #먹스타그램');
+  return { blog, insta, title: `${name} 다녀왔어요` };
 }
 
 // ============================================================
@@ -2718,14 +2791,18 @@ function tpl_놀고기록() {
   const mom_reaction = gvf('mom_reaction');
   const again = gvf('again');
 
-  let body = `${date_info ? date_info + '에 ' : ''}${place}에 다녀왔어요.\n\n`;
-  if (vibe) body += `${vibe}\n\n`;
-  if (highlight) body += `가장 기억에 남는 건요.\n${highlight}\n\n`;
-  if (mom_reaction) body += `말랑맘은 ${mom_reaction}\n\n`;
-  if (again) body += `재방문 의사는요, ${again}`;
+  const paras = [];
+  paras.push(`${date_info ? date_info + '에 ' : ''}${place}에 다녀왔어요.`);
+  paras.push(pick(TONE.lead));
+  if (vibe) paras.push(vibe);
+  if (highlight) paras.push(`가장 기억에 남는 건요.\n\n${highlight}`);
+  paras.push(pick(TONE.feel));
+  if (mom_reaction) paras.push(`${pick(TONE.mom)}\n${mom_reaction}`);
+  if (again) paras.push(`재방문 의사요? ${again}`);
+  paras.push(pick(TONE.end));
 
-  const blog = makeBlog(body, `#데이트 #부부데이트 #신혼데이트 #나들이 #${place.slice(0,8)}`);
-  const insta = makeInsta(`${place}\n\n${highlight ? highlight.slice(0, 80) : ''}`, '#데이트 #부부데이트 #나들이');
+  const blog = makeBlog(paras, `#데이트 #부부데이트 #신혼데이트 #나들이 #${place.slice(0,6)}`);
+  const insta = makeInsta([`${place}`, highlight ? highlight.slice(0, 60) : pick(TONE.feel)], '#데이트 #부부데이트 #나들이');
   return { blog, insta, title: `${place} 다녀왔어요` };
 }
 
@@ -2740,14 +2817,18 @@ function tpl_집밥요리() {
   const result = gvf('result');
   const tip = gvf('tip');
 
-  let body = `${reason ? reason + '\n\n' : ''}오늘은 ${dish}를 만들었어요.\n\n`;
-  if (recipe) body += `재료와 방법을 간단히 적어볼게요.\n${recipe}\n\n`;
-  if (result) body += `${result}\n\n`;
-  if (tip) body += `팁을 하나 드리자면요.\n${tip}\n\n`;
-  body += `집밥이 최고예요.`;
+  const paras = [];
+  if (reason) paras.push(reason);
+  paras.push(`오늘은 ${dish}를 만들었어요.`);
+  paras.push(pick(TONE.lead));
+  if (recipe) paras.push(`재료랑 만드는 방법이에요.\n\n${recipe}`);
+  if (result) paras.push(result);
+  paras.push(pick(TONE.feel));
+  if (tip) paras.push(`팁을 하나 드리면요.\n\n${tip}`);
+  paras.push(`집밥이 최고예요.\n${pick(TONE.end)}`);
 
-  const blog = makeBlog(body, `#집밥 #요리기록 #집밥스타그램 #이유식 #아빠요리 #${keyword.slice(0,8)}`);
-  const insta = makeInsta(`${dish}\n\n${result ? result.slice(0, 80) : ''}`, '#집밥 #요리기록 #집밥스타그램');
+  const blog = makeBlog(paras, `#집밥 #요리기록 #집밥스타그램 #이유식 #아빠요리 #${keyword.replace(/\s/g,'').slice(0,6)}`);
+  const insta = makeInsta([`${dish}`, keyword, result ? result.slice(0, 60) : ''], '#집밥 #요리기록 #집밥스타그램');
   return { blog, insta, title: `${dish} 만들었어요 - ${keyword}` };
 }
 
@@ -2764,22 +2845,25 @@ function tpl_살림리뷰() {
   const cons = gvf('cons');
   const rec = gvf('rec');
 
-  const intro = {
-    '내돈내산': '직접 구매해서 써봤어요.',
-    '협찬·제공': '제품을 제공받아 솔직하게 써봤어요.',
-    '선물받음': '선물받아서 써봤는데요.',
+  const introMap = {
+    '내돈내산': '직접 사봤어요.',
+    '협찬·제공': '제공받아서 써봤어요.',
+    '선물받음': '선물받아서 써봤는데 할 말이 생겼어요.',
     '당근마켓': '당근마켓에서 득템했어요.',
-  }[purchase] || '구매해서 써봤어요.';
+  };
 
-  let body = `${intro}\n\n${product}인데요, ${keyword}\n\n`;
-  if (reason) body += `${reason}\n\n`;
-  if (pros) body += `좋았던 점이에요.\n${pros}\n\n`;
-  if (cons) body += `아쉬운 점도 솔직하게요.\n${cons}\n\n`;
-  if (price) body += `가격은 ${price}이에요.\n\n`;
-  if (rec) body += `${rec}에게 추천해요.`;
+  const paras = [];
+  paras.push(introMap[purchase] || '사용해봤어요.');
+  paras.push(`${product}인데요, ${keyword}`);
+  if (reason) paras.push(reason);
+  if (pros) paras.push(`${pick(TONE.pros)}\n\n${pros}`);
+  if (cons) paras.push(`${pick(TONE.cons)}\n\n${cons}`);
+  if (price) paras.push(`가격은 ${price}이에요.`);
+  if (rec) paras.push(`${pick(TONE.rec)}\n${rec}에게 추천해요.`);
+  paras.push(pick(TONE.end));
 
-  const blog = makeBlog(body, `#살림 #살림템 #생활용품추천 #식품리뷰 #내돈내산 #${keyword.slice(0,6)}`);
-  const insta = makeInsta(`${product}\n${keyword}\n\n${pros ? pros.slice(0, 80) : ''}`, '#살림 #살림템 #생활용품추천');
+  const blog = makeBlog(paras, `#살림 #살림템 #생활용품추천 #식품리뷰 #내돈내산 #${keyword.replace(/\s/g,'').slice(0,6)}`);
+  const insta = makeInsta([`${product}`, keyword, pros ? pros.slice(0, 60) : ''], '#살림 #살림템 #생활용품추천');
   return { blog, insta, title: `${product} 솔직 후기 - ${keyword}` };
 }
 
@@ -2794,15 +2878,18 @@ function tpl_생활정보후기() {
   const result = gvf('result');
   const tip = gvf('tip');
 
-  let body = `${service}에 다녀왔어요.\n${keyword}\n\n`;
-  if (purpose) body += `방문 목적은 ${purpose}이었어요.\n\n`;
-  if (process) body += `${process}\n\n`;
-  if (result) body += `${result}\n\n`;
-  if (tip) body += `팁을 드리자면요.\n${tip}\n\n`;
-  body += `같은 상황이신 분들께 도움이 됐으면 좋겠어요.`;
+  const paras = [];
+  paras.push(`${service}에 다녀왔어요.\n${keyword}`);
+  paras.push(pick(TONE.lead));
+  if (purpose) paras.push(`방문 이유는요, ${purpose}`);
+  if (process) paras.push(`${pick(TONE.process)}\n\n${process}`);
+  if (result) paras.push(result);
+  paras.push(pick(TONE.feel));
+  if (tip) paras.push(`팁을 드리면요.\n\n${tip}`);
+  paras.push(`${pick(TONE.rec)}\n${pick(TONE.end)}`);
 
-  const blog = makeBlog(body, `#생활정보 #생활후기 #육아생활 #신혼생활 #생활꿀팁 #${service.slice(0,6)}`);
-  const insta = makeInsta(`${service}\n${keyword}\n\n${tip ? tip.slice(0, 80) : result ? result.slice(0, 80) : ''}`, '#생활정보 #생활후기 #생활꿀팁');
+  const blog = makeBlog(paras, `#생활정보 #생활후기 #육아생활 #신혼생활 #생활꿀팁 #${service.slice(0,6)}`);
+  const insta = makeInsta([`${service}`, keyword, tip ? tip.slice(0, 60) : result ? result.slice(0, 60) : ''], '#생활정보 #생활후기 #생활꿀팁');
   return { blog, insta, title: `${service} 후기 - ${keyword}` };
 }
 
@@ -2811,18 +2898,20 @@ function tpl_생활정보후기() {
 // ============================================================
 function tpl_살림재테크() {
   const topic = gvf('topic');
-  const series = gvf('series');
   const sit = gvf('my_situation');
   const extra = gvf('extra');
 
-  let body = `${topic}에 대해 정리해봤어요.\n\n`;
-  if (sit) body += `저희 상황을 먼저 말씀드리면요.\n${sit}\n\n`;
-  if (extra) body += `${extra}\n\n`;
-  body += `같은 상황이신 분들께 도움이 됐으면 좋겠어요.\n자세한 내용은 직접 기관에 확인하시는 걸 추천해요.`;
+  const paras = [];
+  paras.push(`${topic}에 대해 정리해봤어요.`);
+  paras.push(pick(TONE.lead));
+  if (sit) paras.push(`저희 상황을 먼저 말씀드리면요.\n\n${sit}`);
+  if (extra) paras.push(extra);
+  paras.push(`${pick(TONE.rec)}\n정확한 내용은 직접 기관에 확인하시는 걸 추천드려요.`);
+  paras.push(pick(TONE.end));
 
-  const blog = makeBlog(body, '#재테크 #신혼재테크 #정부지원금 #출산지원 #신혼부부혜택');
-  const insta = makeInsta(`${topic}\n\n${sit ? sit.slice(0, 80) : ''}`, '#재테크 #신혼재테크 #정부지원금');
-  return { blog, insta, title: `${topic} 정리` };
+  const blog = makeBlog(paras, '#재테크 #신혼재테크 #정부지원금 #출산지원 #신혼부부혜택');
+  const insta = makeInsta([`${topic}`, sit ? sit.slice(0, 60) : pick(TONE.lead)], '#재테크 #신혼재테크 #정부지원금');
+  return { blog, insta, title: `${topic} 정리해봤어요` };
 }
 
 // ============================================================
@@ -2842,14 +2931,10 @@ const TPL_MAP = {
 };
 
 function generateTemplate() {
-  if (!catName || !TPL_MAP[catName]) {
-    toast('이 카테고리는 템플릿이 없어요');
-    return;
-  }
+  if (!catName || !TPL_MAP[catName]) { toast('이 카테고리는 템플릿이 없어요'); return; }
   try {
     const result = TPL_MAP[catName]();
     if (!result) { toast('입력값을 확인해주세요'); return; }
-
     const { blog, insta, title } = result;
 
     // 결과 표시
@@ -2860,10 +2945,12 @@ function generateTemplate() {
 
     // 제목 표시
     const titleEl = document.getElementById('titleTxt');
-    if (titleEl) titleEl.innerHTML = `<div style="padding:8px 12px;background:var(--al);border:1.5px solid var(--ac);border-radius:var(--rs);font-size:13px;font-weight:600;color:var(--ac);">✓ ${title}</div><div style="font-size:11px;color:var(--ht);margin-top:4px;">템플릿으로 생성됐어요 (토큰 0원)</div>`;
+    if (titleEl) {
+      titleEl.innerHTML = `<div style="padding:8px 12px;background:var(--gl);border:1.5px solid var(--gr);border-radius:var(--rs);font-size:13px;font-weight:600;color:var(--gr);">✓ ${title}</div><div style="font-size:11px;color:var(--ht);margin-top:4px;">템플릿 생성 완료 (토큰 0원)</div>`;
+    }
     selTitle = title;
 
-    // 글자수 업데이트
+    // 글자수
     const bc = document.getElementById('blogCount');
     if (bc) {
       const cnt = blog.length;
@@ -2871,10 +2958,11 @@ function generateTemplate() {
       bc.innerHTML = `<span style="color:${color};font-weight:600;">${cnt.toLocaleString()}자</span> <span style="color:var(--ht);">(권장 1,500~2,000)</span>`;
     }
 
-    // 품질 점수
+    // 품질 점수 + SEO 미리보기
     calcQuality(blog, insta);
+    updateSeoPreview(title);
 
-    // 결과 탭으로 전환
+    // 결과 탭
     document.getElementById('oaEl')?.classList.add('on');
     swOut('blog');
 
@@ -2882,13 +2970,13 @@ function generateTemplate() {
     const date = nowDate();
     autoSave(catName, title, blog, insta, date);
 
-    // 히스토리 저장
+    // 히스토리
     drafts.unshift({ id: Date.now(), cat: catName, title, blog, insta, savedAt: date });
     if (drafts.length > 20) drafts.pop();
     localStorage.setItem('ml_drafts', JSON.stringify(drafts));
     renderDrafts();
 
-    toast('템플릿 글이 생성됐어요! (토큰 0원)');
+    toast('템플릿 글 생성 완료! (토큰 0원)');
   } catch(e) {
     console.error('템플릿 오류:', e);
     toast('오류: ' + e.message);
