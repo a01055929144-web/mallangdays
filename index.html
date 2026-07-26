@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1785026361">
+<meta name="version" content="1785026384">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -406,7 +406,10 @@ input[type="file"]{display:none;}
           <input type="file" id="fi" multiple accept="image/*,video/*" onchange="addFiles(this)">
           <div class="pcs" id="pcs"></div>
         </div>
-        <button class="gen" onclick="generate()">✨ 초안 생성하기</button>
+        <div style="display:flex;gap:8px;">
+          <button class="gen" onclick="generate()" id="genBtn" style="flex:1;">✨ AI 초안 생성</button>
+          <button class="gen" onclick="generateTemplate()" id="tplBtn" style="flex:1;background:var(--gr);border-color:var(--gr);">📝 무료 생성</button>
+        </div>
       </div>
       <div class="ld" id="ldEl"><div class="sp"></div><div style="font-size:14px;color:var(--sb);font-weight:500;">초안 작성 중...</div><div style="font-size:12px;color:var(--ht);margin-top:5px;" id="ldStep">분석 중</div></div>
       <div class="oa" id="oaEl">
