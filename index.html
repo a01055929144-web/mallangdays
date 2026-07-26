@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1784990535">
+<meta name="version" content="1785026361">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -2543,6 +2543,356 @@ document.addEventListener('DOMContentLoaded', () => {
   if (bar) bar.style.width = '100%';
   setTimeout(()=>{ if(sp){sp.style.opacity='0';setTimeout(()=>sp.remove(),400);} }, 700);
 });
+// ======= 토큰 0원 템플릿 시스템 =======
+const FIXED_TAGS_BLOG = '#말랑데이즈 #말랑파파 #말랑맘 #말랑이 #육아정보 #육아일상 #신생아육아 #초보아빠 #초보부모 #아기키우기 #육아기록 #신생아일기';
+const FIXED_TAGS_INSTA = '#말랑데이즈 #말랑파파 #말랑맘 #말랑이 #육아정보 #육아일상 #신생아육아 #초보아빠';
+const COPYRIGHT = '\n\n사진의 저작권은 작성자에게 있습니다. 무단 사용·복제·배포 및 상업적 이용을 금지하며, 위반 시 법적 조치를 받을 수 있습니다.';
+const GREET = localStorage.getItem('custom_greet') || '안녕하세요, 말랑파파에요!';
+
+function gvf(id) {
+  const el = document.getElementById(`f_${id}`);
+  return el ? el.value.trim() : '';
+}
+
+function makeBlog(body, extraTags='') {
+  return `${GREET}\n\n${body}${COPYRIGHT}\n\n${FIXED_TAGS_BLOG}${extraTags ? ' ' + extraTags : ''}`;
+}
+
+function makeInsta(caption, extraTags='') {
+  return `${caption}\n\n자세한 내용은 블로그에서 확인하세요\n\n${FIXED_TAGS_INSTA}${extraTags ? ' ' + extraTags : ''}`;
+}
+
+// ============================================================
+// 1. 임신·육아일기
+// ============================================================
+function tpl_임신기록() {
+  const age = getMalrangAge();
+  const period = gvf('period');
+  const week = gvf('week') || age.label;
+  const baby = gvf('baby');
+  const mom = gvf('mom');
+  const dad = gvf('dad');
+  const letter = gvf('letter');
+  const isPostBirth = period.includes('출산 후') || age.days >= 0;
+
+  let body = '';
+  if (isPostBirth) {
+    body = `말랑이가 ${week}이 됐어요.\n\n`;
+    if (baby) body += `${baby}\n\n`;
+    if (mom) body += `말랑맘은 요즘 ${mom}\n\n`;
+    if (dad) body += `말랑파파인 저는 ${dad}\n\n`;
+    if (letter) body += `말랑이에게.\n${letter}\n\n`;
+    body += `벌써 ${week}이라니, 시간이 참 빠르게 가는 것 같아요.\n하루하루 소중한 순간들을 기록해두려고 해요.`;
+  } else {
+    body = `임신 ${week}차 기록이에요.\n\n`;
+    if (baby) body += `${baby}\n\n`;
+    if (mom) body += `말랑맘은 ${mom}\n\n`;
+    if (dad) body += `저는 ${dad}\n\n`;
+    if (letter) body += `말랑이에게.\n${letter}\n\n`;
+    body += `말랑이를 만날 날이 점점 다가오고 있어요.`;
+  }
+
+  const blog = makeBlog(body, '#임신기록 #육아일기 #신생아일기 #초보아빠육아 #아기성장');
+  const insta = makeInsta(`말랑이 ${week}\n\n${baby || letter || '오늘도 기록해요.'}`, '#임신기록 #육아일기 #아기성장');
+  return { blog, insta, title: `말랑이 ${week} 기록` };
+}
+
+// ============================================================
+// 2. 연애회상
+// ============================================================
+function tpl_연애회상() {
+  const when = gvf('when');
+  const ep = gvf('ep');
+  const feel = gvf('feel');
+  const now = gvf('now');
+
+  let body = `${when}의 이야기예요.\n\n`;
+  if (ep) body += `${ep}\n\n`;
+  if (feel) body += `그때 저는 ${feel}\n\n`;
+  if (now) body += `지금 돌아보면 ${now}\n\n`;
+  body += `이런 소소한 순간들이 쌓여서 지금의 우리가 됐어요.\n말랑맘, 항상 고마워요.`;
+
+  const blog = makeBlog(body, '#연애회상 #부부일상 #신혼일상 #커플일상 #부부기록 #추억소환');
+  const insta = makeInsta(`${when}\n\n${ep ? ep.slice(0, 80) + (ep.length > 80 ? '...' : '') : ''}`, '#연애회상 #부부일상 #신혼일상');
+  return { blog, insta, title: `${when} 연애 회상` };
+}
+
+// ============================================================
+// 3. 육아정보
+// ============================================================
+function tpl_육아정보() {
+  const topic = gvf('topic');
+  const sum = gvf('sum');
+  const exp = gvf('exp');
+  const warn = gvf('warn');
+
+  let body = `저도 처음엔 몰랐는데요, ${topic}에 대해 공유해드릴게요.\n\n`;
+  if (sum) body += `${sum}\n\n`;
+  if (exp) body += `말랑이한테 직접 해봤는데요.\n${exp}\n\n`;
+  if (warn) body += `주의하실 점도 있어요.\n${warn}\n\n`;
+  body += `육아는 정답이 없지만, 같은 상황의 부모님들께 조금이나마 도움이 됐으면 좋겠어요.`;
+
+  const blog = makeBlog(body, `#${topic.slice(0,10)} #신생아 #육아꿀팁 #신생아케어 #아기키우기`);
+  const insta = makeInsta(`${topic}\n\n${sum ? sum.slice(0, 100) : ''}`, '#육아꿀팁 #신생아 #초보육아');
+  return { blog, insta, title: `${topic} - 말랑파파가 직접 해봤어요` };
+}
+
+// ============================================================
+// 4. 육아용품
+// ============================================================
+function tpl_육아용품() {
+  const product = gvf('product');
+  const price = gvf('price');
+  const reason = gvf('reason');
+  const pros = gvf('pros');
+  const cons = gvf('cons');
+  const rec = gvf('rec');
+  const sp = gvf('sp');
+
+  const intro = {
+    '내돈내산': '솔직히 살까 말까 고민 많이 했어요.',
+    '협찬·제공': '제품을 제공받아 솔직하게 써봤어요.',
+    '선물받음': '지인이 선물해줘서 써봤는데요.',
+    '당근마켓': '당근마켓에서 득템했어요.',
+  }[sp] || '구매해서 써봤어요.';
+
+  let body = `${intro}\n\n`;
+  body += `이번에 소개해드릴 제품은 ${product}이에요.\n\n`;
+  if (reason) body += `${reason}\n\n`;
+  if (pros) body += `좋았던 점을 말씀드리면요.\n${pros}\n\n`;
+  if (cons) body += `아쉬운 점도 솔직하게 말씀드릴게요.\n${cons}\n\n`;
+  if (price) body += `가격은 ${price}이에요.\n\n`;
+  if (rec) body += `${rec}에게 추천해드려요.`;
+
+  const blog = makeBlog(body, `#육아용품 #신생아용품 #${sp==='내돈내산'?'내돈내산':'육아용품추천'} #육아필수템 #아기용품추천`);
+  const insta = makeInsta(`${product} 솔직 후기\n\n${pros ? pros.slice(0, 80) : ''}`, '#육아용품 #신생아용품 #내돈내산');
+  return { blog, insta, title: `${product} 솔직 후기 (${sp || '사용 후기'})` };
+}
+
+// ============================================================
+// 5. 먹고기록
+// ============================================================
+function tpl_먹고기록() {
+  const placeData = window.lastPlace || {};
+  const placeName = placeData.name || '맛집';
+  const addr = placeData.address || '';
+  const hours = placeData.hours || '';
+  const parking = placeData.parking || '';
+  const phone = placeData.phone || '';
+  const priceInfo = placeData.price || '';
+  const menu = gvf('menu');
+  const taste = gvf('taste');
+  const ctx = gvf('ctx');
+
+  let body = '';
+  if (addr || hours) {
+    body += `📍 ${addr}\n`;
+    if (hours) body += `🕐 ${hours}\n`;
+    if (parking) body += `🅿️ ${parking}\n`;
+    if (phone) body += `📞 ${phone}\n`;
+    if (priceInfo) body += `💰 ${priceInfo}\n`;
+    body += '\n';
+  }
+  if (ctx) body += `${ctx}\n\n`;
+  body += `${placeName}에 다녀왔어요.\n\n`;
+  if (menu) body += `주문한 메뉴는 ${menu}이에요.\n\n`;
+  if (taste) body += `${taste}\n\n`;
+  body += `또 생각나면 다시 방문할 것 같아요.`;
+
+  const blog = makeBlog(body, `#맛집 #맛집추천 #먹스타그램 #맛집탐방 #${placeName.slice(0,8)}`);
+  const insta = makeInsta(`${placeName}\n\n${taste ? taste.slice(0, 80) : ''}`, '#맛집 #맛집추천 #먹스타그램');
+  return { blog, insta, title: `${placeName} 다녀왔어요` };
+}
+
+// ============================================================
+// 6. 놀고기록
+// ============================================================
+function tpl_놀고기록() {
+  const place = gvf('place');
+  const date_info = gvf('date_info');
+  const highlight = gvf('highlight');
+  const vibe = gvf('vibe');
+  const mom_reaction = gvf('mom_reaction');
+  const again = gvf('again');
+
+  let body = `${date_info ? date_info + '에 ' : ''}${place}에 다녀왔어요.\n\n`;
+  if (vibe) body += `${vibe}\n\n`;
+  if (highlight) body += `가장 기억에 남는 건요.\n${highlight}\n\n`;
+  if (mom_reaction) body += `말랑맘은 ${mom_reaction}\n\n`;
+  if (again) body += `재방문 의사는요, ${again}`;
+
+  const blog = makeBlog(body, `#데이트 #부부데이트 #신혼데이트 #나들이 #${place.slice(0,8)}`);
+  const insta = makeInsta(`${place}\n\n${highlight ? highlight.slice(0, 80) : ''}`, '#데이트 #부부데이트 #나들이');
+  return { blog, insta, title: `${place} 다녀왔어요` };
+}
+
+// ============================================================
+// 7. 집밥요리
+// ============================================================
+function tpl_집밥요리() {
+  const dish = gvf('dish');
+  const keyword = gvf('keyword');
+  const reason = gvf('reason');
+  const recipe = gvf('recipe');
+  const result = gvf('result');
+  const tip = gvf('tip');
+
+  let body = `${reason ? reason + '\n\n' : ''}오늘은 ${dish}를 만들었어요.\n\n`;
+  if (recipe) body += `재료와 방법을 간단히 적어볼게요.\n${recipe}\n\n`;
+  if (result) body += `${result}\n\n`;
+  if (tip) body += `팁을 하나 드리자면요.\n${tip}\n\n`;
+  body += `집밥이 최고예요.`;
+
+  const blog = makeBlog(body, `#집밥 #요리기록 #집밥스타그램 #이유식 #아빠요리 #${keyword.slice(0,8)}`);
+  const insta = makeInsta(`${dish}\n\n${result ? result.slice(0, 80) : ''}`, '#집밥 #요리기록 #집밥스타그램');
+  return { blog, insta, title: `${dish} 만들었어요 - ${keyword}` };
+}
+
+// ============================================================
+// 8. 살림리뷰
+// ============================================================
+function tpl_살림리뷰() {
+  const product = gvf('product');
+  const keyword = gvf('keyword');
+  const purchase = gvf('purchase');
+  const price = gvf('price');
+  const reason = gvf('reason');
+  const pros = gvf('pros');
+  const cons = gvf('cons');
+  const rec = gvf('rec');
+
+  const intro = {
+    '내돈내산': '직접 구매해서 써봤어요.',
+    '협찬·제공': '제품을 제공받아 솔직하게 써봤어요.',
+    '선물받음': '선물받아서 써봤는데요.',
+    '당근마켓': '당근마켓에서 득템했어요.',
+  }[purchase] || '구매해서 써봤어요.';
+
+  let body = `${intro}\n\n${product}인데요, ${keyword}\n\n`;
+  if (reason) body += `${reason}\n\n`;
+  if (pros) body += `좋았던 점이에요.\n${pros}\n\n`;
+  if (cons) body += `아쉬운 점도 솔직하게요.\n${cons}\n\n`;
+  if (price) body += `가격은 ${price}이에요.\n\n`;
+  if (rec) body += `${rec}에게 추천해요.`;
+
+  const blog = makeBlog(body, `#살림 #살림템 #생활용품추천 #식품리뷰 #내돈내산 #${keyword.slice(0,6)}`);
+  const insta = makeInsta(`${product}\n${keyword}\n\n${pros ? pros.slice(0, 80) : ''}`, '#살림 #살림템 #생활용품추천');
+  return { blog, insta, title: `${product} 솔직 후기 - ${keyword}` };
+}
+
+// ============================================================
+// 9. 생활정보후기
+// ============================================================
+function tpl_생활정보후기() {
+  const service = gvf('service');
+  const keyword = gvf('keyword');
+  const purpose = gvf('purpose');
+  const process = gvf('process');
+  const result = gvf('result');
+  const tip = gvf('tip');
+
+  let body = `${service}에 다녀왔어요.\n${keyword}\n\n`;
+  if (purpose) body += `방문 목적은 ${purpose}이었어요.\n\n`;
+  if (process) body += `${process}\n\n`;
+  if (result) body += `${result}\n\n`;
+  if (tip) body += `팁을 드리자면요.\n${tip}\n\n`;
+  body += `같은 상황이신 분들께 도움이 됐으면 좋겠어요.`;
+
+  const blog = makeBlog(body, `#생활정보 #생활후기 #육아생활 #신혼생활 #생활꿀팁 #${service.slice(0,6)}`);
+  const insta = makeInsta(`${service}\n${keyword}\n\n${tip ? tip.slice(0, 80) : result ? result.slice(0, 80) : ''}`, '#생활정보 #생활후기 #생활꿀팁');
+  return { blog, insta, title: `${service} 후기 - ${keyword}` };
+}
+
+// ============================================================
+// 10. 살림재테크
+// ============================================================
+function tpl_살림재테크() {
+  const topic = gvf('topic');
+  const series = gvf('series');
+  const sit = gvf('my_situation');
+  const extra = gvf('extra');
+
+  let body = `${topic}에 대해 정리해봤어요.\n\n`;
+  if (sit) body += `저희 상황을 먼저 말씀드리면요.\n${sit}\n\n`;
+  if (extra) body += `${extra}\n\n`;
+  body += `같은 상황이신 분들께 도움이 됐으면 좋겠어요.\n자세한 내용은 직접 기관에 확인하시는 걸 추천해요.`;
+
+  const blog = makeBlog(body, '#재테크 #신혼재테크 #정부지원금 #출산지원 #신혼부부혜택');
+  const insta = makeInsta(`${topic}\n\n${sit ? sit.slice(0, 80) : ''}`, '#재테크 #신혼재테크 #정부지원금');
+  return { blog, insta, title: `${topic} 정리` };
+}
+
+// ============================================================
+// 템플릿 라우터
+// ============================================================
+const TPL_MAP = {
+  '임신기록': tpl_임신기록,
+  '연애회상': tpl_연애회상,
+  '육아정보': tpl_육아정보,
+  '육아용품': tpl_육아용품,
+  '먹고기록': tpl_먹고기록,
+  '놀고기록': tpl_놀고기록,
+  '집밥요리': tpl_집밥요리,
+  '살림리뷰': tpl_살림리뷰,
+  '생활정보후기': tpl_생활정보후기,
+  '살림재테크': tpl_살림재테크,
+};
+
+function generateTemplate() {
+  if (!catName || !TPL_MAP[catName]) {
+    toast('이 카테고리는 템플릿이 없어요');
+    return;
+  }
+  try {
+    const result = TPL_MAP[catName]();
+    if (!result) { toast('입력값을 확인해주세요'); return; }
+
+    const { blog, insta, title } = result;
+
+    // 결과 표시
+    const blogEl = document.getElementById('blogTxt');
+    const instaEl = document.getElementById('instaTxt');
+    if (blogEl) blogEl.textContent = blog;
+    if (instaEl) instaEl.textContent = insta;
+
+    // 제목 표시
+    const titleEl = document.getElementById('titleTxt');
+    if (titleEl) titleEl.innerHTML = `<div style="padding:8px 12px;background:var(--al);border:1.5px solid var(--ac);border-radius:var(--rs);font-size:13px;font-weight:600;color:var(--ac);">✓ ${title}</div><div style="font-size:11px;color:var(--ht);margin-top:4px;">템플릿으로 생성됐어요 (토큰 0원)</div>`;
+    selTitle = title;
+
+    // 글자수 업데이트
+    const bc = document.getElementById('blogCount');
+    if (bc) {
+      const cnt = blog.length;
+      const color = cnt < 1000 ? '#C62828' : cnt > 2500 ? '#E65100' : '#2E7D32';
+      bc.innerHTML = `<span style="color:${color};font-weight:600;">${cnt.toLocaleString()}자</span> <span style="color:var(--ht);">(권장 1,500~2,000)</span>`;
+    }
+
+    // 품질 점수
+    calcQuality(blog, insta);
+
+    // 결과 탭으로 전환
+    document.getElementById('oaEl')?.classList.add('on');
+    swOut('blog');
+
+    // 저장
+    const date = nowDate();
+    autoSave(catName, title, blog, insta, date);
+
+    // 히스토리 저장
+    drafts.unshift({ id: Date.now(), cat: catName, title, blog, insta, savedAt: date });
+    if (drafts.length > 20) drafts.pop();
+    localStorage.setItem('ml_drafts', JSON.stringify(drafts));
+    renderDrafts();
+
+    toast('템플릿 글이 생성됐어요! (토큰 0원)');
+  } catch(e) {
+    console.error('템플릿 오류:', e);
+    toast('오류: ' + e.message);
+  }
+}
+// ======= 템플릿 시스템 끝 =======
+
 </script>
 </body>
 </html>
