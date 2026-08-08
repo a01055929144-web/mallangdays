@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#D4845A">
 <link rel="manifest" href="data:application/json,{"name":"말랑데이즈 콘텐츠 스튜디오","short_name":"말랑데이즈","start_url":"./","display":"standalone","background_color":"#FAFAF8","theme_color":"#D4845A","icons":[{"src":"https://raw.githubusercontent.com/a01055929144-web/mallangdays/main/icon.png","sizes":"192x192","type":"image/png"}]}">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="version" content="1786169593">
+<meta name="version" content="1786169620">
 <title>말랑데이즈</title>
 <style>
 :root{
@@ -354,6 +354,25 @@ input[type="file"]{display:none;}
           </div>
           <div id="recDynForm"></div>
           <button class="gen" onclick="generateFromRec()">✨ 초안 생성하기</button>
+        </div>
+      </div>
+      <div class="card" id="autoWrap" style="background:var(--sf);border-radius:var(--rs);padding:12px;margin-bottom:8px;border:1px solid var(--bd);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:600;color:var(--tx);">글 자동화</div>
+          <div style="font-size:11px;color:var(--ht);">카테고리 선택 후 바로 작성</div>
+        </div>
+        <div id="autoScheduleList" style="margin-bottom:8px;"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--sb);margin-bottom:6px;">빠른 글쓰기</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button onclick="quickWrite('임신기록')" style="font-size:11px;padding:6px 12px;background:var(--al);color:var(--ac);border:1px solid var(--ac);border-radius:20px;cursor:pointer;touch-action:manipulation;">임신·육아일기</button>
+          <button onclick="quickWrite('육아정보')" style="font-size:11px;padding:6px 12px;background:var(--sf);color:var(--sb);border:1px solid var(--bd);border-radius:20px;cursor:pointer;touch-action:manipulation;">육아정보</button>
+          <button onclick="quickWrite('육아용품')" style="font-size:11px;padding:6px 12px;background:var(--sf);color:var(--sb);border:1px solid var(--bd);border-radius:20px;cursor:pointer;touch-action:manipulation;">육아용품</button>
+          <button onclick="quickWrite('먹고기록')" style="font-size:11px;padding:6px 12px;background:var(--sf);color:var(--sb);border:1px solid var(--bd);border-radius:20px;cursor:pointer;touch-action:manipulation;">먹고기록</button>
+          <button onclick="quickWrite('놀고기록')" style="font-size:11px;padding:6px 12px;background:var(--sf);color:var(--sb);border:1px solid var(--bd);border-radius:20px;cursor:pointer;touch-action:manipulation;">놀고기록</button>
+          <button onclick="quickWrite('집밥요리')" style="font-size:11px;padding:6px 12px;background:var(--sf);color:var(--sb);border:1px solid var(--bd);border-radius:20px;cursor:pointer;touch-action:manipulation;">집밥요리</button>
+          <button onclick="quickWrite('살림리뷰')" style="font-size:11px;padding:6px 12px;background:var(--sf);color:var(--sb);border:1px solid var(--bd);border-radius:20px;cursor:pointer;touch-action:manipulation;">살림리뷰</button>
+          <button onclick="quickWrite('생활정보후기')" style="font-size:11px;padding:6px 12px;background:var(--sf);color:var(--sb);border:1px solid var(--bd);border-radius:20px;cursor:pointer;touch-action:manipulation;">생활정보</button>
+          <button onclick="quickWrite('살림재테크')" style="font-size:11px;padding:6px 12px;background:var(--sf);color:var(--sb);border:1px solid var(--bd);border-radius:20px;cursor:pointer;touch-action:manipulation;">살림재테크</button>
         </div>
       </div>
       <div class="card" id="archCard" style="display:none;">
